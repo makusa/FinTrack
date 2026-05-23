@@ -368,6 +368,10 @@ enum LocalizedStrings {
         "settings.language.section":["fr":"Langue de l'application","en": "App Language",      "es": "Idioma de la app",   "pt": "Idioma do app"],
 
 
+
+        // MARK: - Bank picker
+        "bank.useCustom": ["fr": "Utiliser ce nom personnalisé", "en": "Use this custom name", "es": "Usar este nombre personalizado", "pt": "Usar este nome personalizado"],
+
         // MARK: - Prepayments
         "prepayment.title":          ["fr": "Versements anticipés",            "en": "Prepayments",                "es": "Pagos anticipados",             "pt": "Pagamentos antecipados"],
         "prepayment.oneTime":        ["fr": "Ponctuel",                         "en": "One-Time",                   "es": "Puntual",                       "pt": "Pontual"],

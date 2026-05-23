@@ -50,6 +50,8 @@
 		993DA07AD716A11C96937DE7 /* LocalizedStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89CEF3E35A77FC2463375FDF /* LocalizedStrings.swift */; };
 		BF188BDB02A23E67496A284C /* LoanPrepayment.swift in Sources */ = {isa = PBXBuildFile; fileRef = D95AE7FDBD46765CF2C459EA /* LoanPrepayment.swift */; };
 		2587F30F1BF1B29FD2DC8719 /* AddEditPrepaymentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5E887C892C53194E107C95F /* AddEditPrepaymentView.swift */; };
+		774109B734D18248ECD4F416 /* BankDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = F982256D2C20677F23F33DD8 /* BankDirectory.swift */; };
+		7D059B45A90CB57BC3BFC495 /* BankPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C574E73ABDB03518FD603080 /* BankPicker.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -97,6 +99,8 @@
 		89CEF3E35A77FC2463375FDF /* LocalizedStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedStrings.swift; sourceTree = "<group>"; };
 		D95AE7FDBD46765CF2C459EA /* LoanPrepayment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoanPrepayment.swift; sourceTree = "<group>"; };
 		D5E887C892C53194E107C95F /* AddEditPrepaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditPrepaymentView.swift; sourceTree = "<group>"; };
+		F982256D2C20677F23F33DD8 /* BankDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankDirectory.swift; sourceTree = "<group>"; };
+		C574E73ABDB03518FD603080 /* BankPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankPicker.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -104,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				D34E6F10D5FEAE7E5D0BD329 /* ColorPalette.swift */,
+				F982256D2C20677F23F33DD8 /* BankDirectory.swift */,
 				9D910816B5A699244FFADFE9 /* RecurringTransactionManager.swift */,
 				72EA414C4647414C1515F2B7 /* CashFlowCalculator.swift */,
 				E2DFC423EA38CCA94DF33868 /* CreditLineInterestManager.swift */,
@@ -192,6 +197,7 @@
 			isa = PBXGroup;
 			children = (
 				27E58734E2A21885346D26E0 /* BalanceCard.swift */,
+				C574E73ABDB03518FD603080 /* BankPicker.swift */,
 				3C39D70C12B091E664ADBDE4 /* TransactionRow.swift */,
 			);
 			path = Components;
@@ -311,6 +317,8 @@
 				167DD8D94BD2C94A5D09FCC6 /* RootView.swift in Sources */,
 				17D35A490B812757B7DA1041 /* SeedData.swift in Sources */,
 				FEBFF9935E3B84CAFF02F78B /* SettingsView.swift in Sources */,
+				774109B734D18248ECD4F416 /* BankDirectory.swift in Sources */,
+				7D059B45A90CB57BC3BFC495 /* BankPicker.swift in Sources */,
 				BF188BDB02A23E67496A284C /* LoanPrepayment.swift in Sources */,
 				2587F30F1BF1B29FD2DC8719 /* AddEditPrepaymentView.swift in Sources */,
 

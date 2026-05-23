@@ -47,6 +47,13 @@ struct AccountDetailView: View {
             }
 
             Section(lang["label.details"]) {
+                // Institution avec logo
+                HStack(spacing: 10) {
+                    BankLogoView(domain: BankDirectory.domain(for: account.institution), size: 28, cornerRadius: 6)
+                    Text(account.institution)
+                        .foregroundStyle(.primary)
+                    Spacer()
+                }
                 LabeledContent(lang["label.currency"]) {
                     Text("\(account.currency) — \(Currencies.info(for: account.currency).nameFR)")
                 }

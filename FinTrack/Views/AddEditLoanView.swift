@@ -123,7 +123,7 @@ struct AddEditLoanView: View {
                 }
             }
 
-            TextField(lang["loan.lenderPlaceholder"], text: $lenderName)
+            InstitutionPickerField(text: $lenderName, placeholder: lang["loan.lenderPlaceholder"])
 
             Picker(lang["label.currency"], selection: $currency) {
                 ForEach(Currencies.all) { c in

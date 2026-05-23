@@ -83,9 +83,14 @@ struct LoanDetailView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                Text("\(loan.lenderName.isEmpty ? loan.type.label : loan.lenderName) · \(loan.type.label)")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 8) {
+                    if !loan.lenderName.isEmpty {
+                        BankLogoView(domain: BankDirectory.domain(for: loan.lenderName), size: 22, cornerRadius: 5)
+                    }
+                    Text("\(loan.lenderName.isEmpty ? loan.type.label : loan.lenderName) · \(loan.type.label)")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
 
                 VStack(spacing: 4) {
                     ProgressView(value: progressFraction)

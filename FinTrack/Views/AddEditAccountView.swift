@@ -46,7 +46,7 @@ struct AddEditAccountView: View {
             Form {
                 Section(lang["label.information"]) {
                     TextField(lang["label.name"], text: $name)
-                    TextField(lang["label.institution"], text: $institution)
+                    InstitutionPickerField(text: $institution, placeholder: lang["label.institution"])
                     Picker(lang["label.type"], selection: $type) {
                         ForEach(AccountType.allCases) { t in
                             Text(t.label).tag(t)
