@@ -3,66 +3,143 @@
 //  FinTrack
 //
 //  Three composable pieces:
-//    • BankLogoView           — async logo from Clearbit, SF Symbol fallback
+//    • BankLogoView           — multi-source logo loader with in-memory cache
 //    • InstitutionPickerField — drop-in replacement for a plain institution TextField
 //    • BankPickerSheet        — searchable full-screen bank browser
+//
+//  Logo sources tried in order (first success wins):
+//    1. logo.clearbit.com/{domain}          — high quality, unreliable since HubSpot acquisition
+//    2. www.google.com/s2/favicons?domain=  — always returns something, lower resolution
+//    3. SF Symbol fallback (no network)     — always works
 //
 
 import SwiftUI
 
+// MARK: - Logo image cache
+
+/// Shared in-memory cache so logos aren't re-fetched every time a view appears.
+final class BankLogoCache {
+    static let shared = BankLogoCache()
+    private init() {}
+
+    private var cache: [String: UIImage] = [:]
+    private let queue = DispatchQueue(label: "BankLogoCache", attributes: .concurrent)
+
+    func get(_ key: String) -> UIImage? {
+        queue.sync { cache[key] }
+    }
+
+    func set(_ key: String, image: UIImage) {
+        queue.async(flags: .barrier) { self.cache[key] = image }
+    }
+}
+
 // MARK: - BankLogoView
 
-/// Loads the official bank logo from logo.clearbit.com.
-/// Falls back gracefully to a generic banking SF Symbol.
+/// Loads the official bank logo from multiple sources with graceful fallback.
 struct BankLogoView: View {
     let domain: String?
     var size: CGFloat = 36
-    var cornerRadius: CGFloat? = nil  // nil = size * 0.22
+    var cornerRadius: CGFloat? = nil
 
-    private var url: URL? { BankDirectory.logoURL(for: domain) }
+    @State private var logoImage: UIImage? = nil
+    @State private var failed = false
+
     private var radius: CGFloat { cornerRadius ?? size * 0.22 }
 
+    // URLs to try in order
+    private var candidateURLs: [URL] {
+        guard let d = domain, !d.isEmpty else { return [] }
+        return [
+            // 1. Clearbit (best quality when it works)
+            URL(string: "https://logo.clearbit.com/\(d)?size=128"),
+            // 2. Google favicon (reliable, lower res)
+            URL(string: "https://www.google.com/s2/favicons?domain=\(d)&sz=128"),
+        ].compactMap { $0 }
+    }
+
     var body: some View {
-        Group {
-            if let url {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .success(let img):
-                        img.resizable()
-                            .scaledToFit()
-                    case .failure:
-                        fallback
-                    case .empty:
-                        ProgressView()
-                            .frame(width: size, height: size)
-                    @unknown default:
-                        fallback
-                    }
-                }
+        ZStack {
+            if let img = logoImage {
+                Image(uiImage: img)
+                    .resizable()
+                    .scaledToFit()
+                    .transition(.opacity.animation(.easeIn(duration: 0.2)))
+            } else if failed || domain == nil {
+                fallbackView
             } else {
-                fallback
+                // Loading placeholder
+                RoundedRectangle(cornerRadius: radius, style: .continuous)
+                    .fill(Color(.tertiarySystemBackground))
+                    .overlay(
+                        ProgressView().scaleEffect(0.6)
+                    )
             }
         }
         .frame(width: size, height: size)
         .clipShape(RoundedRectangle(cornerRadius: radius, style: .continuous))
+        .task(id: domain) {
+            await loadLogo()
+        }
     }
 
-    private var fallback: some View {
+    private var fallbackView: some View {
         ZStack {
             RoundedRectangle(cornerRadius: radius, style: .continuous)
                 .fill(Color(.tertiarySystemBackground))
             Image(systemName: "building.columns.fill")
                 .font(.system(size: size * 0.45))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color(.secondaryLabel))
         }
+    }
+
+    // MARK: Loading logic
+
+    @MainActor
+    private func loadLogo() async {
+        guard let d = domain, !d.isEmpty else { failed = true; return }
+
+        // Check cache first
+        if let cached = BankLogoCache.shared.get(d) {
+            logoImage = cached
+            return
+        }
+
+        // Try each URL in sequence
+        for url in candidateURLs {
+            if let img = await fetchImage(from: url) {
+                BankLogoCache.shared.set(d, image: img)
+                logoImage = img
+                return
+            }
+        }
+
+        // All sources failed
+        failed = true
+    }
+
+    private func fetchImage(from url: URL) async -> UIImage? {
+        var request = URLRequest(url: url, timeoutInterval: 8)
+        // A browser-like User-Agent helps with some CDN policies
+        request.setValue(
+            "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15",
+            forHTTPHeaderField: "User-Agent"
+        )
+        guard let (data, response) = try? await URLSession.shared.data(for: request),
+              let http = response as? HTTPURLResponse,
+              http.statusCode == 200,
+              let img = UIImage(data: data),
+              img.size.width > 10   // ignore 1×1 placeholder pixels
+        else { return nil }
+        return img
     }
 }
 
 // MARK: - InstitutionPickerField
 
-/// Replaces a plain TextField for institution input.
+/// Drop-in replacement for a plain TextField.
 /// Shows the matched bank logo inline; a search button opens the full picker.
-/// The user can also type freely — no bank in the directory is required.
+/// The user can also type freely — no bank match is required.
 struct InstitutionPickerField: View {
     @Binding var text: String
     var placeholder: String = "Institution"
@@ -73,14 +150,11 @@ struct InstitutionPickerField: View {
 
     var body: some View {
         HStack(spacing: 10) {
-            // Logo or generic icon
             BankLogoView(domain: matchedDomain, size: 28, cornerRadius: 6)
 
-            // Free-form text field
             TextField(placeholder, text: $text)
                 .autocorrectionDisabled()
 
-            // Tap to browse picker
             Button {
                 showPicker = true
             } label: {
@@ -106,17 +180,12 @@ struct BankPickerSheet: View {
 
     @State private var query: String = ""
 
-    // Preferred country order for sections
     private let preferredOrder = ["CA", "US", "GB", "FR", "DE", "ES", "PT", "NL", "BE", "CH", "AF", "INT"]
 
     private var isSearching: Bool { !query.trimmingCharacters(in: .whitespaces).isEmpty }
-
     private var searchResults: [BankInfo] { BankDirectory.search(query) }
-
     private var countries: [String] {
-        preferredOrder.filter { code in
-            !BankDirectory.banks(for: code).isEmpty
-        }
+        preferredOrder.filter { !BankDirectory.banks(for: $0).isEmpty }
     }
 
     var body: some View {
@@ -124,7 +193,6 @@ struct BankPickerSheet: View {
             List {
                 if isSearching {
                     if searchResults.isEmpty {
-                        // Allow using the raw typed text as-is
                         Section {
                             Button {
                                 selectedName = query.trimmingCharacters(in: .whitespaces)
@@ -153,7 +221,6 @@ struct BankPickerSheet: View {
                         }
                     }
                 } else {
-                    // Browsing mode: sections by country
                     ForEach(countries, id: \.self) { code in
                         Section {
                             ForEach(BankDirectory.banks(for: code)) { bank in
