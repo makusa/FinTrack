@@ -142,15 +142,20 @@ struct AddEditRecurringTransactionView: View {
 
     private var typeSection: some View {
         Section {
-            Picker("Type", selection: $type) {
-                Text(lang["tx.type.expense"]).tag(TransactionType.expense)
-                Text(lang["tx.type.income"]).tag(TransactionType.income)
-            }
-            .pickerStyle(.segmented)
-        }
-        .onChange(of: type) { _, _ in
-            if let cat = selectedCategory, !cat.matches(type) {
-                selectedCategory = nil
+            // Transfer toggle — when enabled, hides income/expense picker
+            Toggle(lang["transfer.recurring.toggle"], isOn: $isTransfer.animation())
+
+            if !isTransfer {
+                Picker(lang["label.type"], selection: $type) {
+                    Text(lang["tx.type.expense"]).tag(TransactionType.expense)
+                    Text(lang["tx.type.income"]).tag(TransactionType.income)
+                }
+                .pickerStyle(.segmented)
+                .onChange(of: type) { _, _ in
+                    if let cat = selectedCategory, !cat.matches(type) {
+                        selectedCategory = nil
+                    }
+                }
             }
         }
     }
@@ -326,6 +331,8 @@ struct AddEditRecurringTransactionView: View {
         payee = rule.payee ?? ""
         note = rule.note
         isActive = rule.isActive
+        isTransfer = rule.isTransfer
+        destinationAccount = rule.destinationAccount
     }
 
     private func save() {
