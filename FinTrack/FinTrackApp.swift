@@ -14,7 +14,8 @@ struct FinTrackApp: App {
     let container: ModelContainer
 
     init() {
-        let schema = Schema([Account.self, Transaction.self, Category.self])
+        let schema = Schema([Account.self, Transaction.self, Category.self,
+                             RecurringTransaction.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
             container = try ModelContainer(for: schema, configurations: [config])
@@ -24,6 +25,9 @@ struct FinTrackApp: App {
 
         // Seed default categories on the main context.
         SeedData.seedIfNeeded(context: container.mainContext)
+
+        // Generate any pending recurring transactions (salary, rent, subscriptions…).
+        RecurringTransactionManager.applyPending(context: container.mainContext)
     }
 
     var body: some Scene {

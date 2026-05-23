@@ -24,6 +24,12 @@ struct SettingsView: View {
             Form {
                 Section("Données") {
                     NavigationLink {
+                        RecurrencesView()
+                    } label: {
+                        Label("Récurrences", systemImage: "arrow.2.squarepath")
+                    }
+
+                    NavigationLink {
                         ManageCategoriesView()
                     } label: {
                         Label("Gérer les catégories", systemImage: "tag")

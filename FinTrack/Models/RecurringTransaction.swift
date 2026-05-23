@@ -1,0 +1,187 @@
+//
+//  RecurringTransaction.swift
+//  FinTrack
+//
+//  Defines a recurring transaction rule. Each rule generates actual Transaction
+//  entries on a schedule. The rule stores the "next due date" and advances it
+//  every time a transaction is generated.
+//
+
+import Foundation
+import SwiftData
+
+// MARK: - Frequency
+
+enum RecurrenceFrequency: String, CaseIterable, Identifiable {
+    case daily      // Quotidien
+    case weekly     // Hebdomadaire
+    case biweekly   // Toutes les 2 semaines
+    case monthly    // Mensuel
+    case quarterly  // Trimestriel
+    case yearly     // Annuel
+
+    var id: String { rawValue }
+
+    var labelFR: String {
+        switch self {
+        case .daily:     return "Quotidien"
+        case .weekly:    return "Hebdomadaire"
+        case .biweekly:  return "Toutes les 2 semaines"
+        case .monthly:   return "Mensuel"
+        case .quarterly: return "Trimestriel"
+        case .yearly:    return "Annuel"
+        }
+    }
+
+    var shortLabelFR: String {
+        switch self {
+        case .daily:     return "/ jour"
+        case .weekly:    return "/ semaine"
+        case .biweekly:  return "/ 2 sem."
+        case .monthly:   return "/ mois"
+        case .quarterly: return "/ trim."
+        case .yearly:    return "/ an"
+        }
+    }
+
+    var iconSystemName: String {
+        switch self {
+        case .daily:     return "clock.arrow.2.circlepath"
+        case .weekly:    return "calendar"
+        case .biweekly:  return "calendar.badge.clock"
+        case .monthly:   return "calendar.circle.fill"
+        case .quarterly: return "calendar.badge.checkmark"
+        case .yearly:    return "calendar.badge.plus"
+        }
+    }
+
+    /// Returns the date of the next occurrence after `date`, using Calendar to
+    /// handle month-length variations (28/29/30/31) correctly.
+    func nextDate(after date: Date) -> Date {
+        let cal = Calendar.current
+        switch self {
+        case .daily:     return cal.date(byAdding: .day,   value: 1,  to: date) ?? date
+        case .weekly:    return cal.date(byAdding: .day,   value: 7,  to: date) ?? date
+        case .biweekly:  return cal.date(byAdding: .day,   value: 14, to: date) ?? date
+        case .monthly:   return cal.date(byAdding: .month, value: 1,  to: date) ?? date
+        case .quarterly: return cal.date(byAdding: .month, value: 3,  to: date) ?? date
+        case .yearly:    return cal.date(byAdding: .year,  value: 1,  to: date) ?? date
+        }
+    }
+}
+
+// MARK: - Model
+
+@Model
+final class RecurringTransaction {
+    /// User-facing label. If blank, the UI falls back to payee or category name.
+    var title: String
+    var amount: Decimal         // always positive
+    var typeRaw: String
+    var frequencyRaw: String
+
+    /// Date of the first desired occurrence. `nextDueDate` is initialised to this.
+    var startDate: Date
+
+    /// The date the manager will generate the NEXT transaction. Advances after
+    /// each generation. This is the single field the manager watches.
+    var nextDueDate: Date
+
+    /// If set, no transactions are generated after this date.
+    var endDate: Date?
+
+    /// Pausing a rule stops generation without deleting it.
+    var isActive: Bool
+
+    var note: String
+    var payee: String?
+    var createdAt: Date
+
+    var account: Account?
+    var category: Category?
+
+    // MARK: Computed
+
+    var type: TransactionType {
+        get { TransactionType(rawValue: typeRaw) ?? .expense }
+        set { typeRaw = newValue.rawValue }
+    }
+
+    var frequency: RecurrenceFrequency {
+        get { RecurrenceFrequency(rawValue: frequencyRaw) ?? .monthly }
+        set { frequencyRaw = newValue.rawValue }
+    }
+
+    /// Display name for the rule: explicit title > payee > category > generic.
+    var displayTitle: String {
+        if !title.trimmingCharacters(in: .whitespaces).isEmpty { return title }
+        if let p = payee, !p.isEmpty { return p }
+        if let c = category { return c.name }
+        return type == .income ? "Revenu récurrent" : "Dépense récurrente"
+    }
+
+    /// Human-readable relative label for nextDueDate.
+    var dueDateLabel: String {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: .now)
+        let due   = cal.startOfDay(for: nextDueDate)
+        let days  = cal.dateComponents([.day], from: today, to: due).day ?? 0
+        switch days {
+        case ..<0:   return "En retard"
+        case 0:      return "Aujourd'hui"
+        case 1:      return "Demain"
+        case 2...6:  return "Dans \(days) jours"
+        default:
+            let fmt = DateFormatter()
+            fmt.locale = Locale(identifier: "fr_CA")
+            fmt.dateFormat = "d MMM"
+            return fmt.string(from: nextDueDate)
+        }
+    }
+
+    /// Colour cue for urgency of the next due date.
+    var dueDateColor: DueDateColor {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: .now)
+        let due   = cal.startOfDay(for: nextDueDate)
+        let days  = cal.dateComponents([.day], from: today, to: due).day ?? 0
+        switch days {
+        case ..<0: return .overdue
+        case 0...2: return .soon
+        default:   return .normal
+        }
+    }
+
+    enum DueDateColor {
+        case overdue, soon, normal
+    }
+
+    // MARK: Init
+
+    init(
+        title: String = "",
+        amount: Decimal,
+        type: TransactionType,
+        frequency: RecurrenceFrequency,
+        startDate: Date,
+        endDate: Date? = nil,
+        account: Account? = nil,
+        category: Category? = nil,
+        note: String = "",
+        payee: String? = nil
+    ) {
+        self.title = title
+        self.amount = amount
+        self.typeRaw = type.rawValue
+        self.frequencyRaw = frequency.rawValue
+        self.startDate = startDate
+        self.nextDueDate = startDate
+        self.endDate = endDate
+        self.isActive = true
+        self.note = note
+        self.payee = payee
+        self.createdAt = .now
+        self.account = account
+        self.category = category
+    }
+}

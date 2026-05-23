@@ -16,6 +16,10 @@ struct DashboardView: View {
     @Query(sort: \Transaction.date, order: .reverse)
     private var allTransactions: [Transaction]
 
+    @Query(filter: #Predicate<RecurringTransaction> { $0.isActive },
+           sort: \RecurringTransaction.nextDueDate, order: .forward)
+    private var activeRecurring: [RecurringTransaction]
+
     @State private var showAddTransaction = false
     @State private var showAddAccount = false
 
@@ -29,6 +33,12 @@ struct DashboardView: View {
 
     private var recentTransactions: [Transaction] {
         Array(allTransactions.prefix(10))
+    }
+
+    /// Recurring rules due within the next 30 days, capped at 5 for the dashboard.
+    private var upcomingRecurrences: [RecurringTransaction] {
+        let horizon = Calendar.current.date(byAdding: .day, value: 30, to: .now) ?? .now
+        return Array(activeRecurring.filter { $0.nextDueDate <= horizon }.prefix(5))
     }
 
     private var thisMonthSummary: (income: Decimal, expense: Decimal, currency: String?) {
@@ -123,6 +133,7 @@ struct DashboardView: View {
                 totalsSection
                 accountsCarousel
                 monthSummarySection
+                upcomingSection
                 recentSection
             }
             .padding(.vertical, 8)
@@ -236,6 +247,85 @@ struct DashboardView: View {
         .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
+    @ViewBuilder
+    private var upcomingSection: some View {
+        if !upcomingRecurrences.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("À venir (30 jours)")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    NavigationLink("Tout voir") {
+                        RecurrencesView()
+                    }
+                    .font(.caption)
+                }
+                .padding(.horizontal)
+
+                VStack(spacing: 0) {
+                    ForEach(Array(upcomingRecurrences.enumerated()), id: \.element.id) { index, rule in
+                        upcomingRow(rule)
+                            .padding(.horizontal)
+                            .padding(.vertical, 10)
+                        if index < upcomingRecurrences.count - 1 {
+                            Divider().padding(.leading, 68)
+                        }
+                    }
+                }
+                .background(Color(.secondarySystemBackground),
+                            in: RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal)
+            }
+        }
+    }
+
+    private func upcomingRow(_ rule: RecurringTransaction) -> some View {
+        let iconColor: Color = {
+            if let hex = rule.category?.colorHex { return Color(hex: hex) }
+            return rule.type == .income ? .green : .secondary
+        }()
+        let iconName = rule.category?.iconSystemName
+            ?? (rule.type == .income ? "arrow.down.circle" : "arrow.up.circle")
+        let amountText: String = {
+            let code = rule.account?.currency ?? Currencies.default
+            return (rule.type == .income ? "+" : "−") + rule.amount.formatted(asCurrency: code)
+        }()
+        let dueLabelColor: Color = {
+            switch rule.dueDateColor {
+            case .overdue: return .red
+            case .soon:    return .orange
+            case .normal:  return .secondary
+            }
+        }()
+
+        return HStack(spacing: 12) {
+            ZStack {
+                Circle().fill(iconColor.opacity(0.15)).frame(width: 40, height: 40)
+                Image(systemName: iconName)
+                    .foregroundStyle(iconColor)
+                    .font(.system(size: 17, weight: .semibold))
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(rule.displayTitle)
+                    .font(.body.weight(.medium))
+                    .lineLimit(1)
+                Text(rule.frequency.shortLabelFR)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(amountText)
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(rule.type == .income ? .green : .primary)
+                Text(rule.dueDateLabel)
+                    .font(.caption2)
+                    .foregroundStyle(dueLabelColor)
+            }
+        }
+    }
+
     private var recentSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -283,5 +373,5 @@ struct DashboardView: View {
 
 #Preview {
     DashboardView()
-        .modelContainer(for: [Account.self, Transaction.self, Category.self], inMemory: true)
+        .modelContainer(for: [Account.self, Transaction.self, Category.self, RecurringTransaction.self], inMemory: true)
 }

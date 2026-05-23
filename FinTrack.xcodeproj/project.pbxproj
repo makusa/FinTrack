@@ -25,6 +25,10 @@
 		F1F79896855354F2AE090AA5 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F69296D8AA5AFFC56CE2664 /* Account.swift */; };
 		F4ECF44923BC9CF1C85E7CD2 /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1829FFD6EB0076039DC19BA /* Transaction.swift */; };
 		FEBFF9935E3B84CAFF02F78B /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A597BF7A45068D64338863D /* SettingsView.swift */; };
+		F998DE904FFBE7D2F5D927AD /* RecurringTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9176C3292D9569EDEF8512C /* RecurringTransaction.swift */; };
+		9A9A32443827A9E6E22D2FB5 /* RecurringTransactionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D910816B5A699244FFADFE9 /* RecurringTransactionManager.swift */; };
+		0C59EC5012BEF259DE21BBCC /* RecurrencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125B9AC2D8CD958FFECBB5FA /* RecurrencesView.swift */; };
+		2250CF4D4FD7001E13E78B0E /* AddEditRecurringTransactionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87196A76F8540EA9918B575D /* AddEditRecurringTransactionView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +51,10 @@
 		F1829FFD6EB0076039DC19BA /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
 		FA75C9EEFB489048F50342E4 /* FinTrackApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinTrackApp.swift; sourceTree = "<group>"; };
 		FF689CB36E8CEEFF2657D413 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D9176C3292D9569EDEF8512C /* RecurringTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurringTransaction.swift; sourceTree = "<group>"; };
+		9D910816B5A699244FFADFE9 /* RecurringTransactionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurringTransactionManager.swift; sourceTree = "<group>"; };
+		125B9AC2D8CD958FFECBB5FA /* RecurrencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrencesView.swift; sourceTree = "<group>"; };
+		87196A76F8540EA9918B575D /* AddEditRecurringTransactionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditRecurringTransactionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -54,6 +62,7 @@
 			isa = PBXGroup;
 			children = (
 				D34E6F10D5FEAE7E5D0BD329 /* ColorPalette.swift */,
+				9D910816B5A699244FFADFE9 /* RecurringTransactionManager.swift */,
 				407761AC420D582595A7D633 /* SeedData.swift */,
 			);
 			path = Utilities;
@@ -65,7 +74,9 @@
 				D76D2AF0CE6FEC33302AB61E /* AccountDetailView.swift */,
 				67FAEBACAD08ED3AFEEB2279 /* AccountsView.swift */,
 				5AA91C436EA64527214D120E /* AddEditAccountView.swift */,
+				87196A76F8540EA9918B575D /* AddEditRecurringTransactionView.swift */,
 				D0A00CBB4D610338F0B810C6 /* AddEditTransactionView.swift */,
+				125B9AC2D8CD958FFECBB5FA /* RecurrencesView.swift */,
 				775C52DD1AEBBCB4437D4D83 /* DashboardView.swift */,
 				A85E6C13F1FA6E8EA17F750A /* RootView.swift */,
 				5A597BF7A45068D64338863D /* SettingsView.swift */,
@@ -101,6 +112,7 @@
 				7F69296D8AA5AFFC56CE2664 /* Account.swift */,
 				F053C63C61980B18AA6263E4 /* Category.swift */,
 				A343B877C383A2628511AF5E /* Currency.swift */,
+				D9176C3292D9569EDEF8512C /* RecurringTransaction.swift */,
 				F1829FFD6EB0076039DC19BA /* Transaction.swift */,
 			);
 			path = Models;
@@ -194,6 +206,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				F1F79896855354F2AE090AA5 /* Account.swift in Sources */,
+				2250CF4D4FD7001E13E78B0E /* AddEditRecurringTransactionView.swift in Sources */,
+				F998DE904FFBE7D2F5D927AD /* RecurringTransaction.swift in Sources */,
+				9A9A32443827A9E6E22D2FB5 /* RecurringTransactionManager.swift in Sources */,
+				0C59EC5012BEF259DE21BBCC /* RecurrencesView.swift in Sources */,
 				708A7E841F0FE54C408D2E08 /* AccountDetailView.swift in Sources */,
 				E6979FF6D154A0B6E9A76A9D /* AccountsView.swift in Sources */,
 				9CFCDC8334BB2628623BFD6D /* AddEditAccountView.swift in Sources */,

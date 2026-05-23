@@ -1,0 +1,98 @@
+//
+//  RecurringTransactionManager.swift
+//  FinTrack
+//
+//  Generates Transaction entries from active RecurringTransaction rules.
+//  Called once at app launch. Safe to call multiple times — it is idempotent
+//  because nextDueDate advances past the current date after each run.
+//
+
+import Foundation
+import SwiftData
+
+enum RecurringTransactionManager {
+
+    // MARK: - Public API
+
+    /// Apply all pending recurring rules up to today's date.
+    /// Inserts the generated Transaction objects and saves the context.
+    static func applyPending(context: ModelContext) {
+        let now = Date()
+        let descriptor = FetchDescriptor<RecurringTransaction>(
+            predicate: #Predicate { $0.isActive }
+        )
+        let rules = (try? context.fetch(descriptor)) ?? []
+
+        var didChange = false
+        for rule in rules {
+            if generateTransactions(for: rule, upTo: now, context: context) {
+                didChange = true
+            }
+        }
+
+        if didChange {
+            try? context.save()
+        }
+    }
+
+    // MARK: - Internal
+
+    /// Generates one or more Transaction entries for `rule`, up to `date`.
+    /// Returns true if at least one transaction was inserted.
+    @discardableResult
+    private static func generateTransactions(
+        for rule: RecurringTransaction,
+        upTo date: Date,
+        context: ModelContext
+    ) -> Bool {
+        var inserted = false
+        var dueDate = rule.nextDueDate
+
+        while dueDate <= date {
+            // Respect end date: deactivate the rule and stop.
+            if let end = rule.endDate, dueDate > end {
+                rule.isActive = false
+                break
+            }
+
+            let tx = Transaction(
+                amount: rule.amount,
+                type: rule.type,
+                date: dueDate,
+                account: rule.account,
+                category: rule.category,
+                note: rule.note,
+                payee: rule.payee,
+                sourceRecurringId: rule.persistentModelID.hashValue  // link for traceability
+            )
+            context.insert(tx)
+            inserted = true
+
+            dueDate = rule.frequency.nextDate(after: dueDate)
+        }
+
+        // Advance nextDueDate so the next call knows where to start.
+        rule.nextDueDate = dueDate
+        return inserted
+    }
+
+    // MARK: - Manual trigger
+
+    /// Generate and save a single occurrence NOW (manual "post early" action).
+    static func postNow(_ rule: RecurringTransaction, context: ModelContext) {
+        let tx = Transaction(
+            amount: rule.amount,
+            type: rule.type,
+            date: .now,
+            account: rule.account,
+            category: rule.category,
+            note: rule.note,
+            payee: rule.payee,
+            sourceRecurringId: rule.persistentModelID.hashValue
+        )
+        context.insert(tx)
+        // Advance the due date by one period.
+        rule.nextDueDate = rule.frequency.nextDate(after: rule.nextDueDate)
+        try? context.save()
+    }
+}

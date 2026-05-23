@@ -40,6 +40,10 @@ final class Transaction {
     var payee: String?
     var createdAt: Date
     var ownerId: UUID             // foyer-readiness: solo mode uses a constant
+    /// Hash of the PersistentModelID of the RecurringTransaction that generated
+    /// this entry. nil = saisie manuelle. Stored as plain Int (not a relationship)
+    /// to avoid circular SwiftData constraints.
+    var sourceRecurringId: Int?
 
     var account: Account?
     var category: Category?
@@ -62,7 +66,8 @@ final class Transaction {
         category: Category? = nil,
         note: String = "",
         payee: String? = nil,
-        ownerId: UUID = AppConstants.soloOwnerId
+        ownerId: UUID = AppConstants.soloOwnerId,
+        sourceRecurringId: Int? = nil
     ) {
         self.amount = amount
         self.typeRaw = type.rawValue
@@ -71,6 +76,7 @@ final class Transaction {
         self.payee = payee
         self.createdAt = .now
         self.ownerId = ownerId
+        self.sourceRecurringId = sourceRecurringId
         self.account = account
         self.category = category
     }
