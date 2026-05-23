@@ -39,6 +39,11 @@ final class Transaction {
     var note: String
     var payee: String?
     var createdAt: Date
+    // MARK: Notification settings
+    var notificationEnabled: Bool = false
+    var notificationDaysBefore: Int = 1
+
+
     var ownerId: UUID             // foyer-readiness: solo mode uses a constant
     /// Hash of the PersistentModelID of the RecurringTransaction that generated
     /// this entry. nil = saisie manuelle. Stored as plain Int (not a relationship)

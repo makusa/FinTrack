@@ -369,6 +369,25 @@ enum LocalizedStrings {
 
 
 
+
+        // MARK: - Notifications
+        "notification.section":      ["fr": "Rappel",                              "en": "Reminder",                       "es": "Recordatorio",                  "pt": "Lembrete"],
+        "notification.enable":       ["fr": "Activer le rappel",                   "en": "Enable Reminder",                "es": "Activar recordatorio",          "pt": "Ativar lembrete"],
+        "notification.daysBefore":   ["fr": "Rappel",                              "en": "Remind me",                      "es": "Recordarme",                    "pt": "Me lembrar"],
+        "notification.dayBefore.1":  ["fr": "La veille",                           "en": "The day before",                 "es": "El día anterior",               "pt": "No dia anterior"],
+        "notification.dayBefore.n":  ["fr": "%d jours avant",                      "en": "%d days before",                 "es": "%d días antes",                 "pt": "%d dias antes"],
+        "notification.tomorrow":     ["fr": "demain",                              "en": "tomorrow",                       "es": "mañana",                        "pt": "amanhã"],
+        "notification.inDays":       ["fr": "dans %d jours",                       "en": "in %d days",                     "es": "en %d días",                    "pt": "em %d dias"],
+        "notification.settings":     ["fr": "Notifications",                       "en": "Notifications",                  "es": "Notificaciones",                "pt": "Notificações"],
+        "notification.manage":       ["fr": "Gérer les rappels",                   "en": "Manage Reminders",               "es": "Gestionar recordatorios",       "pt": "Gerenciar lembretes"],
+        "notification.status":       ["fr": "Statut",                              "en": "Status",                         "es": "Estado",                        "pt": "Status"],
+        "notification.authorized":   ["fr": "Autorisées ✓",                        "en": "Authorized ✓",                   "es": "Autorizadas ✓",                 "pt": "Autorizadas ✓"],
+        "notification.denied":       ["fr": "Refusées — modifier dans Réglages iOS","en": "Denied — change in iOS Settings","es": "Denegadas — cambiar en Ajustes","pt": "Negadas — alterar nas Configurações"],
+        "notification.pending":      ["fr": "Rappels programmés",                  "en": "Scheduled Reminders",            "es": "Recordatorios programados",     "pt": "Lembretes programados"],
+        "notification.reschedule":   ["fr": "Reprogrammer tous les rappels",       "en": "Reschedule All Reminders",       "es": "Reprogramar recordatorios",     "pt": "Reprogramar lembretes"],
+        "notification.openSettings": ["fr": "Ouvrir les réglages iOS",             "en": "Open iOS Settings",              "es": "Abrir Ajustes de iOS",          "pt": "Abrir Configurações do iOS"],
+        "notification.cancelAll":    ["fr": "Annuler tous les rappels",            "en": "Cancel All Reminders",           "es": "Cancelar todos los recordatorios","pt": "Cancelar todos os lembretes"],
+
         // MARK: - Bank picker
         "bank.useCustom": ["fr": "Utiliser ce nom personnalisé", "en": "Use this custom name", "es": "Usar este nombre personalizado", "pt": "Usar este nome personalizado"],
 

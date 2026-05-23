@@ -29,6 +29,9 @@ struct AddEditPrepaymentView: View {
     @State private var note: String = ""
     @State private var showDeleteConfirm: Bool = false
 
+    @State private var notifEnabled: Bool = false
+    @State private var notifDaysBefore: Int = 3
+
     @FocusState private var amountFocused: Bool
 
     private var loan: Loan {
@@ -167,10 +170,29 @@ struct AddEditPrepaymentView: View {
         }
     }
 
+
+    private var notificationSection: some View {
+        Section {
+            Toggle(lang["notification.enable"], isOn: $notifEnabled)
+            if notifEnabled {
+                Picker(lang["notification.daysBefore"], selection: $notifDaysBefore) {
+                    ForEach(notificationDaysOptions, id: \.self) { d in
+                        Text(d == 1 ? lang["notification.dayBefore.1"] : lang.f("notification.dayBefore.n", d)).tag(d)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+        } header: {
+            Label(lang["notification.section"], systemImage: "bell")
+        }
+    }
+
     // MARK: - Logic
 
     private func loadIfEditing() {
         guard case .edit(let prep) = mode else { return }
+        notifEnabled = prep.notificationEnabled
+        notifDaysBefore = prep.notificationDaysBefore
         amountText = decimalToText(prep.amount)
         isRecurring = prep.isRecurring
         startDate = prep.startDate
@@ -194,7 +216,9 @@ struct AddEditPrepaymentView: View {
                 note: trimmedNote.isEmpty ? nil : trimmedNote
             )
             prep.loan = l
-            context.insert(prep)
+            prep.notificationEnabled = notifEnabled
+        prep.notificationDaysBefore = notifDaysBefore
+        context.insert(prep)
 
         case .edit(let prep):
             prep.amount = amt
@@ -205,14 +229,22 @@ struct AddEditPrepaymentView: View {
             prep.note = trimmedNote.isEmpty ? nil : trimmedNote
         }
 
+        prep.notificationEnabled = notifEnabled
+        prep.notificationDaysBefore = notifDaysBefore
         try? context.save()
+        let ctx = context
+        Task { await NotificationManager.shared.scheduleAll(context: ctx) }
         dismiss()
     }
 
     private func deleteIfEditing() {
         guard case .edit(let prep) = mode else { return }
         context.delete(prep)
+        prep.notificationEnabled = notifEnabled
+        prep.notificationDaysBefore = notifDaysBefore
         try? context.save()
+        let ctx = context
+        Task { await NotificationManager.shared.scheduleAll(context: ctx) }
         dismiss()
     }
 

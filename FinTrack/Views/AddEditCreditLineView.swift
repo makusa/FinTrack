@@ -40,6 +40,9 @@ struct AddEditCreditLineView: View {
     @State private var showDeleteConfirm    = false
     @State private var showAdvanced         = false
 
+    @State private var notifEnabled: Bool = false
+    @State private var notifDaysBefore: Int = 3
+
     @FocusState private var limitFocused: Bool
 
     private var isEditing: Bool { if case .edit = mode { return true }; return false }
@@ -252,6 +255,23 @@ struct AddEditCreditLineView: View {
         }
     }
 
+
+    private var notificationSection: some View {
+        Section {
+            Toggle(lang["notification.enable"], isOn: $notifEnabled)
+            if notifEnabled {
+                Picker(lang["notification.daysBefore"], selection: $notifDaysBefore) {
+                    ForEach(notificationDaysOptions, id: \.self) { d in
+                        Text(d == 1 ? lang["notification.dayBefore.1"] : lang.f("notification.dayBefore.n", d)).tag(d)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+        } header: {
+            Label(lang["notification.section"], systemImage: "bell")
+        }
+    }
+
     // MARK: - Logic
 
     private func loadIfEditing() {
@@ -328,7 +348,11 @@ struct AddEditCreditLineView: View {
             cl.notes                = trimNotes.isEmpty ? nil : trimNotes
         }
 
+        line.notificationEnabled = notifEnabled
+        line.notificationDaysBefore = notifDaysBefore
         try? context.save()
+        let ctx = context
+        Task { await NotificationManager.shared.scheduleAll(context: ctx) }
         dismiss()
     }
 

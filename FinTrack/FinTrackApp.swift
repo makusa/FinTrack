@@ -27,6 +27,12 @@ struct FinTrackApp: App {
         // Seed default categories on the main context.
         SeedData.seedIfNeeded(context: container.mainContext)
 
+        // Request notification permission and schedule all upcoming reminders
+        Task { @MainActor in
+            await NotificationManager.shared.requestPermission()
+            await NotificationManager.shared.scheduleAll(context: container.mainContext)
+        }
+
         // Generate any pending recurring transactions (salary, rent, subscriptions…).
         RecurringTransactionManager.applyPending(context: container.mainContext)
         CreditLineInterestManager.applyPending(context: container.mainContext)
