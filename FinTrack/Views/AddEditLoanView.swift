@@ -395,7 +395,8 @@ struct AddEditLoanView: View {
                     startDate: firstPaymentDate,
                     account: selectedAccount,
                     note: "Remboursement \(trimLender.isEmpty ? type.labelFR : trimLender)",
-                    payee: trimLender.isEmpty ? nil : trimLender
+                    payee: trimLender.isEmpty ? nil : trimLender,
+                    isLoanPayment: true
                 )
                 context.insert(rule)
             }
