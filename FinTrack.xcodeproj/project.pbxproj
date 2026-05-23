@@ -29,6 +29,7 @@
 		9A9A32443827A9E6E22D2FB5 /* RecurringTransactionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D910816B5A699244FFADFE9 /* RecurringTransactionManager.swift */; };
 		0C59EC5012BEF259DE21BBCC /* RecurrencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125B9AC2D8CD958FFECBB5FA /* RecurrencesView.swift */; };
 		2250CF4D4FD7001E13E78B0E /* AddEditRecurringTransactionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87196A76F8540EA9918B575D /* AddEditRecurringTransactionView.swift */; };
+		2CF09101984C7B1944C4FF8D /* AnalyticsDashboardSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD7E5055F049060968A35BC2 /* AnalyticsDashboardSection.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,6 +56,7 @@
 		9D910816B5A699244FFADFE9 /* RecurringTransactionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurringTransactionManager.swift; sourceTree = "<group>"; };
 		125B9AC2D8CD958FFECBB5FA /* RecurrencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrencesView.swift; sourceTree = "<group>"; };
 		87196A76F8540EA9918B575D /* AddEditRecurringTransactionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditRecurringTransactionView.swift; sourceTree = "<group>"; };
+		DD7E5055F049060968A35BC2 /* AnalyticsDashboardSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsDashboardSection.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -72,6 +74,7 @@
 			isa = PBXGroup;
 			children = (
 				D76D2AF0CE6FEC33302AB61E /* AccountDetailView.swift */,
+				DD7E5055F049060968A35BC2 /* AnalyticsDashboardSection.swift */,
 				67FAEBACAD08ED3AFEEB2279 /* AccountsView.swift */,
 				5AA91C436EA64527214D120E /* AddEditAccountView.swift */,
 				87196A76F8540EA9918B575D /* AddEditRecurringTransactionView.swift */,
@@ -206,6 +209,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F1F79896855354F2AE090AA5 /* Account.swift in Sources */,
+				2CF09101984C7B1944C4FF8D /* AnalyticsDashboardSection.swift in Sources */,
 				2250CF4D4FD7001E13E78B0E /* AddEditRecurringTransactionView.swift in Sources */,
 				F998DE904FFBE7D2F5D927AD /* RecurringTransaction.swift in Sources */,
 				9A9A32443827A9E6E22D2FB5 /* RecurringTransactionManager.swift in Sources */,

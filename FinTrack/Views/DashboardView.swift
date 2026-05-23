@@ -133,6 +133,14 @@ struct DashboardView: View {
                 totalsSection
                 accountsCarousel
                 monthSummarySection
+                if let currency = mostCommonCurrency() {
+                    AnalyticsDashboardSection(
+                        accounts: accounts,
+                        transactions: allTransactions,
+                        activeRecurring: activeRecurring,
+                        currency: currency
+                    )
+                }
                 upcomingSection
                 recentSection
             }
