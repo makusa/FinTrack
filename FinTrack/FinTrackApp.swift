@@ -18,12 +18,7 @@ struct FinTrackApp: App {
                              RecurringTransaction.self, Loan.self, SavingsProject.self,
                              CreditLine.self, CreditLineEntry.self,
                              LoanPrepayment.self])
-        let config = ModelConfiguration(
-            "FinTrack",
-            schema: schema,
-            isStoredInMemoryOnly: false,
-            cloudKitDatabase: .automatic
-        )
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         let modelContainer: ModelContainer
 
         do {
