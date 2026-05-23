@@ -9,6 +9,7 @@ import SwiftData
 struct AccountsView: View {
     @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
+    @Environment(ExchangeRateManager.self) private var rates
 
     @Query(filter: #Predicate<Account> { !$0.isArchived },
            sort: \Account.createdAt, order: .forward)
@@ -104,9 +105,17 @@ struct AccountsView: View {
                 Text(account.balance.formatted(asCurrency: account.currency))
                     .font(.body.weight(.semibold))
                     .foregroundStyle(account.balance >= 0 ? Color.primary : Color.red)
-                Text(account.currency)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                if account.currency != rates.displayCurrency,
+                   rates.showConvertedAmounts,
+                   let converted = rates.convertedLabel(account.balance, from: account.currency, to: rates.displayCurrency) {
+                    Text(converted)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text(account.currency)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .padding(.vertical, 2)

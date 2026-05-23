@@ -7,6 +7,7 @@ import SwiftUI
 
 struct BalanceCard: View {
     let account: Account
+    @Environment(ExchangeRateManager.self) private var rates
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -41,6 +42,12 @@ struct BalanceCard: View {
                 .foregroundStyle(.white)
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
+            if account.currency != rates.displayCurrency,
+               let converted = rates.convertedLabel(account.balance, from: account.currency, to: rates.displayCurrency) {
+                Text(converted)
+                    .font(.caption2)
+                    .foregroundStyle(.white.opacity(0.7))
+            }
         }
         .padding(16)
         .frame(width: 200, height: 140)

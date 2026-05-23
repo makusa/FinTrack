@@ -39,6 +39,9 @@ struct FinTrackApp: App {
             await NotificationManager.shared.scheduleAll(context: modelContainer.mainContext)
         }
 
+        // Refresh exchange rates
+        Task { await ExchangeRateManager.shared.refreshIfNeeded() }
+
         // Generate any pending recurring transactions (salary, rent, subscriptions…).
         RecurringTransactionManager.applyPending(context: modelContainer.mainContext)
         CreditLineInterestManager.applyPending(context: modelContainer.mainContext)
@@ -47,12 +50,14 @@ struct FinTrackApp: App {
     // Keep a reference to shared singletons so @Observable propagates changes.
     @State private var languageManager = LanguageManager.shared
     @State private var lockManager = AppLockManager.shared
+    @State private var rateManager = ExchangeRateManager.shared
 
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environment(languageManager)
                 .environment(lockManager)
+                .environment(rateManager)
         }
         .modelContainer(container)
     }

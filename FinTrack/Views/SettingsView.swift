@@ -11,6 +11,7 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var context
 
     @Environment(LanguageManager.self) private var lang
+    @Environment(ExchangeRateManager.self) private var rateManager
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query(sort: \Account.createdAt) private var allAccounts: [Account]
 
@@ -45,7 +46,27 @@ struct SettingsView: View {
                 // MARK: - Notifications
                 
 
-                // MARK: - Security
+
+                // MARK: - Exchange Rates
+                Section(lang["fx.settings.section"]) {
+                    NavigationLink {
+                        ExchangeRateSettingsView()
+                    } label: {
+                        HStack {
+                            Label(lang["fx.title"], systemImage: "arrow.left.arrow.right.circle")
+                            Spacer()
+                            if rateManager.isLoading {
+                                ProgressView().scaleEffect(0.8)
+                            } else if rateManager.lastUpdated != nil {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundStyle(.green)
+                                    .font(.caption)
+                            }
+                        }
+                    }
+                }
+
+                                // MARK: - Security
                 Section(lang["security.title"]) {
                     NavigationLink {
                         SecuritySettingsView()

@@ -65,6 +65,8 @@
 		A3FAB620E2DD6DAFA275655D /* AddEditBudgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C639C91C08571101266F200 /* AddEditBudgetView.swift */; };
 		50AAFAB6085C0466336F9CC8 /* BudgetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8293270CCA58D9E6E26D92B7 /* BudgetsView.swift */; };
 		9589B7DCD27F8206748147F1 /* BudgetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F17D78150717C6E9E431672 /* BudgetDetailView.swift */; };
+		74EBB369D0827AD07F40442F /* ExchangeRateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FC0CC86DA61D06F99CD1CB /* ExchangeRateManager.swift */; };
+		E46B90B172447621BDD00575 /* ExchangeRateSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17B390EE919DEAF6F07ECD04 /* ExchangeRateSettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -128,6 +130,8 @@
 		7C639C91C08571101266F200 /* AddEditBudgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditBudgetView.swift; sourceTree = "<group>"; };
 		8293270CCA58D9E6E26D92B7 /* BudgetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetsView.swift; sourceTree = "<group>"; };
 		4F17D78150717C6E9E431672 /* BudgetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetDetailView.swift; sourceTree = "<group>"; };
+		26FC0CC86DA61D06F99CD1CB /* ExchangeRateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeRateManager.swift; sourceTree = "<group>"; };
+		17B390EE919DEAF6F07ECD04 /* ExchangeRateSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeRateSettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -135,6 +139,7 @@
 			isa = PBXGroup;
 			children = (
 				D34E6F10D5FEAE7E5D0BD329 /* ColorPalette.swift */,
+				26FC0CC86DA61D06F99CD1CB /* ExchangeRateManager.swift */,
 				52E6CA305937C42E1A7876E1 /* NotificationManager.swift */,
 				F982256D2C20677F23F33DD8 /* BankDirectory.swift */,
 				9D910816B5A699244FFADFE9 /* RecurringTransactionManager.swift */,
@@ -173,6 +178,7 @@
 				775C52DD1AEBBCB4437D4D83 /* DashboardView.swift */,
 				A85E6C13F1FA6E8EA17F750A /* RootView.swift */,
 				5A597BF7A45068D64338863D /* SettingsView.swift */,
+				17B390EE919DEAF6F07ECD04 /* ExchangeRateSettingsView.swift */,
 				E64FF7387150CEBF8373B32B /* CloudSyncSettingsView.swift */,
 				91BA447ECCCEE2FB354E8567 /* NotificationSettingsView.swift */,
 				73D14C95CDD0E974493F20BB /* TransactionsView.swift */,
@@ -366,6 +372,9 @@
 				167DD8D94BD2C94A5D09FCC6 /* RootView.swift in Sources */,
 				17D35A490B812757B7DA1041 /* SeedData.swift in Sources */,
 				FEBFF9935E3B84CAFF02F78B /* SettingsView.swift in Sources */,
+				74EBB369D0827AD07F40442F /* ExchangeRateManager.swift in Sources */,
+				E46B90B172447621BDD00575 /* ExchangeRateSettingsView.swift in Sources */,
+
 				362BA39F7593D58F36CB132C /* Budget.swift in Sources */,
 				A3FAB620E2DD6DAFA275655D /* AddEditBudgetView.swift in Sources */,
 				50AAFAB6085C0466336F9CC8 /* BudgetsView.swift in Sources */,

@@ -373,6 +373,22 @@ enum LocalizedStrings {
 
 
 
+
+        // MARK: - Exchange Rates
+        "fx.title":                ["fr": "Taux de change",                        "en": "Exchange Rates",                     "es": "Tipos de cambio",                   "pt": "Câmbio"],
+        "fx.settings.section":     ["fr": "Devises",                               "en": "Currencies",                         "es": "Divisas",                           "pt": "Divisas"],
+        "fx.displayCurrency":      ["fr": "Devise d'affichage",                    "en": "Display Currency",                   "es": "Moneda de visualización",           "pt": "Moeda de exibição"],
+        "fx.displayCurrency.footer":["fr":"Le solde global et les montants convertis sont affichés dans cette devise. Vos données sont toujours stockées dans la devise native de chaque compte.", "en": "The global balance and converted amounts are shown in this currency. Your data is always stored in each account's native currency.", "es": "El saldo global y los importes convertidos se muestran en esta divisa. Tus datos siempre se almacenan en la divisa nativa de cada cuenta.", "pt": "O saldo global e os valores convertidos são exibidos nesta moeda. Seus dados são sempre armazenados na moeda nativa de cada conta."],
+        "fx.showConverted":        ["fr": "Afficher les montants convertis",       "en": "Show Converted Amounts",             "es": "Mostrar importes convertidos",      "pt": "Mostrar valores convertidos"],
+        "fx.rates.section":        ["fr": "Source des taux",                       "en": "Rate Source",                        "es": "Fuente de tipos",                   "pt": "Fonte de câmbio"],
+        "fx.rates.current":        ["fr": "Taux actuels (base CAD)",               "en": "Current Rates (CAD base)",           "es": "Tipos actuales (base CAD)",         "pt": "Taxas atuais (base CAD)"],
+        "fx.source":               ["fr": "Fournisseur",                           "en": "Provider",                           "es": "Proveedor",                         "pt": "Provedor"],
+        "fx.lastUpdated":          ["fr": "Dernière mise à jour",                  "en": "Last Updated",                       "es": "Última actualización",              "pt": "Última atualização"],
+        "fx.loading":              ["fr": "Mise à jour des taux…",                 "en": "Updating rates…",                    "es": "Actualizando tipos…",               "pt": "Atualizando taxas…"],
+        "fx.refresh":              ["fr": "Actualiser les taux",                   "en": "Refresh Rates",                      "es": "Actualizar tipos",                  "pt": "Atualizar taxas"],
+        "fx.updated":              ["fr": "Mis à jour %@",                         "en": "Updated %@",                         "es": "Actualizado %@",                    "pt": "Atualizado %@"],
+        "fx.unavailable":          ["fr": "Taux non disponibles (mode hors ligne)","en": "Rates unavailable (offline)",        "es": "Tipos no disponibles (sin conexión)","pt": "Taxas indisponíveis (offline)"],
+
         // MARK: - Budgets
         "tab.budgets":                   ["fr": "Budgets",                              "en": "Budgets",                        "es": "Presupuestos",                  "pt": "Orçamentos"],
         "budget.title":                  ["fr": "Budgets",                              "en": "Budgets",                        "es": "Presupuestos",                  "pt": "Orçamentos"],
