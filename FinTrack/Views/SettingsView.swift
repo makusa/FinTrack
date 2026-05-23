@@ -24,6 +24,12 @@ struct SettingsView: View {
             Form {
                 Section("Données") {
                     NavigationLink {
+                        SavingsProjectsView()
+                    } label: {
+                        Label("Projets d'épargne", systemImage: "target")
+                    }
+
+                    NavigationLink {
                         LoansView()
                     } label: {
                         Label("Prêts", systemImage: "house.fill")

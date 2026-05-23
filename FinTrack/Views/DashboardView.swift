@@ -139,6 +139,13 @@ struct DashboardView: View {
                 loanSection
                 monthSummarySection
                 if let currency = mostCommonCurrency() {
+                    BudgetDashboardSection(
+                        recurring: activeRecurring,
+                        loans: activeLoans,
+                        currency: currency
+                    )
+                }
+                if let currency = mostCommonCurrency() {
                     AnalyticsDashboardSection(
                         accounts: accounts,
                         transactions: allTransactions,

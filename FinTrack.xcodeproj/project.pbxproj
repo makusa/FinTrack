@@ -34,6 +34,12 @@
 		EA43985DFCDBD7FB640756EA /* LoansView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE24C75EEF2EB296CAEC7C6 /* LoansView.swift */; };
 		0888FE86DAB2CEB5D0AC686E /* AddEditLoanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48FB8C0B8F9F61AFDAAE3CC8 /* AddEditLoanView.swift */; };
 		DE008E493C4E18AF10D610BA /* LoanDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42FE84BCE1DA47E72CDEFF11 /* LoanDetailView.swift */; };
+		FE3B8A1C888D722ABC7F5EFE /* SavingsProject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09E9D94757A025D488746867 /* SavingsProject.swift */; };
+		27241ABC7410EE7C310C75F2 /* CashFlowCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72EA414C4647414C1515F2B7 /* CashFlowCalculator.swift */; };
+		38DAAD8E9452CF6C3582E97A /* BudgetDashboardSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = D995ACD7F6C34F34F3A6E7EF /* BudgetDashboardSection.swift */; };
+		F4DCA360B6ACAA99F7307DAC /* CashFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D40FDCA06BF2AE15F1C2F41 /* CashFlowView.swift */; };
+		AE60CEFED9D0DD214526F2A5 /* SavingsProjectsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14B35D753C984C03593B1E14 /* SavingsProjectsView.swift */; };
+		D3132619822C0C4058E1003E /* AddEditSavingsProjectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0594AECB8C2D7DB539637464 /* AddEditSavingsProjectView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,6 +71,12 @@
 		9DE24C75EEF2EB296CAEC7C6 /* LoansView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoansView.swift; sourceTree = "<group>"; };
 		48FB8C0B8F9F61AFDAAE3CC8 /* AddEditLoanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditLoanView.swift; sourceTree = "<group>"; };
 		42FE84BCE1DA47E72CDEFF11 /* LoanDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoanDetailView.swift; sourceTree = "<group>"; };
+		09E9D94757A025D488746867 /* SavingsProject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsProject.swift; sourceTree = "<group>"; };
+		72EA414C4647414C1515F2B7 /* CashFlowCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CashFlowCalculator.swift; sourceTree = "<group>"; };
+		D995ACD7F6C34F34F3A6E7EF /* BudgetDashboardSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetDashboardSection.swift; sourceTree = "<group>"; };
+		5D40FDCA06BF2AE15F1C2F41 /* CashFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CashFlowView.swift; sourceTree = "<group>"; };
+		14B35D753C984C03593B1E14 /* SavingsProjectsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsProjectsView.swift; sourceTree = "<group>"; };
+		0594AECB8C2D7DB539637464 /* AddEditSavingsProjectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditSavingsProjectView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -73,6 +85,7 @@
 			children = (
 				D34E6F10D5FEAE7E5D0BD329 /* ColorPalette.swift */,
 				9D910816B5A699244FFADFE9 /* RecurringTransactionManager.swift */,
+				72EA414C4647414C1515F2B7 /* CashFlowCalculator.swift */,
 				407761AC420D582595A7D633 /* SeedData.swift */,
 			);
 			path = Utilities;
@@ -83,6 +96,10 @@
 			children = (
 				D76D2AF0CE6FEC33302AB61E /* AccountDetailView.swift */,
 				DD7E5055F049060968A35BC2 /* AnalyticsDashboardSection.swift */,
+				D995ACD7F6C34F34F3A6E7EF /* BudgetDashboardSection.swift */,
+				5D40FDCA06BF2AE15F1C2F41 /* CashFlowView.swift */,
+				14B35D753C984C03593B1E14 /* SavingsProjectsView.swift */,
+				0594AECB8C2D7DB539637464 /* AddEditSavingsProjectView.swift */,
 				48FB8C0B8F9F61AFDAAE3CC8 /* AddEditLoanView.swift */,
 				42FE84BCE1DA47E72CDEFF11 /* LoanDetailView.swift */,
 				9DE24C75EEF2EB296CAEC7C6 /* LoansView.swift */,
@@ -128,6 +145,7 @@
 				A343B877C383A2628511AF5E /* Currency.swift */,
 				D9176C3292D9569EDEF8512C /* RecurringTransaction.swift */,
 				A204CEC139DE3F9972A7105F /* Loan.swift */,
+				09E9D94757A025D488746867 /* SavingsProject.swift */,
 				F1829FFD6EB0076039DC19BA /* Transaction.swift */,
 			);
 			path = Models;
@@ -221,6 +239,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				F1F79896855354F2AE090AA5 /* Account.swift in Sources */,
+				FE3B8A1C888D722ABC7F5EFE /* SavingsProject.swift in Sources */,
+				27241ABC7410EE7C310C75F2 /* CashFlowCalculator.swift in Sources */,
+				38DAAD8E9452CF6C3582E97A /* BudgetDashboardSection.swift in Sources */,
+				F4DCA360B6ACAA99F7307DAC /* CashFlowView.swift in Sources */,
+				AE60CEFED9D0DD214526F2A5 /* SavingsProjectsView.swift in Sources */,
+				D3132619822C0C4058E1003E /* AddEditSavingsProjectView.swift in Sources */,
 				EA26B5D8845B5574CC95F6D5 /* Loan.swift in Sources */,
 				EA43985DFCDBD7FB640756EA /* LoansView.swift in Sources */,
 				0888FE86DAB2CEB5D0AC686E /* AddEditLoanView.swift in Sources */,

@@ -1,0 +1,132 @@
+//
+//  CashFlowCalculator.swift
+//  FinTrack
+//
+//  Normalises all recurring transactions and loan payments to a monthly
+//  equivalent so the dashboard can show a single projected surplus/deficit.
+//
+
+import Foundation
+
+// MARK: - Summary
+
+struct CashFlowSummary {
+    let currency: String
+    let monthlyIncome: Decimal
+    let monthlyExpenses: Decimal
+    let monthlyLoanPayments: Decimal
+    let monthlySurplus: Decimal      // income − expenses − loans
+    let monthlyAllocated: Decimal    // sum of project contributions
+    let monthlyFree: Decimal         // surplus − allocated
+
+    var isPositive: Bool { monthlySurplus >= 0 }
+    var isCovered:  Bool { monthlyFree >= 0 }   // after project allocations
+
+    // Individual line items for the detail view
+    let incomeLines:   [CashFlowLine]
+    let expenseLines:  [CashFlowLine]
+    let loanLines:     [CashFlowLine]
+    let projectLines:  [CashFlowLine]
+}
+
+struct CashFlowLine: Identifiable {
+    let id = UUID()
+    let label: String
+    let sublabel: String?       // e.g. frequency badge
+    let amount: Decimal         // always positive; sign is determined by context
+}
+
+// MARK: - Calculator
+
+enum CashFlowCalculator {
+
+    /// Build a CashFlowSummary for the given currency.
+    static func summary(
+        currency: String,
+        recurring: [RecurringTransaction],
+        loans: [Loan],
+        projects: [SavingsProject]
+    ) -> CashFlowSummary {
+
+        // ── Income ────────────────────────────────────────────────────────
+        let incomeRules = recurring.filter {
+            $0.isActive && $0.type == .income && $0.account?.currency == currency
+        }
+        let incomeLines = incomeRules.map {
+            CashFlowLine(
+                label: $0.displayTitle,
+                sublabel: $0.frequency.shortLabelFR,
+                amount: monthlyAmount($0.amount, frequency: $0.frequency)
+            )
+        }
+        let monthlyIncome = incomeLines.reduce(Decimal(0)) { $0 + $1.amount }
+
+        // ── Expenses ──────────────────────────────────────────────────────
+        let expenseRules = recurring.filter {
+            $0.isActive && $0.type == .expense && $0.account?.currency == currency
+        }
+        let expenseLines = expenseRules.map {
+            CashFlowLine(
+                label: $0.displayTitle,
+                sublabel: $0.frequency.shortLabelFR,
+                amount: monthlyAmount($0.amount, frequency: $0.frequency)
+            )
+        }
+        let monthlyExpenses = expenseLines.reduce(Decimal(0)) { $0 + $1.amount }
+
+        // ── Loan payments ─────────────────────────────────────────────────
+        let activeLoans = loans.filter { $0.isActive && $0.currency == currency }
+        let loanLines = activeLoans.map { loan -> CashFlowLine in
+            let calc = loan.calculator
+            let annualPayments = Decimal(calc.paymentAmount * Double(loan.frequency.paymentsPerYear))
+            let monthly = annualPayments / 12
+            return CashFlowLine(
+                label: loan.label.isEmpty ? loan.type.labelFR : loan.label,
+                sublabel: loan.lenderName.isEmpty ? nil : loan.lenderName,
+                amount: monthly
+            )
+        }
+        let monthlyLoanPayments = loanLines.reduce(Decimal(0)) { $0 + $1.amount }
+
+        // ── Projects allocation ───────────────────────────────────────────
+        let activeProjects = projects.filter { $0.isActive && $0.currency == currency }
+        let projectLines = activeProjects.compactMap { p -> CashFlowLine? in
+            guard (p.monthlyContribution as NSDecimalNumber).doubleValue > 0 else { return nil }
+            return CashFlowLine(
+                label: p.name,
+                sublabel: p.projectionLabel,
+                amount: p.monthlyContribution
+            )
+        }
+        let monthlyAllocated = projectLines.reduce(Decimal(0)) { $0 + $1.amount }
+
+        let surplus = monthlyIncome - monthlyExpenses - monthlyLoanPayments
+
+        return CashFlowSummary(
+            currency: currency,
+            monthlyIncome: monthlyIncome,
+            monthlyExpenses: monthlyExpenses,
+            monthlyLoanPayments: monthlyLoanPayments,
+            monthlySurplus: surplus,
+            monthlyAllocated: monthlyAllocated,
+            monthlyFree: surplus - monthlyAllocated,
+            incomeLines: incomeLines,
+            expenseLines: expenseLines,
+            loanLines: loanLines,
+            projectLines: projectLines
+        )
+    }
+
+    // MARK: Normalise to monthly
+
+    static func monthlyAmount(_ amount: Decimal, frequency: RecurrenceFrequency) -> Decimal {
+        switch frequency {
+        case .daily:     return amount * Decimal(365) / 12
+        case .weekly:    return amount * Decimal(52) / 12
+        case .biweekly:  return amount * Decimal(26) / 12
+        case .monthly:   return amount
+        case .quarterly: return amount / 3
+        case .yearly:    return amount / 12
+        }
+    }
+}
