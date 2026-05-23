@@ -26,7 +26,7 @@ struct SecuritySettingsView: View {
                             .frame(width: 44, height: 44)
                         Text(initials)
                             .font(.body.weight(.semibold))
-                            .foregroundStyle(.accentColor)
+                            .foregroundStyle(Color.accentColor)
                     }
                     VStack(alignment: .leading, spacing: 2) {
                         Text(lockManager.userName)
@@ -66,7 +66,7 @@ struct SecuritySettingsView: View {
             }
 
             // MARK: Auto-lock
-            Section(lang["security.autolock"]) {
+            Section {
                 Picker(lang["security.autolock.delay"], selection: Binding(
                     get: { lockManager.autoLockDelay },
                     set: { lockManager.updateAutoLockDelay($0) }
@@ -76,6 +76,8 @@ struct SecuritySettingsView: View {
                     }
                 }
                 .pickerStyle(.menu)
+            } header: {
+                Text(lang["security.autolock"])
             } footer: {
                 Text(lang["security.autolock.footer"])
                     .font(.caption)
@@ -224,7 +226,7 @@ struct ChangePINView: View {
         VStack(spacing: 24) {
             Image(systemName: "lock.rotation")
                 .font(.system(size: 40))
-                .foregroundStyle(.accentColor)
+                .foregroundStyle(Color.accentColor)
             VStack(spacing: 6) {
                 Text(title).font(.title3.weight(.bold))
                 Text(subtitle).font(.subheadline).foregroundStyle(.secondary)

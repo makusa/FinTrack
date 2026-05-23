@@ -53,9 +53,9 @@ enum CreditLineEntryType: String, CaseIterable, Identifiable {
 final class CreditLineEntry {
     var typeRaw: String = CreditLineEntryType.draw.rawValue
     var amount: Decimal = 0          // always positive
-    var date: Date = .now
+    var date: Date = Date.now
     var note: String = ""
-    var createdAt: Date = .now
+    var createdAt: Date = Date.now
 
     var creditLine: CreditLine?
 
@@ -128,7 +128,7 @@ final class CreditLine {
     var compoundingRaw: String = CreditLineCompounding.daily.rawValue
     var minimumPaymentTypeRaw: String = MinimumPaymentType.interestOnly.rawValue
     var minimumPaymentValue: Decimal = 0  // percent OR fixed amount, ignored for interestOnly
-    var lastInterestAccrualDate: Date = .now
+    var lastInterestAccrualDate: Date = Date.now
     var isActive: Bool = true
     // MARK: Notification settings
     var notificationEnabled: Bool = false

@@ -25,7 +25,7 @@ final class Category {
     var applicabilityRaw: String = CategoryApplicability.expense.rawValue
     var isSystem: Bool = false    // built-in categories cannot be deleted, only hidden
     var isHidden: Bool = false
-    var createdAt: Date = .now
+    var createdAt: Date = Date.now
 
     @Relationship(deleteRule: .nullify, inverse: \Transaction.category)
     var transactions: [Transaction] = []

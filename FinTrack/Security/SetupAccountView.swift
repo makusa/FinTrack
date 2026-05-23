@@ -171,7 +171,7 @@ struct SetupAccountView: View {
                     .multilineTextAlignment(.center)
             }
             VStack(spacing: 0) {
-                ForEach(AutoLockDelay.allCases) { delay in
+                ForEach(Array(AutoLockDelay.allCases.enumerated()), id: \.element) { index, delay in
                     Button {
                         autoLock = delay
                     } label: {
@@ -181,14 +181,14 @@ struct SetupAccountView: View {
                             Spacer()
                             if autoLock == delay {
                                 Image(systemName: "checkmark")
-                                    .foregroundStyle(.accentColor)
+                                    .foregroundStyle(Color.accentColor)
                                     .fontWeight(.semibold)
                             }
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 14)
                     }
-                    if delay != AutoLockDelay.allCases.last {
+                    if index < AutoLockDelay.allCases.count - 1 {
                         Divider().padding(.leading, 16)
                     }
                 }

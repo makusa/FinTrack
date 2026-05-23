@@ -48,12 +48,12 @@ final class Account {
     var institution: String = ""
     var typeRaw: String = AccountType.checking.rawValue
     var currency: String = Currencies.default  // ISO 4217 code
-    var initialBalance: Decimal = 0
+    var initialBalance: Decimal = Decimal(0)
     var colorHex: String = "#3478F6"
     var iconSystemName: String = AccountType.checking.defaultIconSystemName
     var isArchived: Bool = false
     var notes: String?
-    var createdAt: Date = .now
+    var createdAt: Date = Date.now
 
     @Relationship(deleteRule: .cascade, inverse: \Transaction.account)
     var transactions: [Transaction] = []
@@ -90,6 +90,6 @@ final class Account {
         self.iconSystemName = iconSystemName ?? type.defaultIconSystemName
         self.isArchived = false
         self.notes = notes
-        self.createdAt = .now
+        self.createdAt = Date.now
     }
 }

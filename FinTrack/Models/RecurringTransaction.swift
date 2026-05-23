@@ -81,11 +81,11 @@ final class RecurringTransaction {
     var frequencyRaw: String = RecurrenceFrequency.monthly.rawValue
 
     /// Date of the first desired occurrence. `nextDueDate` is initialised to this.
-    var startDate: Date = .now
+    var startDate: Date = Date.now
 
     /// The date the manager will generate the NEXT transaction. Advances after
     /// each generation. This is the single field the manager watches.
-    var nextDueDate: Date = .now
+    var nextDueDate: Date = Date.now
 
     /// If set, no transactions are generated after this date.
     var endDate: Date?
@@ -106,7 +106,7 @@ final class RecurringTransaction {
 
     var note: String = ""
     var payee: String?
-    var createdAt: Date = .now
+    var createdAt: Date = Date.now
 
     var account: Account?
     var category: Category?

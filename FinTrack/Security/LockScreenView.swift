@@ -26,7 +26,7 @@ struct LockScreenView: View {
                 VStack(spacing: 16) {
                     Image(systemName: "lock.shield.fill")
                         .font(.system(size: 52))
-                        .foregroundStyle(.accentColor)
+                        .foregroundStyle(Color.accentColor)
 
                     VStack(spacing: 4) {
                         Text("FinTrack")
@@ -72,7 +72,7 @@ struct LockScreenView: View {
                             Text(lang.f("lock.biometric.use", lockManager.biometricType.label))
                                 .font(.callout)
                         }
-                        .foregroundStyle(.accentColor)
+                        .foregroundStyle(Color.accentColor)
                         .padding(.horizontal, 24)
                         .padding(.vertical, 12)
                         .background(Color.accentColor.opacity(0.1), in: Capsule())

@@ -29,7 +29,7 @@ final class SavingsProject {
 
     var notes: String?
     var isActive: Bool = true
-    var createdAt: Date = .now
+    var createdAt: Date = Date.now
 
     /// Optional savings account (e.g., a dedicated TFSA or FHSA).
     var account: Account?

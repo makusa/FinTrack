@@ -20,12 +20,12 @@ final class LoanPrepayment {
     // MARK: Stored properties
 
     var amount: Decimal = 0       // always positive; extra principal applied each occurrence
-    var startDate: Date = .now    // for one-time: the exact payment date; for recurring: first occurrence
+    var startDate: Date = Date.now    // for one-time: the exact payment date; for recurring: first occurrence
     var isRecurring: Bool = false
     var frequencyRaw: String?    // RecurrenceFrequency.rawValue — nil for one-time
     var endDate: Date?           // optional stop date for recurring prepayments
     var note: String?
-    var createdAt: Date = .now
+    var createdAt: Date = Date.now
     // MARK: Notification settings
     var notificationEnabled: Bool = false
     var notificationDaysBefore: Int = 3

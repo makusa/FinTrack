@@ -35,10 +35,10 @@ enum TransactionType: String, CaseIterable, Identifiable {
 final class Transaction {
     var amount: Decimal = 0          // always positive
     var typeRaw: String = TransactionType.expense.rawValue
-    var date: Date = .now
+    var date: Date = Date.now
     var note: String = ""
     var payee: String?
-    var createdAt: Date = .now
+    var createdAt: Date = Date.now
     // MARK: Notification settings
     var notificationEnabled: Bool = false
     var notificationDaysBefore: Int = 1

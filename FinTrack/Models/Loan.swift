@@ -466,7 +466,7 @@ final class Loan {
     var termMonths: Int = 0
     var frequencyRaw: String = LoanPaymentFrequency.monthly.rawValue
     var compoundingRaw: String = LoanCompounding.semiAnnual.rawValue
-    var firstPaymentDate: Date = .now
+    var firstPaymentDate: Date = Date.now
     var isActive: Bool = true
     // MARK: Notification settings
     var notificationEnabled: Bool = false
@@ -474,7 +474,7 @@ final class Loan {
 
 
     var notes: String?
-    var createdAt: Date = .now
+    var createdAt: Date = Date.now
 
     var account: Account?
 
