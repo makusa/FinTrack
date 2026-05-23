@@ -13,12 +13,27 @@ struct LoanDetailView: View {
 
     @State private var showEdit = false
     @State private var showFullSchedule = false
+    @State private var showAddPrepayment = false
+    @State private var prepaymentToEdit: LoanPrepayment? = nil
 
+    // Base calculator (no prepayments) — used for baseline comparisons
     private var calc: LoanCalculator { loan.calculator }
+
+    // All prepayment instances (recurring expanded to concrete dates)
+    private var preps: [PrepaymentInfo] { loan.prepaymentInstances() }
+
+    // Prepayment-aware values
+    private var currentBalance: Double { calc.currentBalanceWith(preps) }
+    private var paymentsElapsed: Int   { calc.paymentsElapsedWith(preps) }
+    private var paymentsRemaining: Int { calc.paymentsRemainingWith(preps) }
+    private var payoffDate: Date       { calc.payoffDateWith(preps) }
+    private var progressFraction: Double { calc.progressFractionWith(preps) }
 
     var body: some View {
         List {
             headerSection
+            if loan.hasPrepayments { impactSection }
+            prepaymentSection
             statusSection
             nextPaymentSection
             progressSection
@@ -37,25 +52,29 @@ struct LoanDetailView: View {
             AddEditLoanView(mode: .edit(loan))
         }
         .sheet(isPresented: $showFullSchedule) {
-            FullAmortizationView(loan: loan)
+            FullAmortizationView(loan: loan, prepayments: preps)
+        }
+        .sheet(isPresented: $showAddPrepayment) {
+            AddEditPrepaymentView(mode: .create(loan: loan))
+        }
+        .sheet(item: $prepaymentToEdit) { prep in
+            AddEditPrepaymentView(mode: .edit(prep))
         }
     }
 
-    // MARK: - Sections
+    // MARK: - Header
 
     private var headerSection: some View {
         Section {
             VStack(spacing: 12) {
-                // Icon
                 Image(systemName: loan.type.iconSystemName)
                     .font(.system(size: 32))
                     .foregroundStyle(.white)
                     .frame(width: 64, height: 64)
                     .background(Color.accentColor, in: Circle())
 
-                // Remaining balance
                 VStack(spacing: 4) {
-                    Text(Decimal(calc.currentBalance).formatted(asCurrency: loan.currency))
+                    Text(Decimal(currentBalance).formatted(asCurrency: loan.currency))
                         .font(.largeTitle.weight(.bold))
                         .minimumScaleFactor(0.6)
                         .lineLimit(1)
@@ -64,21 +83,19 @@ struct LoanDetailView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                // Lender + type
                 Text("\(loan.lenderName.isEmpty ? loan.type.label : loan.lenderName) · \(loan.type.label)")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
-                // Progress bar
                 VStack(spacing: 4) {
-                    ProgressView(value: calc.progressFraction)
+                    ProgressView(value: progressFraction)
                         .tint(.green)
                     HStack {
-                        Text(String(format: "%.1f%% remboursé", calc.progressFraction * 100))
+                        Text(String(format: "%.1f%% remboursé", progressFraction * 100))
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                         Spacer()
-                        Text("Fin: \(calc.payoffDate.formatted(date: .abbreviated, time: .omitted))")
+                        Text("Fin: \(payoffDate.formatted(date: .abbreviated, time: .omitted))")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
@@ -91,28 +108,149 @@ struct LoanDetailView: View {
         .listRowBackground(Color.clear)
     }
 
+    // MARK: - Impact card (shown only when prepayments exist)
+
+    private var impactSection: some View {
+        let savings = calc.savingsVsBaseline(preps)
+        return Section(lang["prepayment.impact"]) {
+            HStack(spacing: 0) {
+                impactTile(
+                    icon: "calendar.badge.minus",
+                    color: .green,
+                    value: lang.f("prepayment.savings.payments", savings.paymentsSaved),
+                    label: lang["loan.paymentsRemaining"]
+                )
+                Divider()
+                impactTile(
+                    icon: "dollarsign.arrow.trianglehead.counterclockwise.rotate.90",
+                    color: .orange,
+                    value: Decimal(savings.interestSaved).formatted(asCurrency: loan.currency),
+                    label: lang["prepayment.savings.interest"]
+                )
+                Divider()
+                impactTile(
+                    icon: "flag.checkered",
+                    color: .blue,
+                    value: savings.newPayoffDate.formatted(.dateTime.month(.abbreviated).year()),
+                    label: lang["prepayment.newPayoffDate"]
+                )
+            }
+            .padding(.vertical, 4)
+
+            // Baseline vs new comparison row
+            if savings.paymentsSaved > 0 {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(lang["prepayment.original"])
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(calc.payoffDate.formatted(date: .abbreviated, time: .omitted))
+                            .font(.caption.weight(.medium))
+                            .strikethrough(true, color: .secondary)
+                            .foregroundStyle(.secondary)
+                    }
+                    Image(systemName: "arrow.right")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 8)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(lang["prepayment.newPayoffDate"])
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(savings.newPayoffDate.formatted(date: .abbreviated, time: .omitted))
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.green)
+                    }
+                    Spacer()
+                }
+                .padding(.top, 2)
+            }
+        }
+    }
+
+    private func impactTile(icon: String, color: Color, value: String, label: String) -> some View {
+        VStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundStyle(color)
+            Text(value)
+                .font(.callout.weight(.semibold))
+                .minimumScaleFactor(0.7)
+                .lineLimit(1)
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
+    }
+
+    // MARK: - Prepayment list section
+
+    private var prepaymentSection: some View {
+        Section {
+            if loan.prepayments.isEmpty {
+                Button {
+                    showAddPrepayment = true
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title3)
+                            .foregroundStyle(.tint)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(lang["prepayment.add"])
+                                .foregroundStyle(.primary)
+                            Text(lang["prepayment.empty.sub"])
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+            } else {
+                ForEach(loan.prepayments.sorted { $0.startDate < $1.startDate }) { prep in
+                    PrepaymentRow(prep: prep, currency: loan.currency)
+                        .contentShape(Rectangle())
+                        .onTapGesture { prepaymentToEdit = prep }
+                }
+                Button {
+                    showAddPrepayment = true
+                } label: {
+                    Label(lang["prepayment.add"], systemImage: "plus")
+                }
+            }
+        } header: {
+            Text(lang["prepayment.title"])
+        }
+    }
+
+    // MARK: - Status section
+
     private var statusSection: some View {
         Section(lang["loan.situation"]) {
             loanRow(lang["loan.originalPrincipal"],
                     value: Decimal(calc.principal).formatted(asCurrency: loan.currency))
             loanRow(lang["loan.principalPaid"],
-                    value: Decimal(calc.principalPaid).formatted(asCurrency: loan.currency),
+                    value: Decimal(calc.principal - currentBalance).formatted(asCurrency: loan.currency),
                     color: .green)
             loanRow(lang["loan.interestPaid"],
                     value: Decimal(calc.interestPaidToDate).formatted(asCurrency: loan.currency),
                     color: .orange)
             loanRow(lang["loan.paymentsMade"],
-                    value: "\(calc.paymentsElapsedToday) / \(calc.effectivePayments)")
+                    value: "\(paymentsElapsed) / \(calc.effectivePayments)")
             loanRow(lang["loan.paymentsRemaining"],
-                    value: "\(calc.paymentsRemaining)",
+                    value: "\(paymentsRemaining)",
                     emphasis: true)
         }
     }
 
+    // MARK: - Next payment section
+
     private var nextPaymentSection: some View {
         Section(lang["loan.nextPayment"]) {
-            let elapsed = calc.paymentsElapsedToday
-            let nextEntry = calc.schedule(from: elapsed + 1, to: elapsed + 1).first
+            let nextEntry = calc.scheduleWithPrepayments(preps, from: paymentsElapsed + 1, to: paymentsElapsed + 1).first
 
             if let entry = nextEntry {
                 loanRow(lang["label.date"],
@@ -133,20 +271,30 @@ struct LoanDetailView: View {
         }
     }
 
+    // MARK: - Total cost section
+
     private var progressSection: some View {
-        Section(lang["loan.totalCost"]) {
+        let totalInt = calc.totalInterestWith(preps)
+        let totalPaid = calc.totalAmountPaidWith(preps)
+        let totalPrep = preps.reduce(0.0) { $0 + $1.amount }
+        let grandTotal = totalPaid + totalPrep
+        let interestRatio = grandTotal > 0 ? totalInt / grandTotal : 0
+
+        return Section(lang["loan.totalCost"]) {
             loanRow(lang["loan.principal"],
                     value: Decimal(calc.principal).formatted(asCurrency: loan.currency))
+            if totalPrep > 0 {
+                loanRow(lang["prepayment.title"],
+                        value: Decimal(totalPrep).formatted(asCurrency: loan.currency),
+                        color: .green)
+            }
             loanRow(lang["loan.totalInterest"],
-                    value: Decimal(calc.totalInterest).formatted(asCurrency: loan.currency),
+                    value: Decimal(totalInt).formatted(asCurrency: loan.currency),
                     color: .orange)
             loanRow(lang["loan.totalPaid"],
-                    value: Decimal(calc.totalAmountPaid).formatted(asCurrency: loan.currency),
+                    value: Decimal(grandTotal).formatted(asCurrency: loan.currency),
                     emphasis: true)
 
-            // Mini bar showing principal vs interest split
-            let interestRatio = calc.principal > 0
-                ? calc.totalInterest / calc.totalAmountPaid : 0
             VStack(alignment: .leading, spacing: 4) {
                 Text(lang["loan.progressSplit"])
                     .font(.caption)
@@ -165,20 +313,22 @@ struct LoanDetailView: View {
                 .frame(height: 8)
                 HStack {
                     legendDot(.accentColor, String(format: "Capital %.0f%%", (1 - interestRatio) * 100))
-                    legendDot(.orange, String(format: "Intérêts %.0f%%", interestRatio * 100))
+                    legendDot(.orange,       String(format: "Intérêts %.0f%%", interestRatio * 100))
                 }
             }
         }
     }
 
+    // MARK: - Upcoming schedule section
+
     private var upcomingScheduleSection: some View {
-        let elapsed = calc.paymentsElapsedToday
-        let upcoming = calc.schedule(from: elapsed + 1, to: elapsed + 12)
+        let upcoming = calc.scheduleWithPrepayments(
+            preps, from: paymentsElapsed + 1, to: paymentsElapsed + 12
+        )
 
         return Section {
             if upcoming.isEmpty {
-                Text(lang["loan.paidOff"])
-                    .foregroundStyle(.secondary)
+                Text(lang["loan.paidOff"]).foregroundStyle(.secondary)
             } else {
                 ForEach(upcoming) { entry in
                     HStack {
@@ -206,7 +356,7 @@ struct LoanDetailView: View {
                 }
 
                 Button { showFullSchedule = true } label: {
-                    Text(lang.f("loan.fullSchedule", calc.paymentsRemaining))
+                    Text(lang.f("loan.fullSchedule", paymentsRemaining))
                         .font(.callout)
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
@@ -237,20 +387,74 @@ struct LoanDetailView: View {
     }
 
     private func compactAmount(_ v: Double) -> String {
-        if v >= 1000 { return String(format: "%.0fk", v / 1000) }
-        return String(format: "%.0f", v)
+        v >= 1000 ? String(format: "%.0fk", v / 1000) : String(format: "%.0f", v)
     }
 }
 
-// MARK: - Full amortization schedule sheet
+// MARK: - PrepaymentRow component
+
+private struct PrepaymentRow: View {
+    @Environment(LanguageManager.self) private var lang
+    let prep: LoanPrepayment
+    let currency: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(prep.isRecurring ? Color.green.opacity(0.15) : Color.blue.opacity(0.15))
+                    .frame(width: 36, height: 36)
+                Image(systemName: prep.isRecurring ? "arrow.clockwise.circle.fill" : "arrow.up.circle.fill")
+                    .foregroundStyle(prep.isRecurring ? .green : .blue)
+                    .font(.system(size: 16))
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(prep.amount.formatted(asCurrency: currency))
+                    .font(.body.weight(.medium))
+                HStack(spacing: 4) {
+                    Text(prep.isRecurring ? lang["prepayment.recurring"] : lang["prepayment.oneTime"])
+                        .foregroundStyle(prep.isRecurring ? .green : .blue)
+                    if let freq = prep.frequency {
+                        Text("· \(freq.shortLabel)")
+                    }
+                    if !prep.isRecurring {
+                        Text("· \(prep.startDate.formatted(date: .abbreviated, time: .omitted))")
+                    } else {
+                        Text("· dès \(prep.startDate.formatted(date: .abbreviated, time: .omitted))")
+                    }
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                if let n = prep.note, !n.isEmpty {
+                    Text(n)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .padding(.vertical, 2)
+    }
+}
+
+// MARK: - Full amortization schedule sheet (prepayment-aware)
 
 struct FullAmortizationView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(LanguageManager.self) private var lang
     let loan: Loan
+    let prepayments: [PrepaymentInfo]
 
     private var entries: [AmortizationEntry] {
         let calc = loan.calculator
-        return calc.schedule(from: calc.paymentsElapsedToday + 1)
+        let elapsed = calc.paymentsElapsedWith(prepayments)
+        return calc.scheduleWithPrepayments(prepayments, from: elapsed + 1)
     }
 
     var body: some View {

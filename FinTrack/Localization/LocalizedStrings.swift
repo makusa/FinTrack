@@ -367,6 +367,25 @@ enum LocalizedStrings {
         "settings.language":     ["fr": "Langue",                 "en": "Language",            "es": "Idioma",             "pt": "Idioma"],
         "settings.language.section":["fr":"Langue de l'application","en": "App Language",      "es": "Idioma de la app",   "pt": "Idioma do app"],
 
+
+        // MARK: - Prepayments
+        "prepayment.title":          ["fr": "Versements anticipés",            "en": "Prepayments",                "es": "Pagos anticipados",             "pt": "Pagamentos antecipados"],
+        "prepayment.oneTime":        ["fr": "Ponctuel",                         "en": "One-Time",                   "es": "Puntual",                       "pt": "Pontual"],
+        "prepayment.recurring":      ["fr": "Récurrent",                        "en": "Recurring",                  "es": "Recurrente",                    "pt": "Recorrente"],
+        "prepayment.add":            ["fr": "Ajouter un versement anticipé",    "en": "Add Prepayment",             "es": "Añadir pago anticipado",        "pt": "Adicionar pagamento antecipado"],
+        "prepayment.create":         ["fr": "Nouveau versement anticipé",       "en": "New Prepayment",             "es": "Nuevo pago anticipado",         "pt": "Novo pagamento antecipado"],
+        "prepayment.edit":           ["fr": "Modifier le versement anticipé",   "en": "Edit Prepayment",            "es": "Editar pago anticipado",        "pt": "Editar pagamento antecipado"],
+        "prepayment.startDate.oneTime":["fr":"Date du versement",               "en": "Payment Date",               "es": "Fecha del pago",                "pt": "Data do pagamento"],
+        "prepayment.startDate.recurring":["fr":"Date de début",                 "en": "Start Date",                 "es": "Fecha de inicio",               "pt": "Data de início"],
+        "prepayment.impact":         ["fr": "Impact des versements anticipés",  "en": "Prepayment Impact",          "es": "Impacto de pagos anticipados",  "pt": "Impacto dos pagamentos antecipados"],
+        "prepayment.savings.payments":["fr": "%d versements économisés",        "en": "%d payments saved",          "es": "%d pagos ahorrados",            "pt": "%d pagamentos economizados"],
+        "prepayment.savings.interest":["fr": "Intérêts économisés",             "en": "Interest Saved",             "es": "Intereses ahorrados",           "pt": "Juros economizados"],
+        "prepayment.newPayoffDate":  ["fr": "Nouvelle date de fin",             "en": "New Payoff Date",            "es": "Nueva fecha de fin",            "pt": "Nova data de quitação"],
+        "prepayment.original":       ["fr": "Sans versements anticipés",        "en": "Without Prepayments",        "es": "Sin pagos anticipados",         "pt": "Sem pagamentos antecipados"],
+        "prepayment.deletePrompt":   ["fr": "Supprimer ce versement anticipé ?","en": "Delete this prepayment?",    "es": "¿Eliminar este pago anticipado?","pt": "Excluir este pagamento antecipado?"],
+        "prepayment.empty.title":    ["fr": "Aucun versement anticipé",         "en": "No Prepayments",             "es": "Sin pagos anticipados",         "pt": "Sem pagamentos antecipados"],
+        "prepayment.empty.sub":      ["fr": "Réduisez vos intérêts en ajoutant un versement ponctuel ou récurrent sur le capital.", "en": "Reduce your interest by adding a one-time or recurring payment toward the principal.", "es": "Reduce tus intereses añadiendo un pago puntual o recurrente al capital.", "pt": "Reduza seus juros adicionando um pagamento pontual ou recorrente ao principal."],
+
         // MARK: - Categories
         "category.title":       ["fr": "Catégories",              "en": "Categories",          "es": "Categorías",         "pt": "Categorias"],
         "category.manage":      ["fr": "Gérer les catégories",    "en": "Manage Categories",   "es": "Gestionar categorías","pt": "Gerenciar categorias"],

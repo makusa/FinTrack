@@ -48,6 +48,8 @@
 		DDB2F3FECBB5936CA4DEE2C8 /* CreditLinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7145838E99C6BA90AEC4B3A8 /* CreditLinesView.swift */; };
 		2926639C4AF2BA98292F8449 /* LanguageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62D587BE21232886BA5D9106 /* LanguageManager.swift */; };
 		993DA07AD716A11C96937DE7 /* LocalizedStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89CEF3E35A77FC2463375FDF /* LocalizedStrings.swift */; };
+		BF188BDB02A23E67496A284C /* LoanPrepayment.swift in Sources */ = {isa = PBXBuildFile; fileRef = D95AE7FDBD46765CF2C459EA /* LoanPrepayment.swift */; };
+		2587F30F1BF1B29FD2DC8719 /* AddEditPrepaymentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5E887C892C53194E107C95F /* AddEditPrepaymentView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -93,6 +95,8 @@
 		7145838E99C6BA90AEC4B3A8 /* CreditLinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditLinesView.swift; sourceTree = "<group>"; };
 		62D587BE21232886BA5D9106 /* LanguageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
 		89CEF3E35A77FC2463375FDF /* LocalizedStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedStrings.swift; sourceTree = "<group>"; };
+		D95AE7FDBD46765CF2C459EA /* LoanPrepayment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoanPrepayment.swift; sourceTree = "<group>"; };
+		D5E887C892C53194E107C95F /* AddEditPrepaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditPrepaymentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -128,6 +132,7 @@
 				5AA91C436EA64527214D120E /* AddEditAccountView.swift */,
 				87196A76F8540EA9918B575D /* AddEditRecurringTransactionView.swift */,
 				D0A00CBB4D610338F0B810C6 /* AddEditTransactionView.swift */,
+				D5E887C892C53194E107C95F /* AddEditPrepaymentView.swift */,
 				125B9AC2D8CD958FFECBB5FA /* RecurrencesView.swift */,
 				775C52DD1AEBBCB4437D4D83 /* DashboardView.swift */,
 				A85E6C13F1FA6E8EA17F750A /* RootView.swift */,
@@ -163,6 +168,7 @@
 			isa = PBXGroup;
 			children = (
 				7F69296D8AA5AFFC56CE2664 /* Account.swift */,
+				D95AE7FDBD46765CF2C459EA /* LoanPrepayment.swift */,
 				F053C63C61980B18AA6263E4 /* Category.swift */,
 				A343B877C383A2628511AF5E /* Currency.swift */,
 				D9176C3292D9569EDEF8512C /* RecurringTransaction.swift */,
@@ -305,6 +311,9 @@
 				167DD8D94BD2C94A5D09FCC6 /* RootView.swift in Sources */,
 				17D35A490B812757B7DA1041 /* SeedData.swift in Sources */,
 				FEBFF9935E3B84CAFF02F78B /* SettingsView.swift in Sources */,
+				BF188BDB02A23E67496A284C /* LoanPrepayment.swift in Sources */,
+				2587F30F1BF1B29FD2DC8719 /* AddEditPrepaymentView.swift in Sources */,
+
 				2926639C4AF2BA98292F8449 /* LanguageManager.swift in Sources */,
 				993DA07AD716A11C96937DE7 /* LocalizedStrings.swift in Sources */,
 

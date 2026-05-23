@@ -287,6 +287,172 @@ struct LoanCalculator {
     }
 }
 
+
+// MARK: - LoanCalculator — Prepayment-aware methods
+
+extension LoanCalculator {
+
+    // MARK: Full step-by-step simulation
+
+    /// Generates a complete amortization schedule incorporating the given prepayments.
+    /// Prepayments that fall on or before a payment date reduce the principal *before*
+    /// that period's interest is computed, which models the standard Canadian convention
+    /// (open prepayment privilege applied at each payment anniversary or anytime for
+    /// variable-rate mortgages).
+    ///
+    /// Returns entries only for payment numbers in [startK, endK].
+    func scheduleWithPrepayments(
+        _ prepayments: [PrepaymentInfo],
+        from startK: Int = 1,
+        to endK: Int? = nil
+    ) -> [AmortizationEntry] {
+        guard !prepayments.isEmpty else {
+            return schedule(from: startK, to: endK)
+        }
+
+        var bal = principal
+        let r = periodicRate
+        let m = paymentAmount
+        var all: [AmortizationEntry] = []
+        let sorted = prepayments.filter { $0.amount > 0 }.sorted { $0.date < $1.date }
+        var pIdx = 0
+
+        // Absorb prepayments that arrive before the very first payment date
+        while pIdx < sorted.count && sorted[pIdx].date < firstPaymentDate {
+            bal = max(0, bal - sorted[pIdx].amount)
+            pIdx += 1
+        }
+
+        let maxK = totalPayments + 500   // upper safety limit
+        for k in 1 ... maxK {
+            guard bal > 0.005 else { break }
+
+            let payDate = paymentDate(k)
+
+            // Absorb prepayments on or before this payment date
+            while pIdx < sorted.count && sorted[pIdx].date <= payDate {
+                bal = max(0, bal - sorted[pIdx].amount)
+                pIdx += 1
+            }
+            guard bal > 0.005 else { break }
+
+            let interest      = bal * r
+            let principalPart = min(m - interest, bal)
+            let payment       = interest + principalPart
+            bal = max(0, bal - principalPart)
+
+            all.append(AmortizationEntry(
+                paymentNumber: k,
+                date: payDate,
+                payment: payment,
+                interest: interest,
+                principal: principalPart,
+                balance: bal
+            ))
+            if bal <= 0.005 { break }
+        }
+
+        let filtered = all.filter { $0.paymentNumber >= startK }
+        if let end = endK { return filtered.filter { $0.paymentNumber <= end } }
+        return filtered
+    }
+
+    // MARK: Derived metrics
+
+    /// Current outstanding balance accounting for all prepayments made so far.
+    func currentBalanceWith(_ prepayments: [PrepaymentInfo]) -> Double {
+        guard !prepayments.isEmpty else { return currentBalance }
+        let today = Calendar.current.startOfDay(for: .now)
+        // Full simulation from beginning
+        let all = scheduleWithPrepayments(prepayments)
+        let elapsed = all.filter { Calendar.current.startOfDay(for: $0.date) <= today }
+        if elapsed.isEmpty {
+            // No regular payment yet — subtract any early prepayments
+            let past = prepayments.filter { $0.date <= today }
+            return max(0, past.reduce(principal) { $0 - $1.amount })
+        }
+        return elapsed.last?.balance ?? currentBalance
+    }
+
+    /// Number of regular payments that have been made as of today, with prepayments.
+    func paymentsElapsedWith(_ prepayments: [PrepaymentInfo]) -> Int {
+        guard !prepayments.isEmpty else { return paymentsElapsedToday }
+        let today = Calendar.current.startOfDay(for: .now)
+        let all = scheduleWithPrepayments(prepayments)
+        return all.filter { Calendar.current.startOfDay(for: $0.date) <= today }.count
+    }
+
+    /// Number of regular payments still remaining, with prepayments.
+    func paymentsRemainingWith(_ prepayments: [PrepaymentInfo]) -> Int {
+        guard !prepayments.isEmpty else { return paymentsRemaining }
+        let today = Calendar.current.startOfDay(for: .now)
+        let all = scheduleWithPrepayments(prepayments)
+        return all.filter { Calendar.current.startOfDay(for: $0.date) > today }.count
+    }
+
+    /// Estimated payoff date with prepayments.
+    func payoffDateWith(_ prepayments: [PrepaymentInfo]) -> Date {
+        guard !prepayments.isEmpty else { return payoffDate }
+        let all = scheduleWithPrepayments(prepayments)
+        return all.last?.date ?? payoffDate
+    }
+
+    /// Total interest that will be paid over the life of the loan, with prepayments.
+    func totalInterestWith(_ prepayments: [PrepaymentInfo]) -> Double {
+        guard !prepayments.isEmpty else { return totalInterest }
+        let all = scheduleWithPrepayments(prepayments)
+        return all.reduce(0) { $0 + $1.interest }
+    }
+
+    /// Total amount paid (regular payments only, excluding lump-sum prepayments).
+    func totalAmountPaidWith(_ prepayments: [PrepaymentInfo]) -> Double {
+        guard !prepayments.isEmpty else { return totalAmountPaid }
+        let all = scheduleWithPrepayments(prepayments)
+        return all.reduce(0) { $0 + $1.payment }
+    }
+
+    // MARK: Savings vs baseline (without any prepayments)
+
+    struct PrepaymentSavings {
+        let paymentsSaved: Int          // fewer regular payments
+        let interestSaved: Double       // interest dollars saved
+        let timeShortened: DateComponents  // calendar delta
+        let newPayoffDate: Date
+    }
+
+    func savingsVsBaseline(_ prepayments: [PrepaymentInfo]) -> PrepaymentSavings {
+        let basePayoffDate = payoffDate
+        let newPayoff = payoffDateWith(prepayments)
+        let baseInterest = totalInterest
+        let newInterest = totalInterestWith(prepayments)
+
+        let baseCount = effectivePayments
+        let newCount = scheduleWithPrepayments(prepayments).count
+        let saved = max(0, baseCount - newCount)
+        let interestSaved = max(0, baseInterest - newInterest)
+
+        let delta = Calendar.current.dateComponents(
+            [.year, .month],
+            from: newPayoff,
+            to: basePayoffDate
+        )
+
+        return PrepaymentSavings(
+            paymentsSaved: saved,
+            interestSaved: interestSaved,
+            timeShortened: delta,
+            newPayoffDate: newPayoff
+        )
+    }
+
+    /// Progress fraction (principal paid / total) with prepayments.
+    func progressFractionWith(_ prepayments: [PrepaymentInfo]) -> Double {
+        guard principal > 0 else { return 0 }
+        let remaining = currentBalanceWith(prepayments)
+        return min(1, max(0, (principal - remaining) / principal))
+    }
+}
+
 // MARK: - Model
 
 @Model
@@ -306,6 +472,9 @@ final class Loan {
     var createdAt: Date
 
     var account: Account?
+
+    @Relationship(deleteRule: .cascade, inverse: \LoanPrepayment.loan)
+    var prepayments: [LoanPrepayment] = []
 
     // MARK: Accessors
 
@@ -336,6 +505,38 @@ final class Loan {
             firstPaymentDate: firstPaymentDate
         )
     }
+
+
+    // MARK: Prepayment helpers
+
+    /// Expands all LoanPrepayment rules into concrete (date, amount) pairs up to `horizon`.
+    /// If `horizon` is nil, uses the original loan payoff date + 10 years as a safety cap.
+    func prepaymentInstances(upTo horizon: Date? = nil) -> [PrepaymentInfo] {
+        let cal = Calendar.current
+        let cap = horizon ?? cal.date(byAdding: .year, value: 10, to: calculator.payoffDate) ?? calculator.payoffDate
+        var result: [PrepaymentInfo] = []
+
+        for prep in prepayments {
+            let amt = (prep.amount as NSDecimalNumber).doubleValue
+            guard amt > 0 else { continue }
+
+            if prep.isRecurring, let freq = prep.frequency {
+                var cur = prep.startDate
+                let end = prep.endDate ?? cap
+                while cur <= min(end, cap) {
+                    result.append(PrepaymentInfo(amount: amt, date: cur))
+                    cur = freq.nextDate(after: cur)
+                }
+            } else {
+                result.append(PrepaymentInfo(amount: amt, date: prep.startDate))
+            }
+        }
+
+        return result.sorted { $0.date < $1.date }
+    }
+
+    /// True if this loan has at least one active prepayment defined.
+    var hasPrepayments: Bool { !prepayments.isEmpty }
 
     // MARK: Init
 
