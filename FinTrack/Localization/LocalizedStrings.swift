@@ -386,6 +386,11 @@ enum LocalizedStrings {
         "security.pin.enter.new.sub":   ["fr": "4 chiffres",                            "en": "4 digits",                           "es": "4 dígitos",                         "pt": "4 dígitos"],
         "security.pin.changed":         ["fr": "PIN modifié avec succès",               "en": "PIN changed successfully",           "es": "PIN cambiado con éxito",            "pt": "PIN alterado com sucesso"],
         "security.pin.wrong.current":   ["fr": "PIN incorrect",                         "en": "Incorrect PIN",                      "es": "PIN incorrecto",                    "pt": "PIN incorreto"],
+
+        "security.biometric.section":      ["fr": "Déverrouillage biométrique",             "en": "Biometric Unlock",                    "es": "Desbloqueo biométrico",               "pt": "Desbloqueio biométrico"],
+        "security.biometric.active":       ["fr": "Face ID actif — déverrouillage automatique", "en": "Face ID active — auto unlock",        "es": "Face ID activo — desbloqueo auto",    "pt": "Face ID ativo — desbloqueio auto"],
+        "security.biometric.unavailable":  ["fr": "Face ID / Touch ID non disponible",      "en": "Face ID / Touch ID not available",    "es": "Face ID / Touch ID no disponible",    "pt": "Face ID / Touch ID não disponível"],
+        "security.biometric.unavailable.sub": ["fr": "Non pris en charge sur cet appareil ou non inscrit dans Réglages iOS.", "en": "Not supported on this device or not enrolled in iOS Settings.", "es": "No compatible con este dispositivo o no inscrito en Ajustes.", "pt": "Não suportado neste dispositivo ou não inscrito nas Configurações."],
         "security.biometric.toggle":    ["fr": "Utiliser %@ pour déverrouiller",        "en": "Use %@ to unlock",                   "es": "Usar %@ para desbloquear",          "pt": "Usar %@ para desbloquear"],
         "security.autolock":            ["fr": "Verrouillage automatique",              "en": "Auto-Lock",                          "es": "Bloqueo automático",                "pt": "Bloqueio automático"],
         "security.autolock.delay":      ["fr": "Verrouiller après",                     "en": "Lock after",                         "es": "Bloquear después de",               "pt": "Bloquear após"],

@@ -187,6 +187,7 @@ final class AppLockManager {
 
     func handleForeground() {
         guard isSetup else { return }
+        checkBiometricCapability()  // refresh in case user enrolled biometrics since last launch
         guard autoLockDelay != .never else { return }
         let elapsed = backgroundDate.map { Date().timeIntervalSince($0) } ?? .infinity
         let threshold = TimeInterval(autoLockDelay.rawValue)

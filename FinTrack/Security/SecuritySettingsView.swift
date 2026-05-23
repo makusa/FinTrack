@@ -53,8 +53,8 @@ struct SecuritySettingsView: View {
             }
 
             // MARK: Biometrics
-            if lockManager.biometricType != .none {
-                Section(lockManager.biometricType.label) {
+            Section {
+                if lockManager.biometricType != .none {
                     Toggle(
                         lang.f("security.biometric.toggle", lockManager.biometricType.label),
                         isOn: Binding(
@@ -62,7 +62,28 @@ struct SecuritySettingsView: View {
                             set:  { lockManager.updateBiometrics($0) }
                         )
                     )
+                    if lockManager.useBiometrics {
+                        Label(lang["security.biometric.active"], systemImage: lockManager.biometricType.systemImage)
+                            .font(.caption)
+                            .foregroundStyle(.green)
+                    }
+                } else {
+                    HStack(spacing: 10) {
+                        Image(systemName: "faceid")
+                            .foregroundStyle(.secondary)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(lang["security.biometric.unavailable"])
+                                .foregroundStyle(.secondary)
+                            Text(lang["security.biometric.unavailable.sub"])
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
+            } header: {
+                Text(lockManager.biometricType != .none
+                     ? lockManager.biometricType.label
+                     : lang["security.biometric.section"])
             }
 
             // MARK: Auto-lock
