@@ -53,9 +53,9 @@ struct AddEditCreditLineView: View {
 
     // MARK: Live estimates
     private var estimatedMonthlyInterest: Decimal? {
-        guard let lim = limit, let r = rate else { return nil }
+        guard limit != nil, let r = rate else { return nil }
         let drawAmt = parseDecimal(currentDrawText) ?? 0
-        let bal = isEditing ? (mode == .create ? drawAmt : Decimal(0)) : drawAmt
+        let bal = isEditing ? Decimal(0) : drawAmt
         guard (bal as NSDecimalNumber).doubleValue > 0 else { return nil }
         return bal * r / 100 / 12
     }

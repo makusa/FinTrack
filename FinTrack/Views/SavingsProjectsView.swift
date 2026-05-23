@@ -171,7 +171,9 @@ struct SavingsProjectRow: View {
 struct SavingsProjectDetailView: View {
     @Environment(\.modelContext) private var context
     @Bindable var project: SavingsProject
-    @State private var showEdit = false
+    @State private var showEdit       = false
+    @State private var scrubDate:    Date?   = nil
+    @State private var scrubAmount:  Double? = nil
 
     private var calc: ProjectionData { ProjectionData(project: project) }
 
@@ -248,7 +250,38 @@ struct SavingsProjectDetailView: View {
                     .font(.caption).foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity).padding(.vertical, 16)
             } else {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 10) {
+
+                    // ── Scrubber readout ──────────────────────────────────
+                    HStack {
+                        if let d = scrubDate, let a = scrubAmount {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(d.formatted(date: .long, time: .omitted))
+                                    .font(.caption2).foregroundStyle(.secondary)
+                                Text(Decimal(a).formatted(asCurrency: project.currency))
+                                    .font(.subheadline.weight(.bold))
+                                    .foregroundStyle(Color(hex: project.colorHex))
+                                if let target = project.targetAmount {
+                                    let remaining = max(0, (target as NSDecimalNumber).doubleValue - a)
+                                    Text(remaining <= 0
+                                         ? "Objectif atteint ✓"
+                                         : "Encore \(Decimal(remaining).formatted(asCurrency: project.currency))")
+                                        .font(.caption2)
+                                        .foregroundStyle(remaining <= 0 ? .green : .secondary)
+                                }
+                            }
+                            .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .leading)))
+                        } else {
+                            Text("Glissez pour explorer la projection")
+                                .font(.caption2).foregroundStyle(.tertiary)
+                                .transition(.opacity)
+                        }
+                        Spacer()
+                    }
+                    .animation(.easeInOut(duration: 0.15), value: scrubDate != nil)
+                    .frame(minHeight: 38)
+
+                    // ── Chart ─────────────────────────────────────────────
                     Chart {
                         ForEach(calc.points) { point in
                             LineMark(
@@ -280,9 +313,19 @@ struct SavingsProjectDetailView: View {
                                 }
                         }
 
-                        RuleMark(x: .value("Aujourd'hui", Date()))
+                        RuleMark(x: .value("Auj.", Date()))
                             .foregroundStyle(.secondary.opacity(0.4))
                             .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
+
+                        // Scrubber
+                        if let d = scrubDate, let a = scrubAmount {
+                            RuleMark(x: .value("Sélection", d))
+                                .foregroundStyle(Color.primary.opacity(0.5))
+                                .lineStyle(StrokeStyle(lineWidth: 1.5))
+                            PointMark(x: .value("Date", d), y: .value("Montant", a))
+                                .symbolSize(60)
+                                .foregroundStyle(Color(hex: project.colorHex))
+                        }
                     }
                     .chartYAxis {
                         AxisMarks(position: .leading) { value in
@@ -303,12 +346,48 @@ struct SavingsProjectDetailView: View {
                             ).font(.system(size: 9))
                         }
                     }
-                    .frame(height: 180)
+                    .frame(height: 200)
+                    .contentShape(Rectangle())
+                    .chartOverlay { proxy in
+                        GeometryReader { geo in
+                            Rectangle().fill(.clear).contentShape(Rectangle())
+                                .gesture(
+                                    DragGesture(minimumDistance: 0)
+                                        .onChanged { val in
+                                            guard let plotFrame = proxy.plotFrame else { return }
+                                            let origin = geo[plotFrame].origin
+                                            let x = val.location.x - origin.x
+                                            guard x >= 0 else { return }
+                                            if let date: Date = proxy.value(atX: x) {
+                                                scrubDate   = date
+                                                scrubAmount = interpolatedSavings(at: date)
+                                            }
+                                        }
+                                        .onEnded { _ in
+                                            withAnimation(.easeOut(duration: 0.4)) {
+                                                scrubDate   = nil
+                                                scrubAmount = nil
+                                            }
+                                        }
+                                )
+                        }
+                    }
                 }
             }
         } header: {
             Text("Projection")
         }
+    }
+
+    /// Step-function interpolation: returns the last known balance at or before `date`.
+    private func interpolatedSavings(at date: Date) -> Double {
+        let pts = calc.points.sorted { $0.date < $1.date }
+        guard !pts.isEmpty else { return 0 }
+        var result = pts.first!.amount
+        for p in pts {
+            if p.date <= date { result = p.amount } else { break }
+        }
+        return result
     }
 
     private var metricsSection: some View {
