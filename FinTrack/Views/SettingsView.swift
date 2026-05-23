@@ -41,6 +41,16 @@ struct SettingsView: View {
                     }
                 }
 
+                
+                // MARK: - Notifications
+                Section(lang["notification.settings"]) {
+                    NavigationLink {
+                        NotificationSettingsView()
+                    } label: {
+                        Label(lang["notification.manage"], systemImage: "bell.badge")
+                    }
+                }
+
                 Section(lang["settings.data"]) {
                     NavigationLink {
                         CreditLinesView()

@@ -130,6 +130,11 @@ final class CreditLine {
     var minimumPaymentValue: Decimal  // percent OR fixed amount, ignored for interestOnly
     var lastInterestAccrualDate: Date
     var isActive: Bool
+    // MARK: Notification settings
+    var notificationEnabled: Bool = false
+    var notificationDaysBefore: Int = 3
+
+
     var notes: String?
     var createdAt: Date
 

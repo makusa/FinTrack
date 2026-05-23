@@ -52,6 +52,8 @@
 		2587F30F1BF1B29FD2DC8719 /* AddEditPrepaymentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5E887C892C53194E107C95F /* AddEditPrepaymentView.swift */; };
 		774109B734D18248ECD4F416 /* BankDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = F982256D2C20677F23F33DD8 /* BankDirectory.swift */; };
 		7D059B45A90CB57BC3BFC495 /* BankPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C574E73ABDB03518FD603080 /* BankPicker.swift */; };
+		C75FD39211FB65E073E06050 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E6CA305937C42E1A7876E1 /* NotificationManager.swift */; };
+		D2E79662D386F09A8C63CAB6 /* NotificationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91BA447ECCCEE2FB354E8567 /* NotificationSettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -101,6 +103,8 @@
 		D5E887C892C53194E107C95F /* AddEditPrepaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditPrepaymentView.swift; sourceTree = "<group>"; };
 		F982256D2C20677F23F33DD8 /* BankDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankDirectory.swift; sourceTree = "<group>"; };
 		C574E73ABDB03518FD603080 /* BankPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankPicker.swift; sourceTree = "<group>"; };
+		52E6CA305937C42E1A7876E1 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
+		91BA447ECCCEE2FB354E8567 /* NotificationSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -108,6 +112,7 @@
 			isa = PBXGroup;
 			children = (
 				D34E6F10D5FEAE7E5D0BD329 /* ColorPalette.swift */,
+				52E6CA305937C42E1A7876E1 /* NotificationManager.swift */,
 				F982256D2C20677F23F33DD8 /* BankDirectory.swift */,
 				9D910816B5A699244FFADFE9 /* RecurringTransactionManager.swift */,
 				72EA414C4647414C1515F2B7 /* CashFlowCalculator.swift */,
@@ -142,6 +147,7 @@
 				775C52DD1AEBBCB4437D4D83 /* DashboardView.swift */,
 				A85E6C13F1FA6E8EA17F750A /* RootView.swift */,
 				5A597BF7A45068D64338863D /* SettingsView.swift */,
+				91BA447ECCCEE2FB354E8567 /* NotificationSettingsView.swift */,
 				73D14C95CDD0E974493F20BB /* TransactionsView.swift */,
 				C587C942D6C553E71658CD6D /* Components */,
 			);
@@ -317,6 +323,8 @@
 				167DD8D94BD2C94A5D09FCC6 /* RootView.swift in Sources */,
 				17D35A490B812757B7DA1041 /* SeedData.swift in Sources */,
 				FEBFF9935E3B84CAFF02F78B /* SettingsView.swift in Sources */,
+				C75FD39211FB65E073E06050 /* NotificationManager.swift in Sources */,
+				D2E79662D386F09A8C63CAB6 /* NotificationSettingsView.swift in Sources */,
 				774109B734D18248ECD4F416 /* BankDirectory.swift in Sources */,
 				7D059B45A90CB57BC3BFC495 /* BankPicker.swift in Sources */,
 				BF188BDB02A23E67496A284C /* LoanPrepayment.swift in Sources */,

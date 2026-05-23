@@ -41,6 +41,9 @@ struct AddEditLoanView: View {
     @State private var createRecurring: Bool = true
     @State private var showDeleteConfirm: Bool = false
 
+    @State private var notifEnabled: Bool = false
+    @State private var notifDaysBefore: Int = 3
+
     @FocusState private var principalFocused: Bool
 
     private var isEditing: Bool { if case .edit = mode { return true }; return false }
@@ -333,6 +336,23 @@ struct AddEditLoanView: View {
         Decimal(v).formatted(asCurrency: currency)
     }
 
+
+    private var notificationSection: some View {
+        Section {
+            Toggle(lang["notification.enable"], isOn: $notifEnabled)
+            if notifEnabled {
+                Picker(lang["notification.daysBefore"], selection: $notifDaysBefore) {
+                    ForEach(notificationDaysOptions, id: \.self) { d in
+                        Text(d == 1 ? lang["notification.dayBefore.1"] : lang.f("notification.dayBefore.n", d)).tag(d)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+        } header: {
+            Label(lang["notification.section"], systemImage: "bell")
+        }
+    }
+
     // MARK: - Logic
 
     private func loadIfEditing() {
@@ -383,6 +403,8 @@ struct AddEditLoanView: View {
                 account: selectedAccount,
                 notes: trimNotes.isEmpty ? nil : trimNotes
             )
+            loan.notificationEnabled = notifEnabled
+            loan.notificationDaysBefore = notifDaysBefore
             context.insert(loan)
 
             // Auto-create recurring transaction if requested
@@ -415,6 +437,8 @@ struct AddEditLoanView: View {
             loan.firstPaymentDate = firstPaymentDate
             loan.account = selectedAccount
             loan.notes = trimNotes.isEmpty ? nil : trimNotes
+            loan.notificationEnabled = notifEnabled
+            loan.notificationDaysBefore = notifDaysBefore
         }
 
         do {
@@ -428,7 +452,11 @@ struct AddEditLoanView: View {
     private func deleteIfEditing() {
         guard case .edit(let loan) = mode else { return }
         context.delete(loan)
+        loan.notificationEnabled = notifEnabled
+        loan.notificationDaysBefore = notifDaysBefore
         try? context.save()
+        let ctx = context
+        Task { await NotificationManager.shared.scheduleAll(context: ctx) }
         dismiss()
     }
 

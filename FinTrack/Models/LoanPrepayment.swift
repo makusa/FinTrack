@@ -26,6 +26,11 @@ final class LoanPrepayment {
     var endDate: Date?           // optional stop date for recurring prepayments
     var note: String?
     var createdAt: Date
+    // MARK: Notification settings
+    var notificationEnabled: Bool = false
+    var notificationDaysBefore: Int = 3
+
+
 
     var loan: Loan?
 

@@ -42,6 +42,9 @@ struct AddEditRecurringTransactionView: View {
     @State private var showCategoryPicker = false
     @State private var showDeleteConfirm = false
 
+    @State private var notifEnabled: Bool = false
+    @State private var notifDaysBefore: Int = 3
+
     @FocusState private var amountFocused: Bool
 
     private var isEditing: Bool {
@@ -257,6 +260,23 @@ struct AddEditRecurringTransactionView: View {
         }
     }
 
+
+    private var notificationSection: some View {
+        Section {
+            Toggle(lang["notification.enable"], isOn: $notifEnabled)
+            if notifEnabled {
+                Picker(lang["notification.daysBefore"], selection: $notifDaysBefore) {
+                    ForEach(notificationDaysOptions, id: \.self) { d in
+                        Text(d == 1 ? lang["notification.dayBefore.1"] : lang.f("notification.dayBefore.n", d)).tag(d)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+        } header: {
+            Label(lang["notification.section"], systemImage: "bell")
+        }
+    }
+
     // MARK: - Logic
 
     private func loadIfEditing() {
@@ -306,6 +326,8 @@ struct AddEditRecurringTransactionView: View {
                 note: trimmedNote,
                 payee: trimmedPayee.isEmpty ? nil : trimmedPayee
             )
+            rule.notificationEnabled = notifEnabled
+            rule.notificationDaysBefore = notifDaysBefore
             context.insert(rule)
             // Immediately apply if the start date is today or earlier.
             RecurringTransactionManager.applyPending(context: context)
@@ -322,6 +344,8 @@ struct AddEditRecurringTransactionView: View {
             rule.note = trimmedNote
             rule.payee = trimmedPayee.isEmpty ? nil : trimmedPayee
             rule.isActive = isActive
+            rule.notificationEnabled = notifEnabled
+            rule.notificationDaysBefore = notifDaysBefore
         }
 
         do {
@@ -335,7 +359,11 @@ struct AddEditRecurringTransactionView: View {
     private func deleteIfEditing() {
         guard case .edit(let rule) = mode else { return }
         context.delete(rule)
+        rule.notificationEnabled = notifEnabled
+        rule.notificationDaysBefore = notifDaysBefore
         try? context.save()
+        let ctx = context
+        Task { await NotificationManager.shared.scheduleAll(context: ctx) }
         dismiss()
     }
 

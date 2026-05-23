@@ -468,6 +468,11 @@ final class Loan {
     var compoundingRaw: String
     var firstPaymentDate: Date
     var isActive: Bool
+    // MARK: Notification settings
+    var notificationEnabled: Bool = false
+    var notificationDaysBefore: Int = 3
+
+
     var notes: String?
     var createdAt: Date
 

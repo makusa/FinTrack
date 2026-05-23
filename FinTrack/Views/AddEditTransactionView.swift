@@ -37,6 +37,9 @@ struct AddEditTransactionView: View {
     @State private var showCategoryPicker = false
     @State private var showDeleteConfirm = false
 
+    @State private var notifEnabled: Bool = false
+    @State private var notifDaysBefore: Int = 3
+
     @FocusState private var amountFocused: Bool
 
     init(mode: TransactionEditorMode, preselectedAccount: Account? = nil) {
@@ -220,6 +223,26 @@ struct AddEditTransactionView: View {
         }
     }
 
+
+    @ViewBuilder
+    private var notificationSection: some View {
+        if type == .expense {
+            Section {
+                Toggle(lang["notification.enable"], isOn: $notifEnabled)
+                if notifEnabled {
+                    Picker(lang["notification.daysBefore"], selection: $notifDaysBefore) {
+                        ForEach(notificationDaysOptions, id: \.self) { d in
+                            Text(d == 1 ? lang["notification.dayBefore.1"] : lang.f("notification.dayBefore.n", d)).tag(d)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
+            } header: {
+                Label(lang["notification.section"], systemImage: "bell")
+            }
+        }
+    }
+
     // MARK: - Logic
 
     private func setupInitialValues() {
@@ -263,6 +286,8 @@ struct AddEditTransactionView: View {
                 note: trimmedNote,
                 payee: trimmedPayee.isEmpty ? nil : trimmedPayee
             )
+            tx.notificationEnabled = notifEnabled
+            tx.notificationDaysBefore = notifDaysBefore
             context.insert(tx)
         case .edit(let tx):
             tx.amount = amount
@@ -272,6 +297,8 @@ struct AddEditTransactionView: View {
             tx.category = selectedCategory
             tx.note = trimmedNote
             tx.payee = trimmedPayee.isEmpty ? nil : trimmedPayee
+            tx.notificationEnabled = notifEnabled
+            tx.notificationDaysBefore = notifDaysBefore
         }
 
         do {
@@ -286,6 +313,8 @@ struct AddEditTransactionView: View {
         guard case .edit(let tx) = mode else { return }
         context.delete(tx)
         try? context.save()
+        let ctx = context
+        Task { await NotificationManager.shared.scheduleAll(context: ctx) }
         dismiss()
     }
 

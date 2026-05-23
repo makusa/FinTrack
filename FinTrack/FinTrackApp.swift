@@ -18,18 +18,28 @@ struct FinTrackApp: App {
                              RecurringTransaction.self, Loan.self, SavingsProject.self,
                              CreditLine.self, CreditLineEntry.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let modelContainer: ModelContainer
+
         do {
-            container = try ModelContainer(for: schema, configurations: [config])
+            modelContainer = try ModelContainer(for: schema, configurations: [config])
         } catch {
             fatalError("FinTrack: ModelContainer init failed — \(error)")
         }
 
+        container = modelContainer
+
         // Seed default categories on the main context.
-        SeedData.seedIfNeeded(context: container.mainContext)
+        SeedData.seedIfNeeded(context: modelContainer.mainContext)
+
+        // Request notification permission and schedule all upcoming reminders
+        Task { @MainActor in
+            await NotificationManager.shared.requestPermission()
+            await NotificationManager.shared.scheduleAll(context: modelContainer.mainContext)
+        }
 
         // Generate any pending recurring transactions (salary, rent, subscriptions…).
-        RecurringTransactionManager.applyPending(context: container.mainContext)
-        CreditLineInterestManager.applyPending(context: container.mainContext)
+        RecurringTransactionManager.applyPending(context: modelContainer.mainContext)
+        CreditLineInterestManager.applyPending(context: modelContainer.mainContext)
     }
 
     // Keep a reference to the shared language manager so the @Observable
