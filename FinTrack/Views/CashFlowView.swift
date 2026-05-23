@@ -58,6 +58,22 @@ struct CashFlowView: View {
                 }
             }
 
+            // ── Credit lines ─────────────────────────────────────────────────
+            if !summary.creditLineLines.isEmpty {
+                Section {
+                    ForEach(summary.creditLineLines) { line in
+                        amountRow(label: line.label, sublabel: line.sublabel,
+                                  amount: line.amount, currency: summary.currency,
+                                  color: .primary, sign: "−")
+                    }
+                    totalRow(label: "Total paiements minima", amount: summary.monthlyCreditLinePayments,
+                             currency: summary.currency, color: .red)
+                } header: {
+                    Label("Marges de crédit (paiements minima)", systemImage: "creditcard.fill")
+                        .foregroundStyle(.red)
+                }
+            }
+
             // ── Net surplus ──────────────────────────────────────────────────
             Section {
                 HStack {

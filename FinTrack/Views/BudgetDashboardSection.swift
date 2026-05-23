@@ -18,6 +18,10 @@ struct BudgetDashboardSection: View {
     let loans: [Loan]
     let currency: String
 
+    @Query(filter: #Predicate<CreditLine> { $0.isActive },
+           sort: \CreditLine.createdAt, order: .forward)
+    private var activeCreditLines: [CreditLine]
+
     @Query(filter: #Predicate<SavingsProject> { $0.isActive },
            sort: \SavingsProject.createdAt, order: .forward)
     private var projects: [SavingsProject]
@@ -27,7 +31,8 @@ struct BudgetDashboardSection: View {
             currency: currency,
             recurring: recurring,
             loans: loans,
-            projects: projects
+            projects: projects,
+            creditLines: activeCreditLines
         )
     }
 

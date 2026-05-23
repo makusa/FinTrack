@@ -15,7 +15,8 @@ struct FinTrackApp: App {
 
     init() {
         let schema = Schema([Account.self, Transaction.self, Category.self,
-                             RecurringTransaction.self, Loan.self, SavingsProject.self])
+                             RecurringTransaction.self, Loan.self, SavingsProject.self,
+                             CreditLine.self, CreditLineEntry.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
             container = try ModelContainer(for: schema, configurations: [config])
@@ -28,6 +29,7 @@ struct FinTrackApp: App {
 
         // Generate any pending recurring transactions (salary, rent, subscriptions…).
         RecurringTransactionManager.applyPending(context: container.mainContext)
+        CreditLineInterestManager.applyPending(context: container.mainContext)
     }
 
     var body: some Scene {

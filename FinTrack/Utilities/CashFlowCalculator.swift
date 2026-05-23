@@ -15,6 +15,7 @@ struct CashFlowSummary {
     let monthlyIncome: Decimal
     let monthlyExpenses: Decimal
     let monthlyLoanPayments: Decimal
+    let monthlyCreditLinePayments: Decimal
     let monthlySurplus: Decimal      // income − expenses − loans
     let monthlyAllocated: Decimal    // sum of project contributions
     let monthlyFree: Decimal         // surplus − allocated
@@ -25,7 +26,8 @@ struct CashFlowSummary {
     // Individual line items for the detail view
     let incomeLines:   [CashFlowLine]
     let expenseLines:  [CashFlowLine]
-    let loanLines:     [CashFlowLine]
+    let loanLines:       [CashFlowLine]
+    let creditLineLines: [CashFlowLine]
     let projectLines:  [CashFlowLine]
 }
 
@@ -45,7 +47,8 @@ enum CashFlowCalculator {
         currency: String,
         recurring: [RecurringTransaction],
         loans: [Loan],
-        projects: [SavingsProject]
+        projects: [SavingsProject],
+        creditLines: [CreditLine] = []
     ) -> CashFlowSummary {
 
         // ── Income ────────────────────────────────────────────────────────
@@ -92,6 +95,21 @@ enum CashFlowCalculator {
         }
         let monthlyLoanPayments = loanLines.reduce(Decimal(0)) { $0 + $1.amount }
 
+        // ── Credit line minimum payments ──────────────────────────────────
+        // Exclude recurring transactions flagged as credit line payments
+        // (already counted here via the creditLines parameter).
+        let activeCreditLines = creditLines.filter { $0.isActive && $0.currency == currency }
+        let creditLineLines = activeCreditLines.compactMap { cl -> CashFlowLine? in
+            let minPay = cl.estimatedMinimumPayment
+            guard (minPay as NSDecimalNumber).doubleValue > 0 else { return nil }
+            return CashFlowLine(
+                label: cl.name,
+                sublabel: "Paiement minimum · \(cl.minimumPaymentType.labelFR)",
+                amount: minPay
+            )
+        }
+        let monthlyCreditLinePayments = creditLineLines.reduce(Decimal(0)) { $0 + $1.amount }
+
         // ── Projects allocation ───────────────────────────────────────────
         let activeProjects = projects.filter { $0.isActive && $0.currency == currency }
         let projectLines = activeProjects.compactMap { p -> CashFlowLine? in
@@ -104,19 +122,21 @@ enum CashFlowCalculator {
         }
         let monthlyAllocated = projectLines.reduce(Decimal(0)) { $0 + $1.amount }
 
-        let surplus = monthlyIncome - monthlyExpenses - monthlyLoanPayments
+        let surplus = monthlyIncome - monthlyExpenses - monthlyLoanPayments - monthlyCreditLinePayments
 
         return CashFlowSummary(
             currency: currency,
             monthlyIncome: monthlyIncome,
             monthlyExpenses: monthlyExpenses,
             monthlyLoanPayments: monthlyLoanPayments,
+            monthlyCreditLinePayments: monthlyCreditLinePayments,
             monthlySurplus: surplus,
             monthlyAllocated: monthlyAllocated,
             monthlyFree: surplus - monthlyAllocated,
             incomeLines: incomeLines,
             expenseLines: expenseLines,
             loanLines: loanLines,
+            creditLineLines: creditLineLines,
             projectLines: projectLines
         )
     }

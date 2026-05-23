@@ -16,6 +16,10 @@ struct DashboardView: View {
     @Query(sort: \Transaction.date, order: .reverse)
     private var allTransactions: [Transaction]
 
+    @Query(filter: #Predicate<CreditLine> { $0.isActive },
+           sort: \CreditLine.createdAt, order: .forward)
+    private var activeCreditLines: [CreditLine]
+
     @Query(filter: #Predicate<Loan> { $0.isActive },
            sort: \Loan.createdAt, order: .forward)
     private var activeLoans: [Loan]
@@ -137,6 +141,7 @@ struct DashboardView: View {
                 totalsSection
                 accountsCarousel
                 loanSection
+                creditLineSection
                 monthSummarySection
                 if let currency = mostCommonCurrency() {
                     BudgetDashboardSection(
@@ -265,6 +270,66 @@ struct DashboardView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
         .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    @ViewBuilder
+    private var creditLineSection: some View {
+        if !activeCreditLines.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Mes marges de crédit")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    NavigationLink("Tout voir") { CreditLinesView() }
+                        .font(.caption)
+                }
+                .padding(.horizontal)
+
+                VStack(spacing: 0) {
+                    ForEach(Array(activeCreditLines.prefix(3).enumerated()), id: \.element.id) { idx, cl in
+                        NavigationLink { CreditLineDetailView(creditLine: cl) } label: {
+                            HStack(spacing: 12) {
+                                ZStack {
+                                    Circle()
+                                        .stroke(Color(.tertiarySystemBackground), lineWidth: 3)
+                                        .frame(width: 38, height: 38)
+                                    Circle()
+                                        .trim(from: 0, to: CGFloat(cl.utilisationFraction))
+                                        .stroke(cl.utilisationFraction >= 0.9 ? Color.red : cl.utilisationFraction >= 0.7 ? Color.orange : Color.green,
+                                                style: StrokeStyle(lineWidth: 3, lineCap: .round))
+                                        .frame(width: 38, height: 38)
+                                        .rotationEffect(.degrees(-90))
+                                    Image(systemName: "creditcard.fill")
+                                        .font(.system(size: 11, weight: .semibold))
+                                        .foregroundStyle(.secondary)
+                                }
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(cl.name)
+                                        .font(.callout.weight(.medium)).lineLimit(1)
+                                    Text(String(format: "%.2f%% / an", (cl.annualInterestRate as NSDecimalNumber).doubleValue))
+                                        .font(.caption2).foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                VStack(alignment: .trailing, spacing: 2) {
+                                    Text(cl.currentBalance.formatted(asCurrency: cl.currency))
+                                        .font(.callout.weight(.semibold)).foregroundStyle(.red)
+                                    Text("/ \(cl.creditLimit.formatted(asCurrency: cl.currency))")
+                                        .font(.caption2).foregroundStyle(.secondary)
+                                }
+                            }
+                            .padding(.horizontal).padding(.vertical, 10)
+                        }
+                        .buttonStyle(.plain)
+                        if idx < min(activeCreditLines.count, 3) - 1 {
+                            Divider().padding(.leading, 62)
+                        }
+                    }
+                }
+                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal)
+            }
+        }
     }
 
     @ViewBuilder

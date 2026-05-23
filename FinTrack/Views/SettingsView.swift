@@ -24,6 +24,12 @@ struct SettingsView: View {
             Form {
                 Section("Données") {
                     NavigationLink {
+                        CreditLinesView()
+                    } label: {
+                        Label("Marges de crédit", systemImage: "creditcard.fill")
+                    }
+
+                    NavigationLink {
                         SavingsProjectsView()
                     } label: {
                         Label("Projets d'épargne", systemImage: "target")

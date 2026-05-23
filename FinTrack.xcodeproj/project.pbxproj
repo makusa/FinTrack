@@ -40,6 +40,12 @@
 		F4DCA360B6ACAA99F7307DAC /* CashFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D40FDCA06BF2AE15F1C2F41 /* CashFlowView.swift */; };
 		AE60CEFED9D0DD214526F2A5 /* SavingsProjectsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14B35D753C984C03593B1E14 /* SavingsProjectsView.swift */; };
 		D3132619822C0C4058E1003E /* AddEditSavingsProjectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0594AECB8C2D7DB539637464 /* AddEditSavingsProjectView.swift */; };
+		30D49F78C629D486133B32EA /* CreditLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFDACD9A3259A35308F6BC6C /* CreditLine.swift */; };
+		CFDF8BF2054547B463B99102 /* CreditLineInterestManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2DFC423EA38CCA94DF33868 /* CreditLineInterestManager.swift */; };
+		6BFFE1A86BA7279E283FD974 /* AddCreditLineEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76A183E86788833043A7F4DD /* AddCreditLineEntryView.swift */; };
+		682808AEF32512F27D8FB7C1 /* AddEditCreditLineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 693704C10FF0BF3B5D6DF6BD /* AddEditCreditLineView.swift */; };
+		51B74CD0991B998803F9E5C7 /* CreditLineDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 456056A2B099C049455F7F10 /* CreditLineDetailView.swift */; };
+		DDB2F3FECBB5936CA4DEE2C8 /* CreditLinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7145838E99C6BA90AEC4B3A8 /* CreditLinesView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -77,6 +83,12 @@
 		5D40FDCA06BF2AE15F1C2F41 /* CashFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CashFlowView.swift; sourceTree = "<group>"; };
 		14B35D753C984C03593B1E14 /* SavingsProjectsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsProjectsView.swift; sourceTree = "<group>"; };
 		0594AECB8C2D7DB539637464 /* AddEditSavingsProjectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditSavingsProjectView.swift; sourceTree = "<group>"; };
+		EFDACD9A3259A35308F6BC6C /* CreditLine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditLine.swift; sourceTree = "<group>"; };
+		E2DFC423EA38CCA94DF33868 /* CreditLineInterestManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditLineInterestManager.swift; sourceTree = "<group>"; };
+		76A183E86788833043A7F4DD /* AddCreditLineEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCreditLineEntryView.swift; sourceTree = "<group>"; };
+		693704C10FF0BF3B5D6DF6BD /* AddEditCreditLineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditCreditLineView.swift; sourceTree = "<group>"; };
+		456056A2B099C049455F7F10 /* CreditLineDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditLineDetailView.swift; sourceTree = "<group>"; };
+		7145838E99C6BA90AEC4B3A8 /* CreditLinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditLinesView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -86,6 +98,7 @@
 				D34E6F10D5FEAE7E5D0BD329 /* ColorPalette.swift */,
 				9D910816B5A699244FFADFE9 /* RecurringTransactionManager.swift */,
 				72EA414C4647414C1515F2B7 /* CashFlowCalculator.swift */,
+				E2DFC423EA38CCA94DF33868 /* CreditLineInterestManager.swift */,
 				407761AC420D582595A7D633 /* SeedData.swift */,
 			);
 			path = Utilities;
@@ -100,6 +113,10 @@
 				5D40FDCA06BF2AE15F1C2F41 /* CashFlowView.swift */,
 				14B35D753C984C03593B1E14 /* SavingsProjectsView.swift */,
 				0594AECB8C2D7DB539637464 /* AddEditSavingsProjectView.swift */,
+				76A183E86788833043A7F4DD /* AddCreditLineEntryView.swift */,
+				693704C10FF0BF3B5D6DF6BD /* AddEditCreditLineView.swift */,
+				456056A2B099C049455F7F10 /* CreditLineDetailView.swift */,
+				7145838E99C6BA90AEC4B3A8 /* CreditLinesView.swift */,
 				48FB8C0B8F9F61AFDAAE3CC8 /* AddEditLoanView.swift */,
 				42FE84BCE1DA47E72CDEFF11 /* LoanDetailView.swift */,
 				9DE24C75EEF2EB296CAEC7C6 /* LoansView.swift */,
@@ -146,6 +163,7 @@
 				D9176C3292D9569EDEF8512C /* RecurringTransaction.swift */,
 				A204CEC139DE3F9972A7105F /* Loan.swift */,
 				09E9D94757A025D488746867 /* SavingsProject.swift */,
+				EFDACD9A3259A35308F6BC6C /* CreditLine.swift */,
 				F1829FFD6EB0076039DC19BA /* Transaction.swift */,
 			);
 			path = Models;
@@ -239,6 +257,12 @@
 			buildActionMask = 2147483647;
 			files = (
 				F1F79896855354F2AE090AA5 /* Account.swift in Sources */,
+				30D49F78C629D486133B32EA /* CreditLine.swift in Sources */,
+				CFDF8BF2054547B463B99102 /* CreditLineInterestManager.swift in Sources */,
+				6BFFE1A86BA7279E283FD974 /* AddCreditLineEntryView.swift in Sources */,
+				682808AEF32512F27D8FB7C1 /* AddEditCreditLineView.swift in Sources */,
+				51B74CD0991B998803F9E5C7 /* CreditLineDetailView.swift in Sources */,
+				DDB2F3FECBB5936CA4DEE2C8 /* CreditLinesView.swift in Sources */,
 				FE3B8A1C888D722ABC7F5EFE /* SavingsProject.swift in Sources */,
 				27241ABC7410EE7C310C75F2 /* CashFlowCalculator.swift in Sources */,
 				38DAAD8E9452CF6C3582E97A /* BudgetDashboardSection.swift in Sources */,
