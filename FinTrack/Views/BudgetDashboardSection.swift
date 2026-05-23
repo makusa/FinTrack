@@ -28,6 +28,39 @@ struct BudgetDashboardSection: View {
            sort: \SavingsProject.createdAt, order: .forward)
     private var projects: [SavingsProject]
 
+    @Query(filter: #Predicate<Budget> { $0.isActive }, sort: \Budget.createdAt)
+    private var activeBudgets: [Budget]
+
+    @Query(sort: \Transaction.date, order: .reverse)
+    private var allTransactions: [Transaction]
+
+    private var budgetStatuses: [BudgetStatus] {
+        activeBudgets
+            .filter { $0.currency == currency }
+            .map { BudgetStatus(budget: $0, spent: BudgetCalculator.spent(for: $0, in: allTransactions)) }
+            .sorted { $0.fraction > $1.fraction }
+            .prefix(3)
+            .map { $0 }
+    }
+
+    @ViewBuilder
+    private var budgetSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(lang["budget.title"])
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.secondary)
+                Spacer()
+                NavigationLink(lang["action.seeAll"]) {
+                    BudgetsView()
+                }
+                .font(.caption)
+            }
+            .padding(.horizontal)
+            BudgetCard(statuses: budgetStatuses)
+        }
+    }
+
     private var summary: CashFlowSummary {
         CashFlowCalculator.summary(
             currency: currency,
@@ -48,6 +81,9 @@ struct BudgetDashboardSection: View {
             CashFlowCard(summary: summary)
             if !projects.isEmpty {
                 SavingsGoalsCard(projects: projects, currency: currency)
+            }
+            if !budgetStatuses.isEmpty {
+                budgetSection
             }
         }
     }
@@ -242,3 +278,63 @@ struct SavingsGoalsCard: View {
         }
     }
 }
+
+// MARK: - BudgetCard (dashboard)
+
+struct BudgetCard: View {
+    @Environment(LanguageManager.self) private var lang
+
+    let statuses: [BudgetStatus]   // pre-filtered, max 3
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(Array(statuses.enumerated()), id: \.element.id) { idx, status in
+                budgetRow(status)
+                if idx < statuses.count - 1 {
+                    Divider().padding(.leading, 48)
+                }
+            }
+        }
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal)
+    }
+
+    private func budgetRow(_ status: BudgetStatus) -> some View {
+        let budget = status.budget
+        return HStack(spacing: 10) {
+            ZStack {
+                Circle()
+                    .fill(Color(hex: budget.colorHex).opacity(0.15))
+                    .frame(width: 32, height: 32)
+                Image(systemName: budget.iconSystemName)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color(hex: budget.colorHex))
+            }
+
+            VStack(alignment: .leading, spacing: 4) {
+                HStack {
+                    Text(budget.name)
+                        .font(.callout.weight(.medium))
+                        .lineLimit(1)
+                    Spacer()
+                    Text("\(status.spent.formatted(asCurrency: budget.currency)) / \(budget.limitAmount.formatted(asCurrency: budget.currency))")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(status.progressColor)
+                }
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(Color(.systemGray5)).frame(height: 5)
+                        RoundedRectangle(cornerRadius: 3)
+                            .fill(status.progressColor)
+                            .frame(width: min(geo.size.width * CGFloat(min(status.fraction, 1.0)), geo.size.width), height: 5)
+                    }
+                }
+                .frame(height: 5)
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+    }
+}
+

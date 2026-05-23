@@ -61,6 +61,10 @@
 		68F3D04A333D2D5EDB205F04 /* SetupAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C7CEFB4A6B79D138F46FB7 /* SetupAccountView.swift */; };
 		BC7733275899CA03991394EE /* LockScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 403A0459018CFBCADE61C6A9 /* LockScreenView.swift */; };
 		9183DA68EC21250E54CF158E /* SecuritySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAA915273C2BA2663313592B /* SecuritySettingsView.swift */; };
+		362BA39F7593D58F36CB132C /* Budget.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6DAFB438F747F3A4E7B1F0A /* Budget.swift */; };
+		A3FAB620E2DD6DAFA275655D /* AddEditBudgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C639C91C08571101266F200 /* AddEditBudgetView.swift */; };
+		50AAFAB6085C0466336F9CC8 /* BudgetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8293270CCA58D9E6E26D92B7 /* BudgetsView.swift */; };
+		9589B7DCD27F8206748147F1 /* BudgetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F17D78150717C6E9E431672 /* BudgetDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -120,6 +124,10 @@
 		61C7CEFB4A6B79D138F46FB7 /* SetupAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupAccountView.swift; sourceTree = "<group>"; };
 		403A0459018CFBCADE61C6A9 /* LockScreenView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockScreenView.swift; sourceTree = "<group>"; };
 		FAA915273C2BA2663313592B /* SecuritySettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecuritySettingsView.swift; sourceTree = "<group>"; };
+		C6DAFB438F747F3A4E7B1F0A /* Budget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Budget.swift; sourceTree = "<group>"; };
+		7C639C91C08571101266F200 /* AddEditBudgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditBudgetView.swift; sourceTree = "<group>"; };
+		8293270CCA58D9E6E26D92B7 /* BudgetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetsView.swift; sourceTree = "<group>"; };
+		4F17D78150717C6E9E431672 /* BudgetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -154,6 +162,9 @@
 				42FE84BCE1DA47E72CDEFF11 /* LoanDetailView.swift */,
 				9DE24C75EEF2EB296CAEC7C6 /* LoansView.swift */,
 				67FAEBACAD08ED3AFEEB2279 /* AccountsView.swift */,
+				7C639C91C08571101266F200 /* AddEditBudgetView.swift */,
+				8293270CCA58D9E6E26D92B7 /* BudgetsView.swift */,
+				4F17D78150717C6E9E431672 /* BudgetDetailView.swift */,
 				5AA91C436EA64527214D120E /* AddEditAccountView.swift */,
 				87196A76F8540EA9918B575D /* AddEditRecurringTransactionView.swift */,
 				D0A00CBB4D610338F0B810C6 /* AddEditTransactionView.swift */,
@@ -197,6 +208,7 @@
 			isa = PBXGroup;
 			children = (
 				7F69296D8AA5AFFC56CE2664 /* Account.swift */,
+				C6DAFB438F747F3A4E7B1F0A /* Budget.swift */,
 				D95AE7FDBD46765CF2C459EA /* LoanPrepayment.swift */,
 				F053C63C61980B18AA6263E4 /* Category.swift */,
 				A343B877C383A2628511AF5E /* Currency.swift */,
@@ -354,6 +366,11 @@
 				167DD8D94BD2C94A5D09FCC6 /* RootView.swift in Sources */,
 				17D35A490B812757B7DA1041 /* SeedData.swift in Sources */,
 				FEBFF9935E3B84CAFF02F78B /* SettingsView.swift in Sources */,
+				362BA39F7593D58F36CB132C /* Budget.swift in Sources */,
+				A3FAB620E2DD6DAFA275655D /* AddEditBudgetView.swift in Sources */,
+				50AAFAB6085C0466336F9CC8 /* BudgetsView.swift in Sources */,
+				9589B7DCD27F8206748147F1 /* BudgetDetailView.swift in Sources */,
+
 				8561D93BA3DC5F3724D6D4E4 /* KeychainHelper.swift in Sources */,
 				D1B8F88A1E4E922C528CA93D /* AppLockManager.swift in Sources */,
 				106920A3035FA69C37399ECA /* PINPadView.swift in Sources */,

@@ -17,7 +17,8 @@ struct FinTrackApp: App {
         let schema = Schema([Account.self, Transaction.self, Category.self,
                              RecurringTransaction.self, Loan.self, SavingsProject.self,
                              CreditLine.self, CreditLineEntry.self,
-                             LoanPrepayment.self])
+                             LoanPrepayment.self,
+                             Budget.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         let modelContainer: ModelContainer
 

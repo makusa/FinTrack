@@ -48,6 +48,9 @@ struct RootView: View {
             TransactionsView()
                 .tabItem { Label(lang["tab.transactions"], systemImage: "list.bullet.rectangle") }
 
+            BudgetsView()
+                .tabItem { Label(lang["tab.budgets"], systemImage: "chart.bar.xaxis") }
+
             SettingsView()
                 .tabItem { Label(lang["tab.settings"], systemImage: "gearshape.fill") }
         }

@@ -372,6 +372,36 @@ enum LocalizedStrings {
 
 
 
+
+        // MARK: - Budgets
+        "tab.budgets":                   ["fr": "Budgets",                              "en": "Budgets",                        "es": "Presupuestos",                  "pt": "Orçamentos"],
+        "budget.title":                  ["fr": "Budgets",                              "en": "Budgets",                        "es": "Presupuestos",                  "pt": "Orçamentos"],
+        "budget.create":                 ["fr": "Nouveau budget",                       "en": "New Budget",                     "es": "Nuevo presupuesto",             "pt": "Novo orçamento"],
+        "budget.edit":                   ["fr": "Modifier le budget",                   "en": "Edit Budget",                    "es": "Editar presupuesto",            "pt": "Editar orçamento"],
+        "budget.add":                    ["fr": "Ajouter un budget",                    "en": "Add Budget",                     "es": "Añadir presupuesto",            "pt": "Adicionar orçamento"],
+        "budget.delete":                 ["fr": "Supprimer ce budget",                  "en": "Delete Budget",                  "es": "Eliminar presupuesto",          "pt": "Excluir orçamento"],
+        "budget.limit":                  ["fr": "Limite",                               "en": "Limit",                          "es": "Límite",                        "pt": "Limite"],
+        "budget.period":                 ["fr": "Période",                              "en": "Period",                         "es": "Período",                       "pt": "Período"],
+        "budget.period.weekly":          ["fr": "Hebdomadaire",                         "en": "Weekly",                         "es": "Semanal",                       "pt": "Semanal"],
+        "budget.period.monthly":         ["fr": "Mensuel",                              "en": "Monthly",                        "es": "Mensual",                       "pt": "Mensal"],
+        "budget.period.yearly":          ["fr": "Annuel",                               "en": "Yearly",                         "es": "Anual",                         "pt": "Anual"],
+        "budget.period.weekly.short":    ["fr": "/sem.",                                "en": "/wk",                            "es": "/sem.",                         "pt": "/sem."],
+        "budget.period.monthly.short":   ["fr": "/mois",                               "en": "/mo",                            "es": "/mes",                          "pt": "/mês"],
+        "budget.period.yearly.short":    ["fr": "/an",                                  "en": "/yr",                            "es": "/año",                          "pt": "/ano"],
+        "budget.name.placeholder":       ["fr": "Ex. Alimentation, Loisirs…",          "en": "e.g. Food, Entertainment…",      "es": "ej. Alimentación, Ocio…",       "pt": "ex. Alimentação, Lazer…"],
+        "budget.category.all":           ["fr": "Toutes les dépenses",                 "en": "All Expenses",                   "es": "Todos los gastos",              "pt": "Todas as despesas"],
+        "budget.category.footer":        ["fr": "Laisser vide pour couvrir toutes les dépenses dans cette devise.", "en": "Leave empty to cover all expenses in this currency.", "es": "Dejar vacío para cubrir todos los gastos en esta moneda.", "pt": "Deixar vazio para cobrir todas as despesas nessa moeda."],
+        "budget.active":                 ["fr": "Budgets actifs",                       "en": "Active Budgets",                 "es": "Presupuestos activos",          "pt": "Orçamentos ativos"],
+        "budget.archived":               ["fr": "Archivés (%d)",                        "en": "Archived (%d)",                  "es": "Archivados (%d)",               "pt": "Arquivados (%d)"],
+        "budget.empty.title":            ["fr": "Aucun budget",                         "en": "No Budgets",                     "es": "Sin presupuestos",              "pt": "Sem orçamentos"],
+        "budget.empty.sub":              ["fr": "Définissez des limites de dépenses par catégorie pour suivre votre consommation en temps réel.", "en": "Set spending limits by category to track your consumption in real time.", "es": "Define límites de gasto por categoría para seguir tu consumo en tiempo real.", "pt": "Defina limites de gastos por categoria para acompanhar seu consumo em tempo real."],
+        "budget.spent":                  ["fr": "Dépensé",                              "en": "Spent",                          "es": "Gastado",                       "pt": "Gasto"],
+        "budget.remaining":              ["fr": "Restant",                              "en": "Remaining",                      "es": "Restante",                      "pt": "Restante"],
+        "budget.over":                   ["fr": "Dépassé de",                           "en": "Over by",                        "es": "Excedido en",                   "pt": "Excedido em"],
+        "budget.over.banner":            ["fr": "%d budget(s) dépassé(s) ce mois-ci",  "en": "%d budget(s) exceeded",          "es": "%d presupuesto(s) excedido(s)", "pt": "%d orçamento(s) excedido(s)"],
+        "budget.history":                ["fr": "Historique (6 périodes)",              "en": "History (6 periods)",            "es": "Historial (6 períodos)",        "pt": "Histórico (6 períodos)"],
+        "budget.period.transactions":    ["fr": "Transactions de la période",           "en": "Period Transactions",            "es": "Transacciones del período",     "pt": "Transações do período"],
+
         // MARK: - Security / Lock
         "security.title":               ["fr": "Sécurité",                              "en": "Security",                           "es": "Seguridad",                         "pt": "Segurança"],
         "security.account":             ["fr": "Compte",                                "en": "Account",                            "es": "Cuenta",                            "pt": "Conta"],
