@@ -6,26 +6,28 @@
 import SwiftUI
 
 struct RootView: View {
+    @Environment(LanguageManager.self) private var lang
+
     var body: some View {
         TabView {
             DashboardView()
                 .tabItem {
-                    Label("Tableau de bord", systemImage: "chart.pie.fill")
+                    Label(lang["tab.dashboard"], systemImage: "chart.pie.fill")
                 }
 
             AccountsView()
                 .tabItem {
-                    Label("Comptes", systemImage: "building.columns.fill")
+                    Label(lang["tab.accounts"], systemImage: "building.columns.fill")
                 }
 
             TransactionsView()
                 .tabItem {
-                    Label("Transactions", systemImage: "list.bullet.rectangle")
+                    Label(lang["tab.transactions"], systemImage: "list.bullet.rectangle")
                 }
 
             SettingsView()
                 .tabItem {
-                    Label("Réglages", systemImage: "gearshape.fill")
+                    Label(lang["tab.settings"], systemImage: "gearshape.fill")
                 }
         }
     }

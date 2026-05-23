@@ -22,25 +22,25 @@ enum RecurrenceFrequency: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var labelFR: String {
+    var label: String {
         switch self {
-        case .daily:     return "Quotidien"
-        case .weekly:    return "Hebdomadaire"
-        case .biweekly:  return "Toutes les 2 semaines"
-        case .monthly:   return "Mensuel"
-        case .quarterly: return "Trimestriel"
-        case .yearly:    return "Annuel"
+        case .daily:     return LanguageManager.shared["recurring.freq.daily"]
+        case .weekly:    return LanguageManager.shared["recurring.freq.weekly"]
+        case .biweekly:  return LanguageManager.shared["recurring.freq.biweekly"]
+        case .monthly:   return LanguageManager.shared["recurring.freq.monthly"]
+        case .quarterly: return LanguageManager.shared["recurring.freq.quarterly"]
+        case .yearly:    return LanguageManager.shared["recurring.freq.yearly"]
         }
     }
 
-    var shortLabelFR: String {
+    var shortLabel: String {
         switch self {
-        case .daily:     return "/ jour"
-        case .weekly:    return "/ semaine"
-        case .biweekly:  return "/ 2 sem."
-        case .monthly:   return "/ mois"
-        case .quarterly: return "/ trim."
-        case .yearly:    return "/ an"
+        case .daily:     return LanguageManager.shared["recurring.freq.s.daily"]
+        case .weekly:    return LanguageManager.shared["recurring.freq.s.weekly"]
+        case .biweekly:  return LanguageManager.shared["recurring.freq.s.biweekly"]
+        case .monthly:   return LanguageManager.shared["recurring.freq.s.monthly"]
+        case .quarterly: return LanguageManager.shared["recurring.freq.s.quarterly"]
+        case .yearly:    return LanguageManager.shared["recurring.freq.s.yearly"]
         }
     }
 
@@ -123,7 +123,7 @@ final class RecurringTransaction {
         if !title.trimmingCharacters(in: .whitespaces).isEmpty { return title }
         if let p = payee, !p.isEmpty { return p }
         if let c = category { return c.name }
-        return type == .income ? "Revenu récurrent" : "Dépense récurrente"
+        return type == .income ? LanguageManager.shared["tx.type.income"] : LanguageManager.shared["tx.type.expense"]
     }
 
     /// Human-readable relative label for nextDueDate.

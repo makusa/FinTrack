@@ -15,10 +15,10 @@ enum TransactionType: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var labelFR: String {
+    var label: String {
         switch self {
-        case .income:  return "Revenu"
-        case .expense: return "Dépense"
+        case .income:  return LanguageManager.shared["tx.type.income"]
+        case .expense: return LanguageManager.shared["tx.type.expense"]
         }
     }
 

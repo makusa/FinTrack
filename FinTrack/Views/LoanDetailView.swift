@@ -8,6 +8,7 @@ import Charts
 
 struct LoanDetailView: View {
     @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
     @Bindable var loan: Loan
 
     @State private var showEdit = false
@@ -58,13 +59,13 @@ struct LoanDetailView: View {
                         .font(.largeTitle.weight(.bold))
                         .minimumScaleFactor(0.6)
                         .lineLimit(1)
-                    Text("Solde restant")
+                    Text(lang["label.balance"])
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
 
                 // Lender + type
-                Text("\(loan.lenderName.isEmpty ? loan.type.labelFR : loan.lenderName) · \(loan.type.labelFR)")
+                Text("\(loan.lenderName.isEmpty ? loan.type.label : loan.lenderName) · \(loan.type.label)")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
@@ -91,32 +92,32 @@ struct LoanDetailView: View {
     }
 
     private var statusSection: some View {
-        Section("Situation actuelle") {
-            loanRow("Capital initial",
+        Section(lang["loan.situation"]) {
+            loanRow(lang["loan.originalPrincipal"],
                     value: Decimal(calc.principal).formatted(asCurrency: loan.currency))
-            loanRow("Capital remboursé",
+            loanRow(lang["loan.principalPaid"],
                     value: Decimal(calc.principalPaid).formatted(asCurrency: loan.currency),
                     color: .green)
-            loanRow("Intérêts payés à ce jour",
+            loanRow(lang["loan.interestPaid"],
                     value: Decimal(calc.interestPaidToDate).formatted(asCurrency: loan.currency),
                     color: .orange)
-            loanRow("Versements effectués",
+            loanRow(lang["loan.paymentsMade"],
                     value: "\(calc.paymentsElapsedToday) / \(calc.effectivePayments)")
-            loanRow("Versements restants",
+            loanRow(lang["loan.paymentsRemaining"],
                     value: "\(calc.paymentsRemaining)",
                     emphasis: true)
         }
     }
 
     private var nextPaymentSection: some View {
-        Section("Prochain versement") {
+        Section(lang["loan.nextPayment"]) {
             let elapsed = calc.paymentsElapsedToday
             let nextEntry = calc.schedule(from: elapsed + 1, to: elapsed + 1).first
 
             if let entry = nextEntry {
-                loanRow("Date",
+                loanRow(lang["label.date"],
                         value: entry.date.formatted(date: .long, time: .omitted))
-                loanRow("Montant total",
+                loanRow(lang["label.amount"],
                         value: Decimal(entry.payment).formatted(asCurrency: loan.currency),
                         emphasis: true)
                 loanRow("dont intérêts",
@@ -126,20 +127,20 @@ struct LoanDetailView: View {
                         value: Decimal(entry.principal).formatted(asCurrency: loan.currency),
                         color: .green)
             } else {
-                Text("Prêt entièrement remboursé.")
+                Text(lang["loan.paidOff"])
                     .foregroundStyle(.secondary)
             }
         }
     }
 
     private var progressSection: some View {
-        Section("Coût total") {
-            loanRow("Montant emprunté",
+        Section(lang["loan.totalCost"]) {
+            loanRow(lang["loan.principal"],
                     value: Decimal(calc.principal).formatted(asCurrency: loan.currency))
-            loanRow("Total des intérêts",
+            loanRow(lang["loan.totalInterest"],
                     value: Decimal(calc.totalInterest).formatted(asCurrency: loan.currency),
                     color: .orange)
-            loanRow("Coût total du prêt",
+            loanRow(lang["loan.totalPaid"],
                     value: Decimal(calc.totalAmountPaid).formatted(asCurrency: loan.currency),
                     emphasis: true)
 
@@ -147,7 +148,7 @@ struct LoanDetailView: View {
             let interestRatio = calc.principal > 0
                 ? calc.totalInterest / calc.totalAmountPaid : 0
             VStack(alignment: .leading, spacing: 4) {
-                Text("Répartition capital / intérêts")
+                Text(lang["loan.progressSplit"])
                     .font(.caption)
                     .foregroundStyle(.secondary)
                 GeometryReader { geo in
@@ -176,13 +177,13 @@ struct LoanDetailView: View {
 
         return Section {
             if upcoming.isEmpty {
-                Text("Prêt entièrement remboursé.")
+                Text(lang["loan.paidOff"])
                     .foregroundStyle(.secondary)
             } else {
                 ForEach(upcoming) { entry in
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Versement #\(entry.paymentNumber)")
+                            Text(lang.f("loan.paymentNum", entry.paymentNumber))
                                 .font(.caption.weight(.medium))
                             Text(entry.date.formatted(date: .abbreviated, time: .omitted))
                                 .font(.caption2)
@@ -205,13 +206,13 @@ struct LoanDetailView: View {
                 }
 
                 Button { showFullSchedule = true } label: {
-                    Text("Voir le tableau complet (\(calc.paymentsRemaining) versements)")
+                    Text(lang.f("loan.fullSchedule", calc.paymentsRemaining))
                         .font(.callout)
                         .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
         } header: {
-            Text("Prochains versements (12 mois)")
+            Text(lang["loan.upcoming12"])
         }
     }
 
@@ -285,11 +286,11 @@ struct FullAmortizationView: View {
                 }
                 .padding(.vertical, 2)
             }
-            .navigationTitle("Tableau d'amortissement")
+            .navigationTitle(lang["loan.amortization"])
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Fermer") { dismiss() }
+                    Button(lang["action.close"]) { dismiss() }
                 }
             }
         }

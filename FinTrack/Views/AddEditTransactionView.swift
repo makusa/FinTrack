@@ -13,6 +13,7 @@ enum TransactionEditorMode {
 
 struct AddEditTransactionView: View {
     @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
     @Environment(\.dismiss) private var dismiss
 
     let mode: TransactionEditorMode
@@ -49,7 +50,7 @@ struct AddEditTransactionView: View {
     }
 
     private var navTitle: String {
-        isEditing ? "Modifier la transaction" : "Nouvelle transaction"
+        isEditing ? lang["tx.edit"] : lang["tx.create"]
     }
 
     private var currencyCode: String {
@@ -79,7 +80,7 @@ struct AddEditTransactionView: View {
                     Button(role: .destructive) {
                         showDeleteConfirm = true
                     } label: {
-                        Label("Supprimer la transaction", systemImage: "trash")
+                        Label(lang["action.delete"], systemImage: "trash")
                     }
                 }
             }
@@ -88,10 +89,10 @@ struct AddEditTransactionView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
-                Button("Annuler") { dismiss() }
+                Button(lang["action.cancel"]) { dismiss() }
             }
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Enregistrer") { save() }
+                Button(lang["action.save"]) { save() }
                     .disabled(!canSave)
                     .fontWeight(.semibold)
             }
@@ -103,10 +104,10 @@ struct AddEditTransactionView: View {
                 selected: $selectedCategory
             )
         }
-        .confirmationDialog("Supprimer cette transaction ?",
+        .confirmationDialog(lang["tx.deletePrompt"],
                             isPresented: $showDeleteConfirm, titleVisibility: .visible) {
-            Button("Supprimer", role: .destructive) { deleteIfEditing() }
-            Button("Annuler", role: .cancel) {}
+            Button(lang["action.delete"], role: .destructive) { deleteIfEditing() }
+            Button(lang["action.cancel"], role: .cancel) {}
         }
         .onAppear(perform: setupInitialValues)
     }
@@ -139,8 +140,8 @@ struct AddEditTransactionView: View {
     private var typeSection: some View {
         Section {
             Picker("Type", selection: $type) {
-                Text("Dépense").tag(TransactionType.expense)
-                Text("Revenu").tag(TransactionType.income)
+                Text(lang["tx.type.expense"]).tag(TransactionType.expense)
+                Text(lang["tx.type.income"]).tag(TransactionType.income)
             }
             .pickerStyle(.segmented)
             .onChange(of: type) { _, _ in
@@ -153,13 +154,13 @@ struct AddEditTransactionView: View {
     }
 
     private var accountSection: some View {
-        Section("Compte") {
+        Section(lang["label.account"]) {
             if accounts.isEmpty {
-                Text("Aucun compte. Créez-en un d'abord.")
+                Text(lang["label.account"])
                     .foregroundStyle(.secondary)
             } else {
-                Picker("Compte", selection: $selectedAccount) {
-                    Text("Choisir…").tag(Account?.none)
+                Picker(lang["label.account"], selection: $selectedAccount) {
+                    Text(lang["label.none"] + "…").tag(Account?.none)
                     ForEach(accounts) { account in
                         HStack {
                             Image(systemName: account.iconSystemName)
@@ -176,7 +177,7 @@ struct AddEditTransactionView: View {
     }
 
     private var categorySection: some View {
-        Section("Catégorie") {
+        Section(lang["label.category"]) {
             Button {
                 showCategoryPicker = true
             } label: {
@@ -195,7 +196,7 @@ struct AddEditTransactionView: View {
                     } else {
                         Image(systemName: "tag")
                             .foregroundStyle(.secondary)
-                        Text("Aucune catégorie")
+                        Text(lang["tx.noCategory"])
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
@@ -209,12 +210,12 @@ struct AddEditTransactionView: View {
     }
 
     private var detailsSection: some View {
-        Section("Détails") {
-            DatePicker("Date", selection: $date, displayedComponents: .date)
-            TextField(type == .income ? "Source (employeur, client…)"
-                                       : "Bénéficiaire (commerce, personne…)",
+        Section(lang["label.details"]) {
+            DatePicker(lang["label.date"], selection: $date, displayedComponents: .date)
+            TextField(type == .income ? lang["tx.payeeIncome"]
+                                       : lang["tx.payeeExpense"],
                       text: $payee)
-            TextField("Note", text: $note, axis: .vertical)
+            TextField(lang["label.note"], text: $note, axis: .vertical)
                 .lineLimit(1...3)
         }
     }
@@ -351,7 +352,7 @@ private struct CategoryPickerSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Fermer") { dismiss() }
+                    Button(LanguageManager.shared["action.close"]) { dismiss() }
                 }
             }
         }

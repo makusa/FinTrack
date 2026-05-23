@@ -80,7 +80,7 @@ struct CashFlowView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Surplus mensuel estimé")
                             .font(.headline)
-                        Text("Avant allocation aux projets")
+                        Text(lang["cashflow.surplus.before"])
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
@@ -92,7 +92,7 @@ struct CashFlowView: View {
                 .padding(.vertical, 4)
 
                 if !summary.isPositive {
-                    Label("Attention : les sorties dépassent les entrées ce mois-ci.",
+                    Label(lang["cashflow.warning.deficit"],
                           systemImage: "exclamationmark.triangle.fill")
                         .font(.caption)
                         .foregroundStyle(.orange)
@@ -131,12 +131,12 @@ struct CashFlowView: View {
 
             // ── Note ─────────────────────────────────────────────────────────
             Section {
-                Text("Basé uniquement sur vos transactions et prêts récurrents. Les dépenses non planifiées ne sont pas incluses.")
+                Text(lang["cashflow.note"])
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
         }
-        .navigationTitle("Flux mensuel")
+        .navigationTitle(lang["cashflow.title"])
         .navigationBarTitleDisplayMode(.inline)
     }
 

@@ -7,6 +7,7 @@ import SwiftUI
 
 struct AddCreditLineEntryView: View {
     @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
     @Environment(\.dismiss)      private var dismiss
 
     let creditLine: CreditLine
@@ -45,8 +46,8 @@ struct AddCreditLineEntryView: View {
                 // Type selector (draw or repayment only — interest is auto)
                 Section {
                     Picker("Type", selection: $entryType) {
-                        Text("Retrait").tag(CreditLineEntryType.draw)
-                        Text("Remboursement").tag(CreditLineEntryType.repayment)
+                        Text(lang["cl.entry.draw"]).tag(CreditLineEntryType.draw)
+                        Text(lang["cl.entry.repayment"]).tag(CreditLineEntryType.repayment)
                     }
                     .pickerStyle(.segmented)
                 }
@@ -71,27 +72,27 @@ struct AddCreditLineEntryView: View {
                 }
 
                 // Context
-                Section("Détails") {
-                    DatePicker("Date", selection: $date, displayedComponents: .date)
-                    TextField("Note (ex. achat matériel, remboursement partiel)", text: $note, axis: .vertical)
+                Section(lang["label.details"]) {
+                    DatePicker(lang["label.date"], selection: $date, displayedComponents: .date)
+                    TextField(lang["label.note"], text: $note, axis: .vertical)
                         .lineLimit(1...3)
                 }
 
                 // Balances after operation (live preview)
                 if let amt = amount, amt > 0 {
-                    Section("Aperçu après opération") {
+                    Section(lang["cl.preview"]) {
                         let newBalance = entryType == .draw
                             ? creditLine.currentBalance + amt
                             : max(0, creditLine.currentBalance - amt)
                         let newAvailable = max(0, creditLine.creditLimit - newBalance)
                         HStack {
-                            Text("Solde utilisé").foregroundStyle(.secondary)
+                            Text(lang["cl.balanceUsed"]).foregroundStyle(.secondary)
                             Spacer()
                             Text(newBalance.formatted(asCurrency: creditLine.currency))
                                 .foregroundStyle(newBalance > creditLine.creditLimit ? .red : .primary)
                         }
                         HStack {
-                            Text("Disponible").foregroundStyle(.secondary)
+                            Text(lang["cl.available"]).foregroundStyle(.secondary)
                             Spacer()
                             Text(newAvailable.formatted(asCurrency: creditLine.currency))
                                 .foregroundStyle(.green)
@@ -99,12 +100,12 @@ struct AddCreditLineEntryView: View {
                     }
                 }
             }
-            .navigationTitle(entryType == .draw ? "Nouveau retrait" : "Remboursement")
+            .navigationTitle(entryType == .draw ? lang["cl.newDraw"] : lang["cl.newRepayment"])
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading)  { Button("Annuler") { dismiss() } }
+                ToolbarItem(placement: .topBarLeading)  { Button(lang["action.cancel"]) { dismiss() } }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Enregistrer") { save() }
+                    Button(lang["action.save"]) { save() }
                         .disabled(!canSave).fontWeight(.semibold)
                 }
             }

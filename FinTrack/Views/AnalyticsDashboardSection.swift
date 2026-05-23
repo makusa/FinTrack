@@ -27,7 +27,7 @@ struct AnalyticsDashboardSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Analyse & Projection")
+            Text(lang["analytics.title"])
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
                 .padding(.horizontal)
@@ -224,7 +224,7 @@ struct BalanceProjectionCard: View {
             // ── Header ─────────────────────────────────────────────────────
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Projection de solde")
+                    Text(lang["analytics.balanceProjection"])
                         .font(.subheadline.weight(.semibold))
                     Text(currency)
                         .font(.caption2)
@@ -305,17 +305,17 @@ struct BalanceProjectionCard: View {
 
                 // Zero baseline
                 if willNegative {
-                    RuleMark(y: .value("Zéro", 0))
+                    RuleMark(y: .value(lang["analytics.zero"], 0))
                         .foregroundStyle(.red.opacity(0.4))
                         .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 3]))
                 }
 
                 // Today marker
-                RuleMark(x: .value("Auj.", Calendar.current.startOfDay(for: .now)))
+                RuleMark(x: .value(lang["analytics.todayShort"], Calendar.current.startOfDay(for: .now)))
                     .foregroundStyle(.secondary.opacity(0.4))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [3, 3]))
                     .annotation(position: .top, alignment: .center) {
-                        Text("Auj.")
+                        Text(lang["analytics.todayShort"])
                             .font(.system(size: 9))
                             .foregroundStyle(.secondary)
                     }
@@ -391,7 +391,7 @@ struct BalanceProjectionCard: View {
             HStack(spacing: 16) {
                 HStack(spacing: 5) {
                     Rectangle().fill(Color.accentColor).frame(width: 16, height: 2.5)
-                    Text("Réel").font(.caption2).foregroundStyle(.secondary)
+                    Text(lang["analytics.real"]).font(.caption2).foregroundStyle(.secondary)
                 }
                 HStack(spacing: 5) {
                     HStack(spacing: 3) {
@@ -399,10 +399,10 @@ struct BalanceProjectionCard: View {
                             Rectangle().fill(Color.teal).frame(width: 5, height: 2)
                         }
                     }
-                    Text("Projection").font(.caption2).foregroundStyle(.secondary)
+                    Text(lang["analytics.projection"]).font(.caption2).foregroundStyle(.secondary)
                 }
                 Spacer()
-                Text("Appuyez et glissez pour explorer")
+                Text(lang["analytics.scrubHint"])
                     .font(.caption2)
                     .foregroundStyle(.tertiary)
             }
@@ -488,7 +488,7 @@ struct IncomeExpenseCard: View {
             // ── Header ─────────────────────────────────────────────────────
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Revenus vs Dépenses")
+                    Text(lang["analytics.incomeExpense"])
                         .font(.subheadline.weight(.semibold))
                     Text(currency)
                         .font(.caption2).foregroundStyle(.secondary)
@@ -591,7 +591,7 @@ struct IncomeExpenseCard: View {
                     legendDot(.green, "Revenus")
                     legendDot(.red,   "Dépenses")
                     Spacer()
-                    Text("Touchez une barre")
+                    Text(lang["analytics.tapBar"])
                         .font(.caption2).foregroundStyle(.tertiary)
                 }
             }
@@ -667,7 +667,7 @@ struct CategoryBreakdownCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Répartition des dépenses")
+                Text(lang["analytics.categoryBreakdown"])
                     .font(.subheadline.weight(.semibold))
                 Spacer()
                 Text("Ce mois · \(currency)")

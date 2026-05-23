@@ -8,6 +8,7 @@ import SwiftData
 
 struct RecurrencesView: View {
     @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
 
     @Query(sort: \RecurringTransaction.nextDueDate, order: .forward)
     private var allRules: [RecurringTransaction]
@@ -28,7 +29,7 @@ struct RecurrencesView: View {
                 emptyState
             } else {
                 if !activeRules.isEmpty {
-                    Section("Actives (\(activeRules.count))") {
+                    Section(lang.f("recurring.active", activeRules.count)) {
                         ForEach(activeRules) { rule in
                             NavigationLink {
                                 AddEditRecurringTransactionView(mode: .edit(rule))
@@ -39,12 +40,12 @@ struct RecurrencesView: View {
                                 Button(role: .destructive) {
                                     delete(rule)
                                 } label: {
-                                    Label("Supprimer", systemImage: "trash")
+                                    Label(lang["action.delete"], systemImage: "trash")
                                 }
                                 Button {
                                     toggleActive(rule)
                                 } label: {
-                                    Label("Mettre en pause", systemImage: "pause.circle")
+                                    Label(lang["action.pause"], systemImage: "pause.circle")
                                 }
                                 .tint(.orange)
                             }
@@ -52,7 +53,7 @@ struct RecurrencesView: View {
                                 Button {
                                     RecurringTransactionManager.postNow(rule, context: context)
                                 } label: {
-                                    Label("Générer maintenant", systemImage: "bolt.fill")
+                                    Label(lang["action.generateNow"], systemImage: "bolt.fill")
                                 }
                                 .tint(.blue)
                             }
@@ -74,18 +75,18 @@ struct RecurrencesView: View {
                                     Button(role: .destructive) {
                                         delete(rule)
                                     } label: {
-                                        Label("Supprimer", systemImage: "trash")
+                                        Label(lang["action.delete"], systemImage: "trash")
                                     }
                                     Button {
                                         toggleActive(rule)
                                     } label: {
-                                        Label("Réactiver", systemImage: "play.circle")
+                                        Label(lang["action.resume"], systemImage: "play.circle")
                                     }
                                     .tint(.green)
                                 }
                             }
                         } label: {
-                            Text("En pause (\(inactiveRules.count))")
+                            Text(lang.f("recurring.paused", inactiveRules.count))
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
@@ -93,7 +94,7 @@ struct RecurrencesView: View {
                 }
             }
         }
-        .navigationTitle("Récurrences")
+        .navigationTitle(lang["recurring.title"])
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -116,9 +117,9 @@ struct RecurrencesView: View {
                 .font(.system(size: 44))
                 .foregroundStyle(.tint)
                 .padding(.top, 32)
-            Text("Aucune récurrence")
+            Text(lang["recurring.empty.title"])
                 .font(.headline)
-            Text("Ajoutez votre salaire, vos abonnements ou tout paiement régulier. FinTrack les enregistrera automatiquement à chaque échéance.")
+            Text(lang["recurring.empty.sub"])
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -180,7 +181,7 @@ struct RecurringTransactionRow: View {
                     .lineLimit(1)
                 HStack(spacing: 6) {
                     // Frequency badge
-                    Text(rule.frequency.labelFR)
+                    Text(rule.frequency.label)
                         .font(.caption2.weight(.medium))
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)

@@ -25,13 +25,13 @@ enum LoanType: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var labelFR: String {
+    var label: String {
         switch self {
-        case .mortgage: return "Hypothèque"
-        case .auto:     return "Prêt automobile"
-        case .personal: return "Prêt personnel"
-        case .student:  return "Prêt étudiant"
-        case .other:    return "Autre"
+        case .mortgage: return LanguageManager.shared["loan.type.mortgage"]
+        case .auto:     return LanguageManager.shared["loan.type.auto"]
+        case .personal: return LanguageManager.shared["loan.type.personal"]
+        case .student:  return LanguageManager.shared["loan.type.student"]
+        case .other:    return LanguageManager.shared["loan.type.other"]
         }
     }
 
@@ -59,12 +59,12 @@ enum LoanPaymentFrequency: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var labelFR: String {
+    var label: String {
         switch self {
-        case .monthly:             return "Mensuel"
-        case .biweeklyAccelerated: return "Bihebdomadaire accéléré"
-        case .biweekly:            return "Bihebdomadaire"
-        case .weekly:              return "Hebdomadaire"
+        case .monthly:             return LanguageManager.shared["loan.freq.monthly"]
+        case .biweeklyAccelerated: return LanguageManager.shared["loan.freq.biweeklyAcc"]
+        case .biweekly:            return LanguageManager.shared["loan.freq.biweekly"]
+        case .weekly:              return LanguageManager.shared["loan.freq.weekly"]
         }
     }
 
@@ -93,10 +93,10 @@ enum LoanCompounding: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var labelFR: String {
+    var label: String {
         switch self {
-        case .monthly:    return "Mensuelle"
-        case .semiAnnual: return "Semestrielle (hypothèques CA)"
+        case .monthly:    return LanguageManager.shared["loan.compound.monthly"]
+        case .semiAnnual: return LanguageManager.shared["loan.compound.semiAnnual"]
         }
     }
 }

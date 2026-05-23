@@ -8,6 +8,7 @@ import SwiftData
 
 struct CreditLinesView: View {
     @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
 
     @Query(filter: #Predicate<CreditLine> { $0.isActive },
            sort: \CreditLine.createdAt, order: .forward)
@@ -38,7 +39,7 @@ struct CreditLinesView: View {
                     Section {
                         ForEach(debtByCurrency, id: \.currency) { row in
                             HStack {
-                                Label("Dette totale (\(row.currency))",
+                                Label(lang["cl.totalDebt"] + " (\(row.currency))",
                                       systemImage: "creditcard.trianglebadge.exclamationmark")
                                     .foregroundStyle(.red)
                                 Spacer()
@@ -50,7 +51,7 @@ struct CreditLinesView: View {
                     }
                 }
 
-                Section("Mes marges (\(activeLines.count))") {
+                Section(lang["cl.title"]) {
                     ForEach(activeLines) { cl in
                         NavigationLink {
                             CreditLineDetailView(creditLine: cl)
@@ -59,10 +60,10 @@ struct CreditLinesView: View {
                         }
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) { delete(cl) } label: {
-                                Label("Supprimer", systemImage: "trash")
+                                Label(lang["action.delete"], systemImage: "trash")
                             }
                             Button { archive(cl) } label: {
-                                Label("Archiver", systemImage: "archivebox")
+                                Label(lang["action.archive"], systemImage: "archivebox")
                             }
                             .tint(.orange)
                         }
@@ -81,10 +82,10 @@ struct CreditLinesView: View {
                             }
                             .swipeActions(edge: .trailing) {
                                 Button(role: .destructive) { delete(cl) } label: {
-                                    Label("Supprimer", systemImage: "trash")
+                                    Label(lang["action.delete"], systemImage: "trash")
                                 }
                                 Button { archive(cl) } label: {
-                                    Label("Réactiver", systemImage: "tray.and.arrow.up")
+                                    Label(lang["action.resume"], systemImage: "tray.and.arrow.up")
                                 }
                                 .tint(.green)
                             }
@@ -97,7 +98,7 @@ struct CreditLinesView: View {
                 }
             }
         }
-        .navigationTitle("Marges de crédit")
+        .navigationTitle(lang["cl.title"])
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showAdd = true } label: {
@@ -116,13 +117,13 @@ struct CreditLinesView: View {
         VStack(spacing: 12) {
             Image(systemName: "creditcard.fill")
                 .font(.system(size: 44)).foregroundStyle(.tint).padding(.top, 32)
-            Text("Aucune marge de crédit")
+            Text(lang["cl.empty.title"])
                 .font(.headline)
-            Text("Ajoutez vos marges de crédit pour suivre leur solde, les intérêts courus automatiquement et votre taux d'utilisation.")
+            Text(lang["cl.empty.sub"])
                 .font(.callout).foregroundStyle(.secondary)
                 .multilineTextAlignment(.center).padding(.horizontal, 24)
             Button { showAdd = true } label: {
-                Label("Ajouter une marge", systemImage: "plus")
+                Label(lang["cl.add"], systemImage: "plus")
                     .font(.body.weight(.semibold))
                     .padding(.horizontal, 20).padding(.vertical, 12)
             }

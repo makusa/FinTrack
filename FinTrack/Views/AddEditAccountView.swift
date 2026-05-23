@@ -13,6 +13,7 @@ enum AccountEditorMode {
 
 struct AddEditAccountView: View {
     @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
     @Environment(\.dismiss) private var dismiss
 
     let mode: AccountEditorMode
@@ -32,7 +33,7 @@ struct AddEditAccountView: View {
     }
 
     private var navTitle: String {
-        isEditing ? "Modifier le compte" : "Nouveau compte"
+        isEditing ? lang["account.edit"] : lang["account.create"]
     }
 
     private var canSave: Bool {
@@ -43,12 +44,12 @@ struct AddEditAccountView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Informations") {
-                    TextField("Nom (ex. BNC Courant)", text: $name)
-                    TextField("Institution (ex. Banque Nationale)", text: $institution)
-                    Picker("Type", selection: $type) {
+                Section(lang["label.information"]) {
+                    TextField(lang["label.name"], text: $name)
+                    TextField(lang["label.institution"], text: $institution)
+                    Picker(lang["label.type"], selection: $type) {
                         ForEach(AccountType.allCases) { t in
-                            Text(t.labelFR).tag(t)
+                            Text(t.label).tag(t)
                         }
                     }
                     .onChange(of: type) { _, newType in
@@ -60,14 +61,14 @@ struct AddEditAccountView: View {
                     }
                 }
 
-                Section("Devise") {
-                    Picker("Devise", selection: $currency) {
+                Section(lang["label.currency"]) {
+                    Picker(lang["label.currency"], selection: $currency) {
                         ForEach(Currencies.all) { c in
                             Text("\(c.code) — \(c.nameFR)").tag(c.code)
                         }
                     }
                     HStack {
-                        Text("Solde initial")
+                        Text(lang["account.initialBalance"])
                         Spacer()
                         TextField("0", text: $initialBalanceText)
                             .keyboardType(.numbersAndPunctuation)
@@ -78,13 +79,13 @@ struct AddEditAccountView: View {
                     }
                 }
 
-                Section("Apparence") {
+                Section(lang["label.appearance"]) {
                     colorPicker
                     iconPicker
                 }
 
-                Section("Notes (optionnel)") {
-                    TextField("Numéro de compte, branche, etc.", text: $notes, axis: .vertical)
+                Section(lang["label.notes"] + " " + lang["label.optional"]) {
+                    TextField(lang["label.notes"], text: $notes, axis: .vertical)
                         .lineLimit(2...4)
                 }
 
@@ -93,10 +94,10 @@ struct AddEditAccountView: View {
                         Button(role: .destructive) {
                             delete(account)
                         } label: {
-                            Label("Supprimer définitivement", systemImage: "trash")
+                            Label(lang["account.deleteDefinitive"], systemImage: "trash")
                         }
                     } footer: {
-                        Text("La suppression efface ce compte et toutes ses transactions. Préférez l'archivage si vous souhaitez les conserver.")
+                        Text(lang["account.deleteFooter"])
                     }
                 }
             }
@@ -104,10 +105,10 @@ struct AddEditAccountView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Annuler") { dismiss() }
+                    Button(lang["action.cancel"]) { dismiss() }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Enregistrer") { save() }
+                    Button(lang["action.save"]) { save() }
                         .disabled(!canSave)
                         .fontWeight(.semibold)
                 }
@@ -120,7 +121,7 @@ struct AddEditAccountView: View {
 
     private var colorPicker: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Couleur").font(.subheadline)
+            Text(lang["label.color"]).font(.subheadline)
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(ColorPalette.accountColors, id: \.self) { hex in
@@ -144,7 +145,7 @@ struct AddEditAccountView: View {
 
     private var iconPicker: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Icône").font(.subheadline)
+            Text(lang["label.icon"]).font(.subheadline)
             let icons = Array(Set(AccountType.allCases.map(\.defaultIconSystemName) + [
                 "creditcard.fill", "banknote.fill", "dollarsign.circle.fill",
                 "building.columns.fill", "chart.line.uptrend.xyaxis", "wallet.pass.fill",

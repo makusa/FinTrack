@@ -8,6 +8,7 @@ import SwiftData
 
 struct LoansView: View {
     @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
 
     @Query(filter: #Predicate<Loan> { $0.isActive },
            sort: \Loan.createdAt, order: .forward)
@@ -38,17 +39,17 @@ struct LoansView: View {
                 // Debt summary strip
                 debtSummarySection
 
-                Section("Mes prêts") {
+                Section(lang["loan.title"]) {
                     ForEach(activeLoans) { loan in
                         NavigationLink { LoanDetailView(loan: loan) } label: {
                             LoanRow(loan: loan)
                         }
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) { delete(loan) } label: {
-                                Label("Supprimer", systemImage: "trash")
+                                Label(lang["action.delete"], systemImage: "trash")
                             }
                             Button { archive(loan) } label: {
-                                Label("Archiver", systemImage: "archivebox")
+                                Label(lang["action.archive"], systemImage: "archivebox")
                             }
                             .tint(.orange)
                         }
@@ -65,23 +66,23 @@ struct LoansView: View {
                             }
                             .swipeActions(edge: .trailing) {
                                 Button(role: .destructive) { delete(loan) } label: {
-                                    Label("Supprimer", systemImage: "trash")
+                                    Label(lang["action.delete"], systemImage: "trash")
                                 }
                                 Button { archive(loan) } label: {
-                                    Label("Réactiver", systemImage: "tray.and.arrow.up")
+                                    Label(lang["action.resume"], systemImage: "tray.and.arrow.up")
                                 }
                                 .tint(.green)
                             }
                         }
                     } label: {
-                        Text("Prêts archivés (\(archivedLoans.count))")
+                        Text(lang.f("account.archived", archivedLoans.count))
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
                 }
             }
         }
-        .navigationTitle("Prêts")
+        .navigationTitle(lang["loan.title"])
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showAdd = true } label: {
@@ -100,7 +101,7 @@ struct LoansView: View {
         Section {
             ForEach(debtByCurrency, id: \.currency) { row in
                 HStack {
-                    Label("Dette totale (\(row.currency))", systemImage: "minus.circle.fill")
+                    Label(lang["loan.totalDebt"] + " (\(row.currency))", systemImage: "minus.circle.fill")
                         .foregroundStyle(.red)
                     Spacer()
                     Text(row.total.formatted(asCurrency: row.currency))
@@ -117,15 +118,15 @@ struct LoansView: View {
                 .font(.system(size: 44))
                 .foregroundStyle(.tint)
                 .padding(.top, 32)
-            Text("Aucun prêt enregistré")
+            Text(lang["loan.empty.title"])
                 .font(.headline)
-            Text("Ajoutez une hypothèque, un prêt auto ou personnel. FinTrack calculera automatiquement les mensualités et le tableau d'amortissement.")
+            Text(lang["loan.empty.sub"])
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
             Button { showAdd = true } label: {
-                Label("Ajouter un prêt", systemImage: "plus")
+                Label(lang["loan.add"], systemImage: "plus")
                     .font(.body.weight(.semibold))
                     .padding(.horizontal, 20)
                     .padding(.vertical, 12)
@@ -171,7 +172,7 @@ struct LoanRow: View {
             }
 
             VStack(alignment: .leading, spacing: 3) {
-                Text(loan.label.isEmpty ? loan.type.labelFR : loan.label)
+                Text(loan.label.isEmpty ? loan.type.label : loan.label)
                     .font(.body.weight(.medium))
                     .lineLimit(1)
                 HStack(spacing: 4) {

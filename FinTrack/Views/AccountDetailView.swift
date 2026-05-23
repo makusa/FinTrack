@@ -8,6 +8,7 @@ import SwiftData
 
 struct AccountDetailView: View {
     @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
     @Environment(\.dismiss) private var dismiss
 
     @Bindable var account: Account
@@ -36,7 +37,7 @@ struct AccountDetailView: View {
                         .minimumScaleFactor(0.6)
                         .lineLimit(1)
 
-                    Text("\(account.institution) · \(account.type.labelFR)")
+                    Text("\(account.institution) · \(account.type.label)")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
@@ -45,23 +46,23 @@ struct AccountDetailView: View {
                 .listRowBackground(Color.clear)
             }
 
-            Section("Détails") {
-                LabeledContent("Devise") {
+            Section(lang["label.details"]) {
+                LabeledContent(lang["label.currency"]) {
                     Text("\(account.currency) — \(Currencies.info(for: account.currency).nameFR)")
                 }
-                LabeledContent("Solde initial") {
+                LabeledContent(lang["account.initialBalance"]) {
                     Text(account.initialBalance.formatted(asCurrency: account.currency))
                 }
                 if let notes = account.notes, !notes.isEmpty {
-                    LabeledContent("Notes") {
+                    LabeledContent(lang["label.notes"]) {
                         Text(notes).multilineTextAlignment(.trailing)
                     }
                 }
             }
 
-            Section("Transactions (\(sortedTransactions.count))") {
+            Section("\(lang[\"label.type\"])s (\(sortedTransactions.count))") {
                 if sortedTransactions.isEmpty {
-                    Text("Aucune transaction sur ce compte.")
+                    Text(lang["account.noTransactions"])
                         .font(.callout)
                         .foregroundStyle(.secondary)
                 } else {
@@ -80,12 +81,12 @@ struct AccountDetailView: View {
                 Button {
                     confirmArchive = true
                 } label: {
-                    Label(account.isArchived ? "Désarchiver" : "Archiver le compte",
+                    Label(account.isArchived ? lang["action.unarchive"] : lang["account.title"],
                           systemImage: account.isArchived ? "tray.and.arrow.up" : "archivebox")
                         .foregroundStyle(.orange)
                 }
             } footer: {
-                Text("L'archivage masque le compte sans supprimer ses transactions. Les soldes globaux ne tiennent plus compte d'un compte archivé.")
+                Text(lang["account.archiveFooter"])
             }
         }
         .navigationTitle(account.name)
@@ -96,12 +97,12 @@ struct AccountDetailView: View {
                     Button {
                         showAddTransaction = true
                     } label: {
-                        Label("Nouvelle transaction", systemImage: "plus")
+                        Label(lang["account.newTransaction"], systemImage: "plus")
                     }
                     Button {
                         showEdit = true
                     } label: {
-                        Label("Modifier le compte", systemImage: "pencil")
+                        Label(lang["account.edit"], systemImage: "pencil")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
@@ -117,18 +118,18 @@ struct AccountDetailView: View {
             }
         }
         .confirmationDialog(
-            account.isArchived ? "Désarchiver ce compte ?" : "Archiver ce compte ?",
+            account.isArchived ? lang["account.unarchivePrompt"] : lang["account.archivePrompt"],
             isPresented: $confirmArchive,
             titleVisibility: .visible
         ) {
-            Button(account.isArchived ? "Désarchiver" : "Archiver") {
+            Button(account.isArchived ? lang["action.unarchive"] : lang["action.archive"]) {
                 account.isArchived.toggle()
                 try? context.save()
                 if account.isArchived {
                     dismiss()
                 }
             }
-            Button("Annuler", role: .cancel) {}
+            Button(lang["action.cancel"], role: .cancel) {}
         }
     }
 

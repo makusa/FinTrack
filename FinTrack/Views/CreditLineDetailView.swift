@@ -8,6 +8,7 @@ import Charts
 
 struct CreditLineDetailView: View {
     @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
     @Bindable var creditLine: CreditLine
 
     @State private var showEdit         = false
@@ -39,7 +40,7 @@ struct CreditLineDetailView: View {
                     }
                     Divider()
                     Button { showEdit = true } label: {
-                        Label("Modifier la marge", systemImage: "pencil")
+                        Label(lang["cl.edit"], systemImage: "pencil")
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
@@ -72,7 +73,7 @@ struct CreditLineDetailView: View {
                     VStack(spacing: 2) {
                         Text(String(format: "%.0f%%", creditLine.utilisationFraction * 100))
                             .font(.title2.weight(.bold))
-                        Text("utilisé")
+                        Text(lang["cl.used"])
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
@@ -82,19 +83,19 @@ struct CreditLineDetailView: View {
                 // Balance vs limit
                 HStack(spacing: 32) {
                     statColumn(
-                        label: "Solde utilisé",
+                        label: lang["cl.balanceUsed"],
                         value: creditLine.currentBalance.formatted(asCurrency: creditLine.currency),
                         color: .red
                     )
                     Divider().frame(height: 36)
                     statColumn(
-                        label: "Disponible",
+                        label: lang["cl.available"],
                         value: creditLine.availableCredit.formatted(asCurrency: creditLine.currency),
                         color: .green
                     )
                     Divider().frame(height: 36)
                     statColumn(
-                        label: "Plafond",
+                        label: lang["cl.limit.short"],
                         value: creditLine.creditLimit.formatted(asCurrency: creditLine.currency),
                         color: .secondary
                     )
@@ -113,9 +114,9 @@ struct CreditLineDetailView: View {
     // MARK: - Metrics
 
     private var metricsSection: some View {
-        Section("Coût mensuel estimé") {
+        Section(lang["cl.metrics"]) {
             HStack {
-                Text("Intérêts mensuels")
+                Text(lang["cl.monthlyInterest"])
                     .foregroundStyle(.secondary)
                 Spacer()
                 Text("≈ \(creditLine.monthlyInterestEstimate.formatted(asCurrency: creditLine.currency))")
@@ -123,19 +124,19 @@ struct CreditLineDetailView: View {
                     .fontWeight(.medium)
             }
             HStack {
-                Text("Paiement minimum")
+                Text(lang["cl.minPayment"])
                     .foregroundStyle(.secondary)
                 Spacer()
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(creditLine.estimatedMinimumPayment.formatted(asCurrency: creditLine.currency))
                         .fontWeight(.semibold)
-                    Text(creditLine.minimumPaymentType.labelFR)
+                    Text(creditLine.minimumPaymentType.label)
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
             }
             HStack {
-                Text("Taux journalier")
+                Text(lang["cl.dailyRate"])
                     .foregroundStyle(.secondary)
                 Spacer()
                 let daily = (creditLine.annualInterestRate as NSDecimalNumber).doubleValue / 365
@@ -148,9 +149,9 @@ struct CreditLineDetailView: View {
     // MARK: - Balance chart
 
     private var balanceChartSection: some View {
-        Section("Évolution du solde") {
+        Section(lang["cl.evolution"]) {
             if sortedEntries.isEmpty {
-                Text("Aucun mouvement enregistré.")
+                Text(lang["cl.noMovements"])
                     .font(.caption).foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity).padding(.vertical, 16)
             } else {
@@ -175,11 +176,11 @@ struct CreditLineDetailView: View {
 
                     // Credit limit reference line
                     let limitDouble = (creditLine.creditLimit as NSDecimalNumber).doubleValue
-                    RuleMark(y: .value("Plafond", limitDouble))
+                    RuleMark(y: .value(lang["cl.limit.short"], limitDouble))
                         .foregroundStyle(Color.orange.opacity(0.6))
                         .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 4]))
                         .annotation(position: .top, alignment: .trailing) {
-                            Text("Plafond")
+                            Text(lang["cl.limit.short"])
                                 .font(.system(size: 9))
                                 .foregroundStyle(.orange)
                                 .padding(.trailing, 4)
@@ -234,9 +235,9 @@ struct CreditLineDetailView: View {
     // MARK: - History
 
     private var historySection: some View {
-        Section("Historique (\(sortedEntries.count))") {
+        Section(lang.f("cl.history", sortedEntries.count)) {
             if sortedEntries.isEmpty {
-                Text("Aucun mouvement pour l'instant.")
+                Text(lang["cl.noHistory"])
                     .font(.callout).foregroundStyle(.secondary)
             } else {
                 ForEach(sortedEntries) { entry in
@@ -250,7 +251,7 @@ struct CreditLineDetailView: View {
                                 .foregroundStyle(Color(hex: entry.type.color))
                         }
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(entry.type.labelFR)
+                            Text(entry.type.label)
                                 .font(.callout.weight(.medium))
                             if !entry.note.isEmpty {
                                 Text(entry.note)

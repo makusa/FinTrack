@@ -11,6 +11,7 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var context
 
     @Query(sort: \Transaction.date, order: .reverse)
+    @Environment(LanguageManager.self) private var lang
     private var allTransactions: [Transaction]
 
     @Query(sort: \Account.createdAt) private var allAccounts: [Account]
@@ -22,7 +23,27 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Données") {
+                // MARK: - Language
+                Section(lang["settings.language.section"]) {
+                    ForEach(AppLanguage.allCases) { language in
+                        Button {
+                            lang.setLanguage(language)
+                        } label: {
+                            HStack {
+                                Text(language.flag + "  " + language.displayName)
+                                    .foregroundStyle(.primary)
+                                Spacer()
+                                if lang.current == language {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(.tint)
+                                        .fontWeight(.semibold)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Section(lang["settings.data"]) {
                     NavigationLink {
                         CreditLinesView()
                     } label: {
@@ -50,22 +71,22 @@ struct SettingsView: View {
                     NavigationLink {
                         ManageCategoriesView()
                     } label: {
-                        Label("Gérer les catégories", systemImage: "tag")
+                        Label(lang["category.manage"], systemImage: "tag")
                     }
 
                     Button {
                         prepareExport()
                     } label: {
-                        Label("Exporter les transactions (CSV)", systemImage: "square.and.arrow.up")
+                        Label(lang["settings.exportCSV"], systemImage: "square.and.arrow.up")
                     }
                     .disabled(allTransactions.isEmpty)
                 }
 
-                Section("Statistiques") {
-                    LabeledContent("Nombre de comptes") {
+                Section(lang["settings.stats"]) {
+                    LabeledContent(lang["settings.accountCount"]) {
                         Text("\(allAccounts.count)")
                     }
-                    LabeledContent("Nombre de transactions") {
+                    LabeledContent(lang["settings.txCount"]) {
                         Text("\(allTransactions.count)")
                     }
                 }
@@ -74,24 +95,24 @@ struct SettingsView: View {
                     Button(role: .destructive) {
                         confirmReset = true
                     } label: {
-                        Label("Réinitialiser toutes les données", systemImage: "trash")
+                        Label(lang["settings.resetAll"], systemImage: "trash")
                     }
                 } header: {
-                    Text("Zone dangereuse")
+                    Text(lang["settings.dangerZone"])
                 } footer: {
-                    Text("Supprime tous les comptes, transactions et catégories personnalisées. Les catégories par défaut seront recréées. Cette action est irréversible.")
+                    Text(lang["settings.resetAll.footer"])
                 }
 
-                Section("À propos") {
-                    LabeledContent("Version") {
+                Section(lang["settings.about"]) {
+                    LabeledContent(lang["settings.version"]) {
                         Text(appVersion)
                     }
-                    LabeledContent("Stockage") {
-                        Text("Local (sur cet appareil)")
+                    LabeledContent(lang["settings.storage"]) {
+                        Text(lang["settings.storage.local"])
                     }
                 }
             }
-            .navigationTitle("Réglages")
+            .navigationTitle(lang["settings.title"])
             .fileExporter(
                 isPresented: $showExporter,
                 document: exportDocument,
@@ -106,14 +127,14 @@ struct SettingsView: View {
                 }
             }
             .confirmationDialog(
-                "Tout réinitialiser ?",
+                lang["settings.resetPrompt"],
                 isPresented: $confirmReset,
                 titleVisibility: .visible
             ) {
-                Button("Réinitialiser", role: .destructive) { resetAll() }
-                Button("Annuler", role: .cancel) {}
+                Button(lang["settings.resetAll"], role: .destructive) { resetAll() }
+                Button(lang["action.cancel"], role: .cancel) {}
             } message: {
-                Text("Toutes vos données seront supprimées. Cette action est irréversible.")
+                Text(lang["settings.resetMessage"])
             }
         }
     }
@@ -215,6 +236,7 @@ struct ManageCategoriesView: View {
     @Environment(\.modelContext) private var context
 
     @Query(sort: \Category.name, order: .forward)
+    @Environment(LanguageManager.self) private var lang
     private var categories: [Category]
 
     @State private var showAddCategory = false
@@ -228,20 +250,20 @@ struct ManageCategoriesView: View {
 
     var body: some View {
         List {
-            Section("Dépenses (\(expenseCategories.count))") {
+            Section(lang.f("category.expenses", expenseCategories.count)) {
                 ForEach(expenseCategories) { cat in
                     categoryRow(cat)
                 }
                 .onDelete { offsets in delete(expenseCategories, at: offsets) }
             }
-            Section("Revenus (\(incomeCategories.count))") {
+            Section(lang.f("category.incomes", incomeCategories.count)) {
                 ForEach(incomeCategories) { cat in
                     categoryRow(cat)
                 }
                 .onDelete { offsets in delete(incomeCategories, at: offsets) }
             }
         }
-        .navigationTitle("Catégories")
+        .navigationTitle(lang["category.title"])
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -268,7 +290,7 @@ struct ManageCategoriesView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(cat.name)
                 if cat.isSystem {
-                    Text("Par défaut")
+                    Text(lang["category.default"])
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -297,6 +319,7 @@ struct ManageCategoriesView: View {
 struct AddCategoryView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
+    @Environment(LanguageManager.self) private var lang
 
     @State private var name: String = ""
     @State private var applicability: CategoryApplicability = .expense
@@ -313,18 +336,18 @@ struct AddCategoryView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Nom") {
-                    TextField("Ex. Abonnements", text: $name)
+                Section(lang["label.name"]) {
+                    TextField(lang["category.namePlaceholder"], text: $name)
                 }
-                Section("Type") {
-                    Picker("Applicable à", selection: $applicability) {
-                        Text("Dépenses").tag(CategoryApplicability.expense)
-                        Text("Revenus").tag(CategoryApplicability.income)
-                        Text("Les deux").tag(CategoryApplicability.both)
+                Section(lang["category.type"]) {
+                    Picker(lang["category.applicability"], selection: $applicability) {
+                        Text(lang["category.expense"]).tag(CategoryApplicability.expense)
+                        Text(lang["category.income"]).tag(CategoryApplicability.income)
+                        Text(lang["category.both"]).tag(CategoryApplicability.both)
                     }
                     .pickerStyle(.segmented)
                 }
-                Section("Icône") {
+                Section(lang["label.icon"]) {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 10) {
                             ForEach(iconChoices, id: \.self) { icon in
@@ -343,7 +366,7 @@ struct AddCategoryView: View {
                         }
                     }
                 }
-                Section("Couleur") {
+                Section(lang["label.color"]) {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 10) {
                             ForEach(ColorPalette.categoryColors, id: \.self) { hex in
@@ -363,14 +386,14 @@ struct AddCategoryView: View {
                     }
                 }
             }
-            .navigationTitle("Nouvelle catégorie")
+            .navigationTitle(lang["category.create"])
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Annuler") { dismiss() }
+                    Button(lang["action.cancel"]) { dismiss() }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Enregistrer") { save() }
+                    Button(lang["action.save"]) { save() }
                         .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
                         .fontWeight(.semibold)
                 }

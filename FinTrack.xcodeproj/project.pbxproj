@@ -46,6 +46,8 @@
 		682808AEF32512F27D8FB7C1 /* AddEditCreditLineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 693704C10FF0BF3B5D6DF6BD /* AddEditCreditLineView.swift */; };
 		51B74CD0991B998803F9E5C7 /* CreditLineDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 456056A2B099C049455F7F10 /* CreditLineDetailView.swift */; };
 		DDB2F3FECBB5936CA4DEE2C8 /* CreditLinesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7145838E99C6BA90AEC4B3A8 /* CreditLinesView.swift */; };
+		2926639C4AF2BA98292F8449 /* LanguageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62D587BE21232886BA5D9106 /* LanguageManager.swift */; };
+		993DA07AD716A11C96937DE7 /* LocalizedStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89CEF3E35A77FC2463375FDF /* LocalizedStrings.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -89,6 +91,8 @@
 		693704C10FF0BF3B5D6DF6BD /* AddEditCreditLineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditCreditLineView.swift; sourceTree = "<group>"; };
 		456056A2B099C049455F7F10 /* CreditLineDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditLineDetailView.swift; sourceTree = "<group>"; };
 		7145838E99C6BA90AEC4B3A8 /* CreditLinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditLinesView.swift; sourceTree = "<group>"; };
+		62D587BE21232886BA5D9106 /* LanguageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
+		89CEF3E35A77FC2463375FDF /* LocalizedStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalizedStrings.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -149,6 +153,7 @@
 				FA75C9EEFB489048F50342E4 /* FinTrackApp.swift */,
 				A96289E687731417561F7EB0 /* Models */,
 				0792ABF971B545FD80425FD6 /* Utilities */,
+				B0CC6F0D2B7879414A9D82D5 /* Localization */,
 				472D159D5C5EAF9F408C3FBD /* Views */,
 			);
 			path = FinTrack;
@@ -184,6 +189,15 @@
 				3C39D70C12B091E664ADBDE4 /* TransactionRow.swift */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		B0CC6F0D2B7879414A9D82D5 /* Localization */ = {
+			isa = PBXGroup;
+			children = (
+				62D587BE21232886BA5D9106 /* LanguageManager.swift */,
+				89CEF3E35A77FC2463375FDF /* LocalizedStrings.swift */,
+			);
+			path = Localization;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -291,6 +305,9 @@
 				167DD8D94BD2C94A5D09FCC6 /* RootView.swift in Sources */,
 				17D35A490B812757B7DA1041 /* SeedData.swift in Sources */,
 				FEBFF9935E3B84CAFF02F78B /* SettingsView.swift in Sources */,
+				2926639C4AF2BA98292F8449 /* LanguageManager.swift in Sources */,
+				993DA07AD716A11C96937DE7 /* LocalizedStrings.swift in Sources */,
+
 				F4ECF44923BC9CF1C85E7CD2 /* Transaction.swift in Sources */,
 				82765C0497359E218868B01F /* TransactionRow.swift in Sources */,
 				06C2E07EE5FBAE507ACB0421 /* TransactionsView.swift in Sources */,

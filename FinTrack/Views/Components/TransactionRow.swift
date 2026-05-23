@@ -6,6 +6,8 @@
 import SwiftUI
 
 struct TransactionRow: View {
+    @Environment(LanguageManager.self) private var lang
+
     let transaction: Transaction
 
     private var iconName: String {
@@ -26,7 +28,7 @@ struct TransactionRow: View {
         if let cat = transaction.category {
             return cat.name
         }
-        return transaction.type == .income ? "Revenu" : "Dépense"
+        return transaction.type == .income ? LanguageManager.shared["tx.type.income"] : LanguageManager.shared["tx.type.expense"]
     }
 
     private var secondaryText: String {

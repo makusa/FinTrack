@@ -8,6 +8,7 @@ import SwiftData
 
 struct TransactionsView: View {
     @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
 
     @Query(sort: \Transaction.date, order: .reverse)
     private var allTransactions: [Transaction]
@@ -26,9 +27,9 @@ struct TransactionsView: View {
         var id: String { rawValue }
         var labelFR: String {
             switch self {
-            case .all:     return "Tout"
-            case .income:  return "Revenus"
-            case .expense: return "Dépenses"
+            case .all:     return lang["label.all"]
+            case .income:  return lang["label.incomes"]
+            case .expense: return lang["label.expenses"]
             }
         }
     }
@@ -74,16 +75,16 @@ struct TransactionsView: View {
             Group {
                 if allTransactions.isEmpty {
                     ContentUnavailableView(
-                        "Aucune transaction",
+                        lang["tx.noTx"],
                         systemImage: "list.bullet.rectangle",
-                        description: Text("Ajoutez une transaction depuis le tableau de bord ou un compte.")
+                        description: Text(lang["tx.noTx.sub"])
                     )
                 } else {
                     list
                 }
             }
-            .navigationTitle("Transactions")
-            .searchable(text: $searchText, prompt: "Rechercher")
+            .navigationTitle(lang["tx.title"])
+            .searchable(text: $searchText, prompt: lang["action.search"])
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     filterMenu
@@ -134,12 +135,12 @@ struct TransactionsView: View {
         Menu {
             Picker("Type", selection: $filterType) {
                 ForEach(TypeFilter.allCases) { f in
-                    Text(f.labelFR).tag(f)
+                    Text(f.label).tag(f)
                 }
             }
             Divider()
             Picker("Compte", selection: $filterAccount) {
-                Text("Tous les comptes").tag(Account?.none)
+                Text(lang["tx.allAccounts"]).tag(Account?.none)
                 ForEach(accounts) { a in
                     Text(a.name).tag(Optional(a))
                 }

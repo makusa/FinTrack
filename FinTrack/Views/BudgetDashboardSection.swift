@@ -38,7 +38,7 @@ struct BudgetDashboardSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Budget & Épargne")
+            Text(lang["analytics.budget"])
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
                 .padding(.horizontal)
@@ -84,7 +84,7 @@ struct CashFlowCard: View {
 
                 // Net surplus
                 HStack {
-                    Text("≈ Surplus mensuel")
+                    Text(lang["cashflow.surplus"])
                         .font(.subheadline.weight(.semibold))
                     Spacer()
                     HStack(spacing: 4) {

@@ -58,7 +58,7 @@ enum CashFlowCalculator {
         let incomeLines = incomeRules.map {
             CashFlowLine(
                 label: $0.displayTitle,
-                sublabel: $0.frequency.shortLabelFR,
+                sublabel: $0.frequency.shortLabel,
                 amount: monthlyAmount($0.amount, frequency: $0.frequency)
             )
         }
@@ -75,7 +75,7 @@ enum CashFlowCalculator {
         let expenseLines = expenseRules.map {
             CashFlowLine(
                 label: $0.displayTitle,
-                sublabel: $0.frequency.shortLabelFR,
+                sublabel: $0.frequency.shortLabel,
                 amount: monthlyAmount($0.amount, frequency: $0.frequency)
             )
         }
@@ -88,7 +88,7 @@ enum CashFlowCalculator {
             let annualPayments = Decimal(calc.paymentAmount * Double(loan.frequency.paymentsPerYear))
             let monthly = annualPayments / 12
             return CashFlowLine(
-                label: loan.label.isEmpty ? loan.type.labelFR : loan.label,
+                label: loan.label.isEmpty ? loan.type.label : loan.label,
                 sublabel: loan.lenderName.isEmpty ? nil : loan.lenderName,
                 amount: monthly
             )
@@ -104,7 +104,7 @@ enum CashFlowCalculator {
             guard (minPay as NSDecimalNumber).doubleValue > 0 else { return nil }
             return CashFlowLine(
                 label: cl.name,
-                sublabel: "Paiement minimum · \(cl.minimumPaymentType.labelFR)",
+                sublabel: LanguageManager.shared["cl.minPayment"] + " · " + cl.minimumPaymentType.label,
                 amount: minPay
             )
         }

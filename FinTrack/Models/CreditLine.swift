@@ -22,11 +22,11 @@ enum CreditLineEntryType: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var labelFR: String {
+    var label: String {
         switch self {
-        case .draw:            return "Retrait"
-        case .repayment:       return "Remboursement"
-        case .interestAccrual: return "Intérêts courus"
+        case .draw:            return LanguageManager.shared["cl.entry.draw"]
+        case .repayment:       return LanguageManager.shared["cl.entry.repayment"]
+        case .interestAccrual: return LanguageManager.shared["cl.entry.interest"]
         }
     }
 
@@ -90,10 +90,10 @@ enum CreditLineCompounding: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var labelFR: String {
+    var label: String {
         switch self {
-        case .daily:   return "Quotidienne (marges CA)"
-        case .monthly: return "Mensuelle"
+        case .daily:   return LanguageManager.shared["cl.compound.daily"]
+        case .monthly: return LanguageManager.shared["cl.compound.monthly"]
         }
     }
 }
@@ -107,11 +107,11 @@ enum MinimumPaymentType: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var labelFR: String {
+    var label: String {
         switch self {
-        case .interestOnly:   return "Intérêts seulement"
-        case .percentBalance: return "% du solde"
-        case .fixedAmount:    return "Montant fixe"
+        case .interestOnly:   return LanguageManager.shared["cl.minType.interestOnly"]
+        case .percentBalance: return LanguageManager.shared["cl.minType.percent"]
+        case .fixedAmount:    return LanguageManager.shared["cl.minType.fixed"]
         }
     }
 }

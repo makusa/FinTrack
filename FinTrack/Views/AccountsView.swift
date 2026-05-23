@@ -8,6 +8,7 @@ import SwiftData
 
 struct AccountsView: View {
     @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
 
     @Query(filter: #Predicate<Account> { !$0.isArchived },
            sort: \Account.createdAt, order: .forward)
@@ -26,13 +27,13 @@ struct AccountsView: View {
                 if activeAccounts.isEmpty {
                     Section {
                         ContentUnavailableView(
-                            "Aucun compte",
+                            lang["account.noAccounts"],
                             systemImage: "building.columns",
-                            description: Text("Appuyez sur + pour ajouter un compte.")
+                            description: Text(lang["account.noAccounts.sub"])
                         )
                     }
                 } else {
-                    Section("Mes comptes") {
+                    Section(lang["account.myAccounts"]) {
                         ForEach(activeAccounts) { account in
                             NavigationLink {
                                 AccountDetailView(account: account)
@@ -55,14 +56,14 @@ struct AccountsView: View {
                                 }
                             }
                         } label: {
-                            Text("Comptes archivés (\(archivedAccounts.count))")
+                            Text(lang.f("account.archived", archivedAccounts.count))
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
                     }
                 }
             }
-            .navigationTitle("Comptes")
+            .navigationTitle(lang["account.title"])
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -92,7 +93,7 @@ struct AccountsView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(account.name)
                     .font(.body.weight(.medium))
-                Text("\(account.institution) · \(account.type.labelFR)")
+                Text("\(account.institution) · \(account.type.label)")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

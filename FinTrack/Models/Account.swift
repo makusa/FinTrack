@@ -19,14 +19,14 @@ enum AccountType: String, CaseIterable, Identifiable {
 
     var id: String { rawValue }
 
-    var labelFR: String {
+    var label: String {
         switch self {
-        case .checking:   return "Compte courant"
-        case .savings:    return "Épargne"
-        case .credit:     return "Carte de crédit"
-        case .cash:       return "Liquide"
-        case .investment: return "Placement"
-        case .other:      return "Autre"
+        case .checking:   return LanguageManager.shared["account.type.checking"]
+        case .savings:    return LanguageManager.shared["account.type.savings"]
+        case .credit:     return LanguageManager.shared["account.type.credit"]
+        case .cash:       return LanguageManager.shared["account.type.cash"]
+        case .investment: return LanguageManager.shared["account.type.investment"]
+        case .other:      return LanguageManager.shared["account.type.other"]
         }
     }
 

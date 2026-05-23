@@ -11,6 +11,7 @@ import Charts
 
 struct SavingsProjectsView: View {
     @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
 
     @Query(filter: #Predicate<SavingsProject> { $0.isActive },
            sort: \SavingsProject.createdAt, order: .forward)
@@ -51,7 +52,7 @@ struct SavingsProjectsView: View {
                     }
                 }
 
-                Section("Mes projets (\(activeProjects.count))") {
+                Section(lang.f("savings.myProjects", activeProjects.count)) {
                     ForEach(activeProjects) { project in
                         NavigationLink {
                             SavingsProjectDetailView(project: project)
@@ -60,10 +61,10 @@ struct SavingsProjectsView: View {
                         }
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) { delete(project) } label: {
-                                Label("Supprimer", systemImage: "trash")
+                                Label(lang["action.delete"], systemImage: "trash")
                             }
                             Button { archive(project) } label: {
-                                Label("Archiver", systemImage: "archivebox")
+                                Label(lang["action.archive"], systemImage: "archivebox")
                             }
                             .tint(.orange)
                         }
@@ -82,22 +83,22 @@ struct SavingsProjectsView: View {
                             }
                             .swipeActions(edge: .trailing) {
                                 Button(role: .destructive) { delete(project) } label: {
-                                    Label("Supprimer", systemImage: "trash")
+                                    Label(lang["action.delete"], systemImage: "trash")
                                 }
                                 Button { archive(project) } label: {
-                                    Label("Réactiver", systemImage: "tray.and.arrow.up")
+                                    Label(lang["action.resume"], systemImage: "tray.and.arrow.up")
                                 }
                                 .tint(.green)
                             }
                         }
                     } label: {
-                        Text("Archivés (\(archivedProjects.count))")
+                        Text(lang.f("savings.archived", archivedProjects.count))
                             .font(.subheadline).foregroundStyle(.secondary)
                     }
                 }
             }
         }
-        .navigationTitle("Projets d'épargne")
+        .navigationTitle(lang["savings.title"])
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showAdd = true } label: {
@@ -114,13 +115,13 @@ struct SavingsProjectsView: View {
         VStack(spacing: 12) {
             Image(systemName: "target")
                 .font(.system(size: 44)).foregroundStyle(.tint).padding(.top, 32)
-            Text("Aucun projet d'épargne")
+            Text(lang["savings.empty.title"])
                 .font(.headline)
-            Text("Définissez un objectif — voyage, fonds d'urgence, achat — et FinTrack calculera quand vous l'atteindrez en fonction de votre surplus mensuel.")
+            Text(lang["savings.empty.sub"])
                 .font(.callout).foregroundStyle(.secondary)
                 .multilineTextAlignment(.center).padding(.horizontal, 24)
             Button { showAdd = true } label: {
-                Label("Créer un projet", systemImage: "plus")
+                Label(lang["savings.create"], systemImage: "plus")
                     .font(.body.weight(.semibold))
                     .padding(.horizontal, 20).padding(.vertical, 12)
             }
@@ -228,16 +229,16 @@ struct SavingsProjectDetailView: View {
     }
 
     private var statusSection: some View {
-        Section("Situation actuelle") {
+        Section(lang["savings.currentAmount.section"]) {
             row("Épargné", value: project.currentAmount.formatted(asCurrency: project.currency))
             if let target = project.targetAmount {
-                row("Objectif", value: target.formatted(asCurrency: project.currency))
+                row(lang["savings.target"], value: target.formatted(asCurrency: project.currency))
                 row("Restant", value: project.amountRemaining?.formatted(asCurrency: project.currency) ?? "—",
                     color: .orange)
             }
-            row("Contribution mensuelle",
+            row(lang["savings.contribution"],
                 value: (project.monthlyContribution as NSDecimalNumber).doubleValue > 0
-                    ? project.monthlyContribution.formatted(asCurrency: project.currency) + "/mois"
+                    ? project.monthlyContribution.formatted(asCurrency: project.currency) + lang["label.perMonth"]
                     : "Non définie",
                 emphasis: true)
         }
@@ -246,7 +247,7 @@ struct SavingsProjectDetailView: View {
     private var projectionChartSection: some View {
         Section {
             if calc.points.isEmpty {
-                Text("Définissez une contribution mensuelle pour voir la projection.")
+                Text(lang["savings.projectionEmpty"])
                     .font(.caption).foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity).padding(.vertical, 16)
             } else {
@@ -264,7 +265,7 @@ struct SavingsProjectDetailView: View {
                                 if let target = project.targetAmount {
                                     let remaining = max(0, (target as NSDecimalNumber).doubleValue - a)
                                     Text(remaining <= 0
-                                         ? "Objectif atteint ✓"
+                                         ? lang["savings.goalReached.check"]
                                          : "Encore \(Decimal(remaining).formatted(asCurrency: project.currency))")
                                         .font(.caption2)
                                         .foregroundStyle(remaining <= 0 ? .green : .secondary)
@@ -272,7 +273,7 @@ struct SavingsProjectDetailView: View {
                             }
                             .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .leading)))
                         } else {
-                            Text("Glissez pour explorer la projection")
+                            Text(lang["savings.scrubHint"])
                                 .font(.caption2).foregroundStyle(.tertiary)
                                 .transition(.opacity)
                         }
@@ -306,7 +307,7 @@ struct SavingsProjectDetailView: View {
                                 .foregroundStyle(Color(hex: project.colorHex).opacity(0.6))
                                 .lineStyle(StrokeStyle(lineWidth: 1.5, dash: [5, 4]))
                                 .annotation(position: .top, alignment: .trailing) {
-                                    Text("Objectif")
+                                    Text(lang["savings.target"])
                                         .font(.system(size: 9))
                                         .foregroundStyle(Color(hex: project.colorHex))
                                         .padding(.trailing, 4)
@@ -391,21 +392,21 @@ struct SavingsProjectDetailView: View {
     }
 
     private var metricsSection: some View {
-        Section("Indicateurs") {
+        Section(lang["savings.indicators"]) {
             if let reachDate = project.targetReachDate {
-                row("Date d'atteinte estimée",
+                row(lang["savings.targetReach"],
                     value: reachDate.formatted(date: .long, time: .omitted),
                     emphasis: true)
                 if let months = project.monthsToTarget {
-                    row("Mois restants", value: "\(months) mois")
+                    row(lang["savings.monthsLeft"], value: "\(months) mois")
                 }
             } else if project.targetAmount != nil {
                 row("Date d'atteinte", value: "Définissez une contribution mensuelle")
             }
 
             if let req = project.requiredMonthlyForDeadline {
-                row("Contribution requise (échéance)",
-                    value: req.formatted(asCurrency: project.currency) + "/mois",
+                row(lang["savings.requiredContrib"],
+                    value: req.formatted(asCurrency: project.currency) + lang["label.perMonth"],
                     color: req > project.monthlyContribution ? .orange : .green)
             }
         }

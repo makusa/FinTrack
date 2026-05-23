@@ -13,6 +13,7 @@ enum CreditLineEditorMode {
 
 struct AddEditCreditLineView: View {
     @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
     @Environment(\.dismiss)      private var dismiss
 
     let mode: CreditLineEditorMode
@@ -42,7 +43,7 @@ struct AddEditCreditLineView: View {
     @FocusState private var limitFocused: Bool
 
     private var isEditing: Bool { if case .edit = mode { return true }; return false }
-    private var navTitle: String { isEditing ? "Modifier la marge" : "Nouvelle marge de crédit" }
+    private var navTitle: String { isEditing ? lang["cl.edit"] : lang["cl.create"] }
 
     private var limit: Decimal? { parseDecimal(limitText) }
     private var rate:  Decimal? { parseDecimal(rateText) }
@@ -76,16 +77,16 @@ struct AddEditCreditLineView: View {
             .navigationTitle(navTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading)  { Button("Annuler") { dismiss() } }
+                ToolbarItem(placement: .topBarLeading)  { Button(lang["action.cancel"]) { dismiss() } }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Enregistrer") { save() }
+                    Button(lang["action.save"]) { save() }
                         .disabled(!canSave).fontWeight(.semibold)
                 }
             }
-            .confirmationDialog("Supprimer cette marge ?",
+            .confirmationDialog(lang["cl.delete"],
                                 isPresented: $showDeleteConfirm, titleVisibility: .visible) {
-                Button("Supprimer", role: .destructive) { deleteIfEditing() }
-                Button("Annuler", role: .cancel) {}
+                Button(lang["action.delete"], role: .destructive) { deleteIfEditing() }
+                Button(lang["action.cancel"], role: .cancel) {}
             }
             .onAppear(perform: loadIfEditing)
         }
@@ -94,10 +95,10 @@ struct AddEditCreditLineView: View {
     // MARK: - Sections
 
     private var identitySection: some View {
-        Section("Identification") {
-            TextField("Nom (ex. Marge BNC, HELOC Desjardins)", text: $name)
-            TextField("Prêteur (ex. Banque Nationale)", text: $lenderName)
-            Picker("Devise", selection: $currency) {
+        Section(lang["label.information"]) {
+            TextField(lang["cl.namePlaceholder"], text: $name)
+            TextField(lang["loan.lenderPlaceholder"], text: $lenderName)
+            Picker(lang["label.currency"], selection: $currency) {
                 ForEach(Currencies.all) { c in Text("\(c.code) — \(c.nameFR)").tag(c.code) }
             }
         }
@@ -106,7 +107,7 @@ struct AddEditCreditLineView: View {
     private var financialSection: some View {
         Section {
             HStack {
-                Text("Plafond autorisé")
+                Text(lang["cl.limit"])
                 Spacer()
                 TextField("0", text: $limitText)
                     .keyboardType(.decimalPad).multilineTextAlignment(.trailing)
@@ -116,8 +117,8 @@ struct AddEditCreditLineView: View {
 
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Taux d'intérêt annuel")
-                    Text("Tel qu'indiqué dans votre contrat")
+                    Text(lang["cl.rate"])
+                    Text(lang["cl.rate.sub"])
                         .font(.caption2).foregroundStyle(.secondary)
                 }
                 Spacer()
@@ -130,7 +131,7 @@ struct AddEditCreditLineView: View {
                 withAnimation { showAdvanced.toggle() }
             } label: {
                 HStack {
-                    Text(showAdvanced ? "Masquer options avancées" : "Options avancées")
+                    Text(showAdvanced ? lang["label.hideAdvanced"] : lang["label.advanced"])
                         .font(.callout)
                     Spacer()
                     Image(systemName: showAdvanced ? "chevron.up" : "chevron.down")
@@ -147,17 +148,17 @@ struct AddEditCreditLineView: View {
     private var advancedSection: some View {
         Section {
             Picker("Capitalisation", selection: $compounding) {
-                ForEach(CreditLineCompounding.allCases) { c in Text(c.labelFR).tag(c) }
+                ForEach(CreditLineCompounding.allCases) { c in Text(c.label).tag(c) }
             }
         } header: { Text("Avancé") } footer: {
-            Text("La plupart des marges de crédit canadiennes utilisent la capitalisation quotidienne.")
+            Text(lang["cl.compound.daily"])
         }
     }
 
     private var initialDrawSection: some View {
         Section {
             HStack {
-                Text("Solde actuel utilisé")
+                Text(lang["cl.initialBalance"])
                 Spacer()
                 TextField("0", text: $currentDrawText)
                     .keyboardType(.decimalPad).multilineTextAlignment(.trailing).frame(maxWidth: 150)
@@ -165,21 +166,21 @@ struct AddEditCreditLineView: View {
             }
             if let est = estimatedMonthlyInterest, (est as NSDecimalNumber).doubleValue > 0 {
                 HStack {
-                    Text("Intérêts mensuels estimés").foregroundStyle(.secondary)
+                    Text(lang["cl.monthlyInterest"]).foregroundStyle(.secondary)
                     Spacer()
                     Text("≈ \(est.formatted(asCurrency: currency))")
                         .foregroundStyle(.orange).fontWeight(.medium)
                 }
             }
         } header: { Text("Solde initial") } footer: {
-            Text("Entrez le montant actuellement utilisé sur cette marge. Vous pourrez ensuite ajouter des retraits et remboursements manuellement.")
+            Text(lang["cl.initialBalance.footer"])
         }
     }
 
     private var minPaymentSection: some View {
         Section {
-            Picker("Type de paiement minimum", selection: $minPayType) {
-                ForEach(MinimumPaymentType.allCases) { t in Text(t.labelFR).tag(t) }
+            Picker(lang["cl.minPayment"], selection: $minPayType) {
+                ForEach(MinimumPaymentType.allCases) { t in Text(t.label).tag(t) }
             }
             if minPayType == .percentBalance || minPayType == .fixedAmount {
                 HStack {
@@ -192,14 +193,14 @@ struct AddEditCreditLineView: View {
                 }
             }
         } header: { Text("Paiement minimum") } footer: {
-            Text("Utilisé pour estimer l'obligation mensuelle dans le flux de trésorerie.")
+            Text(lang["cl.minPayment.footer"])
         }
     }
 
     private var accountSection: some View {
-        Section("Compte associé (optionnel)") {
+        Section(lang["cl.associatedAccount"]) {
             Picker("Compte", selection: $selectedAccount) {
-                Text("Aucun").tag(Account?.none)
+                Text(lang["label.none"]).tag(Account?.none)
                 ForEach(accounts) { acc in
                     HStack {
                         Image(systemName: acc.iconSystemName).foregroundStyle(Color(hex: acc.colorHex))
@@ -214,8 +215,8 @@ struct AddEditCreditLineView: View {
         Section {
             Toggle(isOn: $createRecurring.animation()) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Remboursement récurrent")
-                    Text("Enregistre automatiquement un paiement périodique")
+                    Text(lang["cl.recurringRepayment"])
+                    Text(lang["cl.recurringRepayment.sub"])
                         .font(.caption).foregroundStyle(.secondary)
                 }
             }
@@ -227,16 +228,16 @@ struct AddEditCreditLineView: View {
                         .keyboardType(.decimalPad).multilineTextAlignment(.trailing).frame(maxWidth: 120)
                     Text(Currencies.info(for: currency).symbol).foregroundStyle(.secondary)
                 }
-                Picker("Fréquence", selection: $recurringFrequency) {
-                    ForEach(RecurrenceFrequency.allCases) { f in Text(f.labelFR).tag(f) }
+                Picker(lang["label.frequency"], selection: $recurringFrequency) {
+                    ForEach(RecurrenceFrequency.allCases) { f in Text(f.label).tag(f) }
                 }
             }
         } header: { Text("Remboursement automatique") }
     }
 
     private var notesSection: some View {
-        Section("Notes (optionnel)") {
-            TextField("Numéro de compte, conditions, etc.", text: $notes, axis: .vertical)
+        Section(lang["label.notes"] + " " + lang["label.optional"]) {
+            TextField(lang["label.notes"], text: $notes, axis: .vertical)
                 .lineLimit(2...4)
         }
     }
@@ -244,10 +245,10 @@ struct AddEditCreditLineView: View {
     private var deleteSection: some View {
         Section {
             Button(role: .destructive) { showDeleteConfirm = true } label: {
-                Label("Supprimer cette marge", systemImage: "trash")
+                Label(lang["cl.delete"], systemImage: "trash")
             }
         } footer: {
-            Text("Supprime la marge et tout son historique de mouvements.")
+            Text(lang["cl.delete.footer"])
         }
     }
 

@@ -8,6 +8,7 @@ import SwiftData
 
 struct DashboardView: View {
     @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
 
     @Query(filter: #Predicate<Account> { !$0.isArchived },
            sort: \Account.createdAt, order: .forward)
@@ -80,7 +81,7 @@ struct DashboardView: View {
                     populated
                 }
             }
-            .navigationTitle("Tableau de bord")
+            .navigationTitle(lang["dashboard.title"])
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
@@ -111,7 +112,7 @@ struct DashboardView: View {
             Image(systemName: "building.columns")
                 .font(.system(size: 56))
                 .foregroundStyle(.tint)
-            Text("Bienvenue dans FinTrack")
+            Text(lang["dashboard.welcome.title"])
                 .font(.title2.weight(.semibold))
             Text("Commencez par ajouter un compte bancaire,\nune carte ou un portefeuille liquide.")
                 .multilineTextAlignment(.center)
@@ -120,7 +121,7 @@ struct DashboardView: View {
             Button {
                 showAddAccount = true
             } label: {
-                Label("Ajouter mon premier compte", systemImage: "plus")
+                Label(lang["dashboard.welcome.cta"], systemImage: "plus")
                     .font(.body.weight(.semibold))
                     .padding(.horizontal, 20)
                     .padding(.vertical, 12)
@@ -167,7 +168,7 @@ struct DashboardView: View {
 
     private var totalsSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Solde global")
+            Text(lang["dashboard.globalBalance"])
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.secondary)
                 .padding(.horizontal)
@@ -194,11 +195,11 @@ struct DashboardView: View {
     private var accountsCarousel: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Mes comptes")
+                Text(lang["dashboard.myAccounts"])
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
                 Spacer()
-                NavigationLink("Tout voir") {
+                NavigationLink(lang["action.seeAll"]) {
                     AccountsView()
                 }
                 .font(.caption)
@@ -226,21 +227,21 @@ struct DashboardView: View {
         let summary = thisMonthSummary
         if let currency = summary.currency {
             VStack(alignment: .leading, spacing: 8) {
-                Text("Ce mois-ci (\(currency))")
+                Text(lang["dashboard.thisMonth"] + " (\(currency))")
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
                     .padding(.horizontal)
 
                 HStack(spacing: 12) {
                     summaryTile(
-                        title: "Revenus",
+                        title: lang["label.incomes"],
                         value: summary.income,
                         currency: currency,
                         color: .green,
                         systemImage: "arrow.down.left.circle.fill"
                     )
                     summaryTile(
-                        title: "Dépenses",
+                        title: lang["label.expenses"],
                         value: summary.expense,
                         currency: currency,
                         color: .red,
@@ -277,11 +278,11 @@ struct DashboardView: View {
         if !activeCreditLines.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text("Mes marges de crédit")
+                    Text(lang["dashboard.myCreditLines"])
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(.secondary)
                     Spacer()
-                    NavigationLink("Tout voir") { CreditLinesView() }
+                    NavigationLink(lang["action.seeAll"]) { CreditLinesView() }
                         .font(.caption)
                 }
                 .padding(.horizontal)
@@ -337,11 +338,11 @@ struct DashboardView: View {
         if !activeLoans.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text("Mes prêts")
+                    Text(lang["dashboard.myLoans"])
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(.secondary)
                     Spacer()
-                    NavigationLink("Tout voir") { LoansView() }
+                    NavigationLink(lang["action.seeAll"]) { LoansView() }
                         .font(.caption)
                 }
                 .padding(.horizontal)
@@ -358,7 +359,7 @@ struct DashboardView: View {
                                         .font(.system(size: 15, weight: .semibold))
                                 }
                                 VStack(alignment: .leading, spacing: 2) {
-                                    Text(loan.label.isEmpty ? loan.type.labelFR : loan.label)
+                                    Text(loan.label.isEmpty ? loan.type.label : loan.label)
                                         .font(.callout.weight(.medium)).lineLimit(1)
                                     ProgressView(value: calc.progressFraction)
                                         .tint(.green).scaleEffect(y: 0.7)
@@ -390,11 +391,11 @@ struct DashboardView: View {
         if !upcomingRecurrences.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text("À venir (30 jours)")
+                    Text(lang["dashboard.upcoming"])
                         .font(.subheadline.weight(.medium))
                         .foregroundStyle(.secondary)
                     Spacer()
-                    NavigationLink("Tout voir") {
+                    NavigationLink(lang["action.seeAll"]) {
                         RecurrencesView()
                     }
                     .font(.caption)
@@ -448,7 +449,7 @@ struct DashboardView: View {
                 Text(rule.displayTitle)
                     .font(.body.weight(.medium))
                     .lineLimit(1)
-                Text(rule.frequency.shortLabelFR)
+                Text(rule.frequency.shortLabel)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -467,11 +468,11 @@ struct DashboardView: View {
     private var recentSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Transactions récentes")
+                Text(lang["dashboard.recentTx"])
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
                 Spacer()
-                NavigationLink("Tout voir") {
+                NavigationLink(lang["action.seeAll"]) {
                     TransactionsView()
                 }
                 .font(.caption)

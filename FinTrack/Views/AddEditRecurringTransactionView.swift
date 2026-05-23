@@ -13,6 +13,7 @@ enum RecurringEditorMode {
 
 struct AddEditRecurringTransactionView: View {
     @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
     @Environment(\.dismiss) private var dismiss
 
     let mode: RecurringEditorMode
@@ -49,7 +50,7 @@ struct AddEditRecurringTransactionView: View {
     }
 
     private var navTitle: String {
-        isEditing ? "Modifier la récurrence" : "Nouvelle récurrence"
+        isEditing ? lang["recurring.edit"] : lang["recurring.create"]
     }
 
     private var currencyCode: String {
@@ -81,10 +82,10 @@ struct AddEditRecurringTransactionView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Annuler") { dismiss() }
+                    Button(lang["action.cancel"]) { dismiss() }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Enregistrer") { save() }
+                    Button(lang["action.save"]) { save() }
                         .disabled(!canSave)
                         .fontWeight(.semibold)
                 }
@@ -96,10 +97,10 @@ struct AddEditRecurringTransactionView: View {
                     selected: $selectedCategory
                 )
             }
-            .confirmationDialog("Supprimer cette récurrence ?",
+            .confirmationDialog(lang["recurring.deletePrompt"],
                                 isPresented: $showDeleteConfirm, titleVisibility: .visible) {
-                Button("Supprimer", role: .destructive) { deleteIfEditing() }
-                Button("Annuler", role: .cancel) {}
+                Button(lang["action.delete"], role: .destructive) { deleteIfEditing() }
+                Button(lang["action.cancel"], role: .cancel) {}
             }
             .onAppear(perform: loadIfEditing)
         }
@@ -133,8 +134,8 @@ struct AddEditRecurringTransactionView: View {
     private var typeSection: some View {
         Section {
             Picker("Type", selection: $type) {
-                Text("Dépense").tag(TransactionType.expense)
-                Text("Revenu").tag(TransactionType.income)
+                Text(lang["tx.type.expense"]).tag(TransactionType.expense)
+                Text(lang["tx.type.income"]).tag(TransactionType.income)
             }
             .pickerStyle(.segmented)
             .onChange(of: type) { _, _ in
@@ -146,38 +147,38 @@ struct AddEditRecurringTransactionView: View {
     }
 
     private var scheduleSection: some View {
-        Section("Planification") {
+        Section(lang["recurring.schedule"]) {
             // Label (optional but helpful for payroll, rent, etc.)
-            TextField("Nom (ex. Salaire BNC, Loyer)", text: $title)
+            TextField(lang["recurring.name"], text: $title)
 
-            Picker("Fréquence", selection: $frequency) {
+            Picker(lang["label.frequency"], selection: $frequency) {
                 ForEach(RecurrenceFrequency.allCases) { f in
                     HStack {
                         Image(systemName: f.iconSystemName)
-                        Text(f.labelFR)
+                        Text(f.label)
                     }
                     .tag(f)
                 }
             }
 
-            DatePicker("Première occurrence", selection: $startDate, displayedComponents: .date)
+            DatePicker(lang["recurring.firstOccurrence"], selection: $startDate, displayedComponents: .date)
 
-            Toggle("Date de fin", isOn: $hasEndDate.animation())
+            Toggle(lang["recurring.endDate"], isOn: $hasEndDate.animation())
             if hasEndDate {
-                DatePicker("Fin le", selection: $endDate,
+                DatePicker(lang["recurring.endDate"], selection: $endDate,
                            in: startDate..., displayedComponents: .date)
             }
         }
     }
 
     private var accountSection: some View {
-        Section("Compte") {
+        Section(lang["label.account"]) {
             if accounts.isEmpty {
                 Text("Aucun compte. Créez-en un d'abord.")
                     .foregroundStyle(.secondary)
             } else {
-                Picker("Compte", selection: $selectedAccount) {
-                    Text("Choisir…").tag(Account?.none)
+                Picker(lang["label.account"], selection: $selectedAccount) {
+                    Text(lang["label.none"] + "…").tag(Account?.none)
                     ForEach(accounts) { account in
                         HStack {
                             Image(systemName: account.iconSystemName)
@@ -194,7 +195,7 @@ struct AddEditRecurringTransactionView: View {
     }
 
     private var categorySection: some View {
-        Section("Catégorie") {
+        Section(lang["label.category"]) {
             Button {
                 showCategoryPicker = true
             } label: {
@@ -211,7 +212,7 @@ struct AddEditRecurringTransactionView: View {
                         Text(cat.name).foregroundStyle(.primary)
                     } else {
                         Image(systemName: "tag").foregroundStyle(.secondary)
-                        Text("Aucune catégorie").foregroundStyle(.secondary)
+                        Text(lang["tx.noCategory"]).foregroundStyle(.secondary)
                     }
                     Spacer()
                     Image(systemName: "chevron.right")
@@ -224,9 +225,9 @@ struct AddEditRecurringTransactionView: View {
     }
 
     private var detailsSection: some View {
-        Section("Détails") {
-            TextField(type == .income ? "Source (employeur, client…)"
-                                       : "Bénéficiaire (commerce, abonnement…)",
+        Section(lang["label.details"]) {
+            TextField(type == .income ? lang["tx.payeeIncome"]
+                                       : lang["tx.payeeExpense"],
                       text: $payee)
             TextField("Note", text: $note, axis: .vertical)
                 .lineLimit(1...3)
@@ -249,10 +250,10 @@ struct AddEditRecurringTransactionView: View {
             Button(role: .destructive) {
                 showDeleteConfirm = true
             } label: {
-                Label("Supprimer cette récurrence", systemImage: "trash")
+                Label(lang["recurring.deletePrompt"], systemImage: "trash")
             }
         } footer: {
-            Text("Supprime la règle uniquement. Les transactions déjà enregistrées sont conservées.")
+            Text(lang["recurring.deleteFooter"])
         }
     }
 
@@ -385,7 +386,7 @@ private struct CategoryPickerSheet: View {
             .navigationTitle("Catégorie")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) { Button("Fermer") { dismiss() } }
+                ToolbarItem(placement: .topBarTrailing) { Button(lang["action.close"]) { dismiss() } }
             }
         }
     }

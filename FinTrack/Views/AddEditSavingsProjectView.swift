@@ -13,6 +13,7 @@ enum SavingsProjectEditorMode {
 
 struct AddEditSavingsProjectView: View {
     @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
     @Environment(\.dismiss) private var dismiss
 
     let mode: SavingsProjectEditorMode
@@ -39,7 +40,7 @@ struct AddEditSavingsProjectView: View {
     @State private var showDeleteConfirm: Bool = false
 
     private var isEditing: Bool { if case .edit = mode { return true }; return false }
-    private var navTitle: String { isEditing ? "Modifier le projet" : "Nouveau projet" }
+    private var navTitle: String { isEditing ? lang["savings.edit"] : lang["savings.createNew"] }
 
     private var canSave: Bool { !name.trimmingCharacters(in: .whitespaces).isEmpty }
 
@@ -93,15 +94,15 @@ struct AddEditSavingsProjectView: View {
             .navigationTitle(navTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading)  { Button("Annuler") { dismiss() } }
+                ToolbarItem(placement: .topBarLeading)  { Button(lang["action.cancel"]) { dismiss() } }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Enregistrer") { save() }
+                    Button(lang["action.save"]) { save() }
                         .disabled(!canSave).fontWeight(.semibold)
                 }
             }
-            .confirmationDialog("Supprimer ce projet ?", isPresented: $showDeleteConfirm, titleVisibility: .visible) {
-                Button("Supprimer", role: .destructive) { deleteIfEditing() }
-                Button("Annuler", role: .cancel) {}
+            .confirmationDialog(lang["savings.delete"], isPresented: $showDeleteConfirm, titleVisibility: .visible) {
+                Button(lang["action.delete"], role: .destructive) { deleteIfEditing() }
+                Button(lang["action.cancel"], role: .cancel) {}
             }
             .onAppear(perform: loadIfEditing)
         }
@@ -155,7 +156,7 @@ struct AddEditSavingsProjectView: View {
                 }
             }
 
-            Picker("Devise", selection: $currency) {
+            Picker(lang["label.currency"], selection: $currency) {
                 ForEach(Currencies.all) { c in Text("\(c.code) — \(c.nameFR)").tag(c.code) }
             }
         }
@@ -166,12 +167,12 @@ struct AddEditSavingsProjectView: View {
             Toggle(isOn: $trackViaAccount.animation()) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Suivre via un compte")
-                    Text("Le montant épargné = solde du compte choisi")
+                    Text(lang["savings.trackViaAccount.sub"])
                         .font(.caption).foregroundStyle(.secondary)
                 }
             }
             if trackViaAccount {
-                Picker("Compte", selection: $selectedAccount) {
+                Picker(lang["label.account"], selection: $selectedAccount) {
                     Text("Choisir…").tag(Account?.none)
                     ForEach(accounts) { acc in
                         HStack {
@@ -190,7 +191,7 @@ struct AddEditSavingsProjectView: View {
                 }
             } else {
                 HStack {
-                    Text("Montant déjà épargné")
+                    Text(lang["savings.alreadySaved"])
                     Spacer()
                     TextField("0", text: $currentAmountText)
                         .keyboardType(.decimalPad).multilineTextAlignment(.trailing).frame(maxWidth: 120)
@@ -202,10 +203,10 @@ struct AddEditSavingsProjectView: View {
 
     private var targetSection: some View {
         Section {
-            Toggle("Définir un montant cible", isOn: $hasTarget.animation())
+            Toggle(lang["savings.defineTarget"], isOn: $hasTarget.animation())
             if hasTarget {
                 HStack {
-                    Text("Montant cible")
+                    Text(lang["savings.targetAmount"])
                     Spacer()
                     TextField("0", text: $targetAmountText)
                         .keyboardType(.decimalPad).multilineTextAlignment(.trailing).frame(maxWidth: 120)
@@ -214,7 +215,7 @@ struct AddEditSavingsProjectView: View {
                 Toggle(isOn: $hasDeadline.animation()) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Date limite")
-                        Text("L'app calculera la contribution requise")
+                        Text(lang["savings.deadline.sub"])
                             .font(.caption).foregroundStyle(.secondary)
                     }
                 }
@@ -229,7 +230,7 @@ struct AddEditSavingsProjectView: View {
     private var contributionSection: some View {
         Section {
             HStack {
-                Text("Contribution mensuelle")
+                Text(lang["savings.contribution"])
                 Spacer()
                 TextField("0", text: $contributionText)
                     .keyboardType(.decimalPad).multilineTextAlignment(.trailing).frame(maxWidth: 120)
@@ -238,7 +239,7 @@ struct AddEditSavingsProjectView: View {
         } header: {
             Text("Versement mensuel depuis le surplus")
         } footer: {
-            Text("Ce montant sera déduit du surplus mensuel affiché dans le flux de trésorerie.")
+            Text(lang["savings.contribution.footer"])
         }
     }
 
@@ -283,7 +284,7 @@ struct AddEditSavingsProjectView: View {
     private var deleteSection: some View {
         Section {
             Button(role: .destructive) { showDeleteConfirm = true } label: {
-                Label("Supprimer ce projet", systemImage: "trash")
+                Label(lang["savings.delete"], systemImage: "trash")
             }
         }
     }

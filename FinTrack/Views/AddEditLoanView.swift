@@ -13,6 +13,7 @@ enum LoanEditorMode {
 
 struct AddEditLoanView: View {
     @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
     @Environment(\.dismiss) private var dismiss
 
     let mode: LoanEditorMode
@@ -43,7 +44,7 @@ struct AddEditLoanView: View {
     @FocusState private var principalFocused: Bool
 
     private var isEditing: Bool { if case .edit = mode { return true }; return false }
-    private var navTitle: String { isEditing ? "Modifier le prêt" : "Nouveau prêt" }
+    private var navTitle: String { isEditing ? lang["loan.edit"] : lang["loan.create"] }
 
     private var termMonths: Int { termYears * 12 + termExtraMonths }
 
@@ -91,16 +92,16 @@ struct AddEditLoanView: View {
             .navigationTitle(navTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading)  { Button("Annuler") { dismiss() } }
+                ToolbarItem(placement: .topBarLeading)  { Button(lang["action.cancel"]) { dismiss() } }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Enregistrer") { save() }
+                    Button(lang["action.save"]) { save() }
                         .disabled(!canSave)
                         .fontWeight(.semibold)
                 }
             }
-            .confirmationDialog("Supprimer ce prêt ?", isPresented: $showDeleteConfirm, titleVisibility: .visible) {
-                Button("Supprimer", role: .destructive) { deleteIfEditing() }
-                Button("Annuler", role: .cancel) {}
+            .confirmationDialog(lang["loan.delete"], isPresented: $showDeleteConfirm, titleVisibility: .visible) {
+                Button(lang["action.delete"], role: .destructive) { deleteIfEditing() }
+                Button(lang["action.cancel"], role: .cancel) {}
             }
             .onAppear(perform: loadIfEditing)
             .onChange(of: type) { _, newType in
@@ -113,18 +114,18 @@ struct AddEditLoanView: View {
     // MARK: - Sections
 
     private var identitySection: some View {
-        Section("Identification") {
-            TextField("Libellé (ex. Hypothèque principale)", text: $label)
+        Section(lang["loan.identify"]) {
+            TextField(lang["loan.labelPlaceholder"], text: $label)
 
-            Picker("Type", selection: $type) {
+            Picker(lang["label.type"], selection: $type) {
                 ForEach(LoanType.allCases) { t in
-                    Label(t.labelFR, systemImage: t.iconSystemName).tag(t)
+                    Label(t.label, systemImage: t.iconSystemName).tag(t)
                 }
             }
 
-            TextField("Prêteur (ex. Banque Nationale)", text: $lenderName)
+            TextField(lang["loan.lenderPlaceholder"], text: $lenderName)
 
-            Picker("Devise", selection: $currency) {
+            Picker(lang["label.currency"], selection: $currency) {
                 ForEach(Currencies.all) { c in
                     Text("\(c.code) — \(c.nameFR)").tag(c.code)
                 }
@@ -136,7 +137,7 @@ struct AddEditLoanView: View {
         Section {
             // Principal — big field
             HStack {
-                Text("Montant emprunté")
+                Text(lang["loan.principal"])
                 Spacer()
                 TextField("0", text: $principalText)
                     .keyboardType(.decimalPad)
@@ -150,8 +151,8 @@ struct AddEditLoanView: View {
             // Interest rate
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Taux d'intérêt annuel")
-                    Text("Taux nominal tel qu'inscrit au contrat")
+                    Text(lang["loan.annualRate"])
+                    Text(lang["loan.annualRate.sub"])
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -169,10 +170,10 @@ struct AddEditLoanView: View {
     }
 
     private var scheduleSection: some View {
-        Section("Durée et versements") {
+        Section(lang["loan.duration"]) {
             // Term — years + months
             HStack {
-                Text("Durée")
+                Text(lang["loan.term"])
                 Spacer()
                 Picker("Années", selection: $termYears) {
                     ForEach(0...35, id: \.self) { y in
@@ -193,19 +194,19 @@ struct AddEditLoanView: View {
                 .clipped()
             }
 
-            Picker("Fréquence des versements", selection: $frequency) {
+            Picker(lang["loan.paymentFreq"], selection: $frequency) {
                 ForEach(LoanPaymentFrequency.allCases) { f in
-                    Text(f.labelFR).tag(f)
+                    Text(f.label).tag(f)
                 }
             }
 
-            DatePicker("Premier versement", selection: $firstPaymentDate, displayedComponents: .date)
+            DatePicker(lang["loan.firstPayment"], selection: $firstPaymentDate, displayedComponents: .date)
 
             Button {
                 withAnimation { showAdvanced.toggle() }
             } label: {
                 HStack {
-                    Text(showAdvanced ? "Masquer les options avancées" : "Options avancées")
+                    Text(showAdvanced ? lang["label.hideAdvanced"] : lang["label.advanced"])
                         .font(.callout)
                     Spacer()
                     Image(systemName: showAdvanced ? "chevron.up" : "chevron.down")
@@ -220,23 +221,23 @@ struct AddEditLoanView: View {
     private var advancedSection: some View {
         Section {
             Picker("Capitalisation des intérêts", selection: $compounding) {
-                ForEach(LoanCompounding.allCases) { c in Text(c.labelFR).tag(c) }
+                ForEach(LoanCompounding.allCases) { c in Text(c.label).tag(c) }
             }
         } header: {
             Text("Avancé")
         } footer: {
-            Text("Les hypothèques canadiennes utilisent la capitalisation semestrielle (Loi sur les intérêts). Les prêts personnels et auto utilisent généralement la capitalisation mensuelle.")
+            Text(lang["loan.compound.footer"])
         }
     }
 
     private var accountSection: some View {
-        Section("Compte débité") {
+        Section(lang["loan.debitAccount"]) {
             if accounts.isEmpty {
-                Text("Aucun compte. Créez-en un d'abord.")
+                Text(lang["loan.noAccount"])
                     .foregroundStyle(.secondary)
             } else {
-                Picker("Compte", selection: $selectedAccount) {
-                    Text("Aucun (suivi seulement)").tag(Account?.none)
+                Picker(lang["label.account"], selection: $selectedAccount) {
+                    Text(lang["loan.noAccount"]).tag(Account?.none)
                     ForEach(accounts) { acc in
                         HStack {
                             Image(systemName: acc.iconSystemName)
@@ -256,7 +257,7 @@ struct AddEditLoanView: View {
     private var summarySection: some View {
         if let calc = calculator {
             Section {
-                summaryRow("Versement \(frequency.labelFR.lowercased())",
+                summaryRow(lang["label.payment"] + " " + frequency.label.lowercased(),
                            value: formatAmount(calc.paymentAmount),
                            highlight: true)
 
@@ -267,19 +268,19 @@ struct AddEditLoanView: View {
                                color: .green)
                 }
 
-                summaryRow("Total des intérêts",
+                summaryRow(lang["loan.totalInterest"],
                            value: formatAmount(calc.totalInterest),
                            color: calc.totalInterest > calc.principal ? .red : .primary)
 
-                summaryRow("Coût total du prêt",
+                summaryRow(lang["loan.totalPaid"],
                            value: formatAmount(calc.totalAmountPaid))
 
-                summaryRow("Date de fin estimée",
+                summaryRow(lang["loan.estimatedEnd"],
                            value: calc.payoffDate.formatted(date: .long, time: .omitted))
             } header: {
                 Text("Résumé calculé")
             } footer: {
-                Text("Calcul basé sur les informations saisies. Vérifiez votre contrat de prêt pour les conditions exactes.")
+                Text(lang["loan.summary.footer"])
             }
         }
     }
@@ -288,8 +289,8 @@ struct AddEditLoanView: View {
         Section {
             Toggle(isOn: $createRecurring) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Créer un versement récurrent")
-                    Text("Enregistre automatiquement chaque paiement dans vos transactions")
+                    Text(lang["loan.createRecurring"])
+                    Text(lang["loan.createRecurring.sub"])
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -298,7 +299,7 @@ struct AddEditLoanView: View {
     }
 
     private var notesSection: some View {
-        Section("Notes (optionnel)") {
+        Section(lang["label.notes"] + " " + lang["label.optional"]) {
             TextField("Numéro de contrat, courtier, etc.", text: $notes, axis: .vertical)
                 .lineLimit(2...4)
         }
@@ -307,10 +308,10 @@ struct AddEditLoanView: View {
     private var deleteSection: some View {
         Section {
             Button(role: .destructive) { showDeleteConfirm = true } label: {
-                Label("Supprimer ce prêt", systemImage: "trash")
+                Label(lang["loan.delete"], systemImage: "trash")
             }
         } footer: {
-            Text("Supprime le prêt et son versement récurrent associé. Les transactions déjà enregistrées sont conservées.")
+            Text(lang["loan.delete.footer"])
         }
     }
 
@@ -388,13 +389,13 @@ struct AddEditLoanView: View {
             if createRecurring, let calc = calculator {
                 let amount = Decimal(calc.paymentAmount)
                 let rule = RecurringTransaction(
-                    title: trimLabel.isEmpty ? type.labelFR : trimLabel,
+                    title: trimLabel.isEmpty ? type.label : trimLabel,
                     amount: amount,
                     type: .expense,
                     frequency: frequency.recurringFrequency,
                     startDate: firstPaymentDate,
                     account: selectedAccount,
-                    note: "Remboursement \(trimLender.isEmpty ? type.labelFR : trimLender)",
+                    note: "Remboursement \(trimLender.isEmpty ? type.label : trimLender)",
                     payee: trimLender.isEmpty ? nil : trimLender,
                     isLoanPayment: true
                 )
