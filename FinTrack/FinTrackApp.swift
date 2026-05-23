@@ -37,6 +37,12 @@ struct FinTrackApp: App {
             await NotificationManager.shared.scheduleAll(context: modelContainer.mainContext)
         }
 
+        // Request notification permission and schedule all upcoming reminders
+        Task { @MainActor in
+            await NotificationManager.shared.requestPermission()
+            await NotificationManager.shared.scheduleAll(context: container.mainContext)
+        }
+
         // Generate any pending recurring transactions (salary, rent, subscriptions…).
         RecurringTransactionManager.applyPending(context: modelContainer.mainContext)
         CreditLineInterestManager.applyPending(context: modelContainer.mainContext)

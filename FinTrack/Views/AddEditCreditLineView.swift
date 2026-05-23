@@ -352,6 +352,8 @@ struct AddEditCreditLineView: View {
             cl.notificationDaysBefore = notifDaysBefore
         }
 
+        line.notificationEnabled = notifEnabled
+        line.notificationDaysBefore = notifDaysBefore
         try? context.save()
         let ctx = context
         Task { await NotificationManager.shared.scheduleAll(context: ctx) }
