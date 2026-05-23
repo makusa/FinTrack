@@ -16,6 +16,10 @@ struct DashboardView: View {
     @Query(sort: \Transaction.date, order: .reverse)
     private var allTransactions: [Transaction]
 
+    @Query(filter: #Predicate<Loan> { $0.isActive },
+           sort: \Loan.createdAt, order: .forward)
+    private var activeLoans: [Loan]
+
     @Query(filter: #Predicate<RecurringTransaction> { $0.isActive },
            sort: \RecurringTransaction.nextDueDate, order: .forward)
     private var activeRecurring: [RecurringTransaction]
@@ -132,6 +136,7 @@ struct DashboardView: View {
             VStack(alignment: .leading, spacing: 24) {
                 totalsSection
                 accountsCarousel
+                loanSection
                 monthSummarySection
                 if let currency = mostCommonCurrency() {
                     AnalyticsDashboardSection(
@@ -253,6 +258,59 @@ struct DashboardView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
         .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    @ViewBuilder
+    private var loanSection: some View {
+        if !activeLoans.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Mes prêts")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    NavigationLink("Tout voir") { LoansView() }
+                        .font(.caption)
+                }
+                .padding(.horizontal)
+
+                VStack(spacing: 0) {
+                    ForEach(Array(activeLoans.prefix(3).enumerated()), id: \.element.id) { idx, loan in
+                        NavigationLink { LoanDetailView(loan: loan) } label: {
+                            let calc = loan.calculator
+                            HStack(spacing: 12) {
+                                ZStack {
+                                    Circle().fill(Color.accentColor.opacity(0.12)).frame(width: 38, height: 38)
+                                    Image(systemName: loan.type.iconSystemName)
+                                        .foregroundStyle(Color.accentColor)
+                                        .font(.system(size: 15, weight: .semibold))
+                                }
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(loan.label.isEmpty ? loan.type.labelFR : loan.label)
+                                        .font(.callout.weight(.medium)).lineLimit(1)
+                                    ProgressView(value: calc.progressFraction)
+                                        .tint(.green).scaleEffect(y: 0.7)
+                                }
+                                Spacer()
+                                VStack(alignment: .trailing, spacing: 2) {
+                                    Text(Decimal(calc.currentBalance).formatted(asCurrency: loan.currency))
+                                        .font(.callout.weight(.semibold)).foregroundStyle(.red)
+                                    Text("\(calc.paymentsRemaining) versements")
+                                        .font(.caption2).foregroundStyle(.secondary)
+                                }
+                            }
+                            .padding(.horizontal).padding(.vertical, 10)
+                        }
+                        .buttonStyle(.plain)
+                        if idx < min(activeLoans.count, 3) - 1 {
+                            Divider().padding(.leading, 62)
+                        }
+                    }
+                }
+                .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal)
+            }
+        }
     }
 
     @ViewBuilder

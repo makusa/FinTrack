@@ -24,6 +24,12 @@ struct SettingsView: View {
             Form {
                 Section("Données") {
                     NavigationLink {
+                        LoansView()
+                    } label: {
+                        Label("Prêts", systemImage: "house.fill")
+                    }
+
+                    NavigationLink {
                         RecurrencesView()
                     } label: {
                         Label("Récurrences", systemImage: "arrow.2.squarepath")

@@ -30,6 +30,10 @@
 		0C59EC5012BEF259DE21BBCC /* RecurrencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125B9AC2D8CD958FFECBB5FA /* RecurrencesView.swift */; };
 		2250CF4D4FD7001E13E78B0E /* AddEditRecurringTransactionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87196A76F8540EA9918B575D /* AddEditRecurringTransactionView.swift */; };
 		2CF09101984C7B1944C4FF8D /* AnalyticsDashboardSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD7E5055F049060968A35BC2 /* AnalyticsDashboardSection.swift */; };
+		EA26B5D8845B5574CC95F6D5 /* Loan.swift in Sources */ = {isa = PBXBuildFile; fileRef = A204CEC139DE3F9972A7105F /* Loan.swift */; };
+		EA43985DFCDBD7FB640756EA /* LoansView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE24C75EEF2EB296CAEC7C6 /* LoansView.swift */; };
+		0888FE86DAB2CEB5D0AC686E /* AddEditLoanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48FB8C0B8F9F61AFDAAE3CC8 /* AddEditLoanView.swift */; };
+		DE008E493C4E18AF10D610BA /* LoanDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42FE84BCE1DA47E72CDEFF11 /* LoanDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -57,6 +61,10 @@
 		125B9AC2D8CD958FFECBB5FA /* RecurrencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrencesView.swift; sourceTree = "<group>"; };
 		87196A76F8540EA9918B575D /* AddEditRecurringTransactionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditRecurringTransactionView.swift; sourceTree = "<group>"; };
 		DD7E5055F049060968A35BC2 /* AnalyticsDashboardSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsDashboardSection.swift; sourceTree = "<group>"; };
+		A204CEC139DE3F9972A7105F /* Loan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loan.swift; sourceTree = "<group>"; };
+		9DE24C75EEF2EB296CAEC7C6 /* LoansView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoansView.swift; sourceTree = "<group>"; };
+		48FB8C0B8F9F61AFDAAE3CC8 /* AddEditLoanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditLoanView.swift; sourceTree = "<group>"; };
+		42FE84BCE1DA47E72CDEFF11 /* LoanDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoanDetailView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -75,6 +83,9 @@
 			children = (
 				D76D2AF0CE6FEC33302AB61E /* AccountDetailView.swift */,
 				DD7E5055F049060968A35BC2 /* AnalyticsDashboardSection.swift */,
+				48FB8C0B8F9F61AFDAAE3CC8 /* AddEditLoanView.swift */,
+				42FE84BCE1DA47E72CDEFF11 /* LoanDetailView.swift */,
+				9DE24C75EEF2EB296CAEC7C6 /* LoansView.swift */,
 				67FAEBACAD08ED3AFEEB2279 /* AccountsView.swift */,
 				5AA91C436EA64527214D120E /* AddEditAccountView.swift */,
 				87196A76F8540EA9918B575D /* AddEditRecurringTransactionView.swift */,
@@ -116,6 +127,7 @@
 				F053C63C61980B18AA6263E4 /* Category.swift */,
 				A343B877C383A2628511AF5E /* Currency.swift */,
 				D9176C3292D9569EDEF8512C /* RecurringTransaction.swift */,
+				A204CEC139DE3F9972A7105F /* Loan.swift */,
 				F1829FFD6EB0076039DC19BA /* Transaction.swift */,
 			);
 			path = Models;
@@ -209,6 +221,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				F1F79896855354F2AE090AA5 /* Account.swift in Sources */,
+				EA26B5D8845B5574CC95F6D5 /* Loan.swift in Sources */,
+				EA43985DFCDBD7FB640756EA /* LoansView.swift in Sources */,
+				0888FE86DAB2CEB5D0AC686E /* AddEditLoanView.swift in Sources */,
+				DE008E493C4E18AF10D610BA /* LoanDetailView.swift in Sources */,
 				2CF09101984C7B1944C4FF8D /* AnalyticsDashboardSection.swift in Sources */,
 				2250CF4D4FD7001E13E78B0E /* AddEditRecurringTransactionView.swift in Sources */,
 				F998DE904FFBE7D2F5D927AD /* RecurringTransaction.swift in Sources */,
