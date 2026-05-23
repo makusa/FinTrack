@@ -95,7 +95,7 @@ struct AddEditBudgetView: View {
                 }
 
                 // MARK: Category
-                Section(lang["label.category"]) {
+                Section {
                     Picker(lang["label.category"], selection: $selectedCategory) {
                         Text(lang["budget.category.all"]).tag(Category?.none)
                         ForEach(expenseCategories) { cat in
@@ -108,6 +108,8 @@ struct AddEditBudgetView: View {
                         }
                     }
                     .pickerStyle(.navigationLink)
+                } header: {
+                    Text(lang["label.category"])
                 } footer: {
                     Text(lang["budget.category.footer"])
                 }

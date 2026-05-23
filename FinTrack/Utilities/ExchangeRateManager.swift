@@ -128,13 +128,14 @@ final class ExchangeRateManager {
             newRates[base] = 1  // base = 1
 
             let now = Date()
+            let finalRates = newRates  // Capture immutable copy for @Sendable closure
             await MainActor.run {
-                self.rates        = newRates
+                self.rates        = finalRates
                 self.baseCurrency = base
                 self.lastUpdated  = now
                 self.isLoading    = false
             }
-            saveToCache(newRates, base: base, date: now)
+            saveToCache(finalRates, base: base, date: now)
 
         } catch {
             await MainActor.run {

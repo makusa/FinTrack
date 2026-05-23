@@ -39,6 +39,8 @@ struct AddEditRecurringTransactionView: View {
     @State private var payee: String = ""
     @State private var note: String = ""
     @State private var isActive: Bool = true
+    @State private var isTransfer: Bool = false
+    @State private var destinationAccount: Account? = nil
     @State private var showCategoryPicker = false
     @State private var showDeleteConfirm = false
 
@@ -76,7 +78,11 @@ struct AddEditRecurringTransactionView: View {
                 typeSection
                 scheduleSection
                 accountSection
-                categorySection
+                if isTransfer {
+                    transferDestinationSection
+                } else {
+                    categorySection
+                }
                 detailsSection
                 if isEditing { statusSection }
                 if isEditing { deleteSection }
@@ -141,10 +147,10 @@ struct AddEditRecurringTransactionView: View {
                 Text(lang["tx.type.income"]).tag(TransactionType.income)
             }
             .pickerStyle(.segmented)
-            .onChange(of: type) { _, _ in
-                if let cat = selectedCategory, !cat.matches(type) {
-                    selectedCategory = nil
-                }
+        }
+        .onChange(of: type) { _, _ in
+            if let cat = selectedCategory, !cat.matches(type) {
+                selectedCategory = nil
             }
         }
     }
@@ -192,6 +198,24 @@ struct AddEditRecurringTransactionView: View {
                         }
                         .tag(Optional(account))
                     }
+                }
+            }
+        }
+    }
+
+
+    private var transferDestinationSection: some View {
+        Section(lang["transfer.to"]) {
+            Picker(lang["transfer.to"], selection: $destinationAccount) {
+                Text(lang["label.none"] + "…").tag(Account?.none)
+                ForEach(accounts.filter { $0.persistentModelID != selectedAccount?.persistentModelID }) { a in
+                    HStack {
+                        Image(systemName: a.iconSystemName)
+                            .foregroundStyle(Color(hex: a.colorHex))
+                        Text(a.name)
+                        Text("(\(a.currency))").foregroundStyle(.secondary)
+                    }
+                    .tag(Optional(a))
                 }
             }
         }
@@ -326,6 +350,8 @@ struct AddEditRecurringTransactionView: View {
                 note: trimmedNote,
                 payee: trimmedPayee.isEmpty ? nil : trimmedPayee
             )
+            rule.isTransfer = isTransfer
+            rule.destinationAccount = isTransfer ? destinationAccount : nil
             rule.notificationEnabled = notifEnabled
             rule.notificationDaysBefore = notifDaysBefore
             context.insert(rule)

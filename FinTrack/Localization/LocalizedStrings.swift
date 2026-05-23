@@ -374,6 +374,20 @@ enum LocalizedStrings {
 
 
 
+
+        // MARK: - Transfers
+        "transfer.title":             ["fr": "Virement",                           "en": "Transfer",                       "es": "Transferencia",                 "pt": "Transferência"],
+        "transfer.create":            ["fr": "Nouveau virement",                   "en": "New Transfer",                   "es": "Nueva transferencia",           "pt": "Nova transferência"],
+        "transfer.accounts":          ["fr": "Comptes",                            "en": "Accounts",                       "es": "Cuentas",                       "pt": "Contas"],
+        "transfer.from":              ["fr": "Compte source",                      "en": "From Account",                   "es": "Cuenta origen",                 "pt": "Conta origem"],
+        "transfer.to":                ["fr": "Compte destinataire",                "en": "To Account",                     "es": "Cuenta destino",                "pt": "Conta destino"],
+        "transfer.to.label":          ["fr": "Vers",                               "en": "To",                             "es": "Hacia",                         "pt": "Para"],
+        "transfer.from.label":        ["fr": "Depuis",                             "en": "From",                           "es": "Desde",                         "pt": "De"],
+        "transfer.preview":           ["fr": "Aperçu du virement",                 "en": "Transfer Preview",               "es": "Vista previa",                  "pt": "Prévia"],
+        "transfer.crossCurrency.note":["fr": "Taux en temps réel",                "en": "Live rate applied",              "es": "Tasa en tiempo real",           "pt": "Taxa em tempo real"],
+        "transfer.sameAccount.error": ["fr": "Le compte source et destinataire doivent être différents.", "en": "Source and destination accounts must be different.", "es": "Las cuentas origen y destino deben ser diferentes.", "pt": "As contas origem e destino devem ser diferentes."],
+        "transfer.recurring.toggle":  ["fr": "Virement entre comptes",             "en": "Transfer Between Accounts",      "es": "Transferencia entre cuentas",   "pt": "Transferência entre contas"],
+
         // MARK: - Exchange Rates
         "fx.title":                ["fr": "Taux de change",                        "en": "Exchange Rates",                     "es": "Tipos de cambio",                   "pt": "Câmbio"],
         "fx.settings.section":     ["fr": "Devises",                               "en": "Currencies",                         "es": "Divisas",                           "pt": "Divisas"],

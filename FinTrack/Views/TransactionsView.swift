@@ -21,6 +21,7 @@ struct TransactionsView: View {
     @State private var filterAccount: Account? = nil
     @State private var searchText: String = ""
     @State private var showAddTransaction = false
+    @State private var showAddTransfer = false
 
     enum TypeFilter: String, CaseIterable, Identifiable {
         case all, income, expense
@@ -90,8 +91,17 @@ struct TransactionsView: View {
                     filterMenu
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showAddTransaction = true
+                    Menu {
+                        Button {
+                            showAddTransaction = true
+                        } label: {
+                            Label(lang["tx.create"], systemImage: "plus")
+                        }
+                        Button {
+                            showAddTransfer = true
+                        } label: {
+                            Label(lang["transfer.create"], systemImage: "arrow.left.arrow.right")
+                        }
                     } label: {
                         Image(systemName: "plus.circle.fill").font(.title3)
                     }
@@ -102,6 +112,9 @@ struct TransactionsView: View {
                 NavigationStack {
                     AddEditTransactionView(mode: .create)
                 }
+            }
+            .sheet(isPresented: $showAddTransfer) {
+                AddTransferView()
             }
         }
     }

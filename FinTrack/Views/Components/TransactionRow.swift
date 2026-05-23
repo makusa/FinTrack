@@ -10,11 +10,17 @@ struct TransactionRow: View {
 
     let transaction: Transaction
 
+    private var isTransfer: Bool {
+        transaction.transferPairId != nil
+    }
+
     private var iconName: String {
-        transaction.category?.iconSystemName ?? "circle.dashed"
+        if isTransfer { return "arrow.left.arrow.right.circle.fill" }
+        return transaction.category?.iconSystemName ?? "circle.dashed"
     }
 
     private var iconColor: Color {
+        if isTransfer { return .blue }
         if let hex = transaction.category?.colorHex {
             return Color(hex: hex)
         }
@@ -22,6 +28,14 @@ struct TransactionRow: View {
     }
 
     private var primaryText: String {
+        if isTransfer {
+            let lang = LanguageManager.shared
+            let dir = transaction.type == .expense ? lang["transfer.to.label"] : lang["transfer.from.label"]
+            if let payee = transaction.payee, !payee.isEmpty {
+                return "\(lang["transfer.title"]) · \(dir) \(payee)"
+            }
+            return lang["transfer.title"]
+        }
         if let payee = transaction.payee, !payee.isEmpty {
             return payee
         }

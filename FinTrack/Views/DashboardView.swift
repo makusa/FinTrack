@@ -32,6 +32,7 @@ struct DashboardView: View {
 
     @State private var showAddTransaction = false
     @State private var showAddAccount = false
+    @State private var showAddTransfer = false
 
     // Group accounts by currency for the totals strip.
     private var totalsByCurrency: [(currency: String, total: Decimal)] {
@@ -85,11 +86,19 @@ struct DashboardView: View {
             .navigationTitle(lang["dashboard.title"])
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showAddTransaction = true
+                    Menu {
+                        Button {
+                            showAddTransaction = true
+                        } label: {
+                            Label(lang["tx.create"], systemImage: "plus")
+                        }
+                        Button {
+                            showAddTransfer = true
+                        } label: {
+                            Label(lang["transfer.create"], systemImage: "arrow.left.arrow.right")
+                        }
                     } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title3)
+                        Image(systemName: "plus.circle.fill").font(.title3)
                     }
                     .disabled(accounts.isEmpty)
                 }
@@ -98,6 +107,9 @@ struct DashboardView: View {
                 NavigationStack {
                     AddEditTransactionView(mode: .create)
                 }
+            }
+            .sheet(isPresented: $showAddTransfer) {
+                AddTransferView()
             }
             .sheet(isPresented: $showAddAccount) {
                 AddEditAccountView(mode: .create)
