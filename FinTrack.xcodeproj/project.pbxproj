@@ -67,6 +67,7 @@
 		9589B7DCD27F8206748147F1 /* BudgetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F17D78150717C6E9E431672 /* BudgetDetailView.swift */; };
 		74EBB369D0827AD07F40442F /* ExchangeRateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FC0CC86DA61D06F99CD1CB /* ExchangeRateManager.swift */; };
 		E46B90B172447621BDD00575 /* ExchangeRateSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17B390EE919DEAF6F07ECD04 /* ExchangeRateSettingsView.swift */; };
+		3598C72B3530823F6E4641E8 /* AddTransferView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944ACF2DB3F1EF911E76FB78 /* AddTransferView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -132,6 +133,7 @@
 		4F17D78150717C6E9E431672 /* BudgetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetDetailView.swift; sourceTree = "<group>"; };
 		26FC0CC86DA61D06F99CD1CB /* ExchangeRateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeRateManager.swift; sourceTree = "<group>"; };
 		17B390EE919DEAF6F07ECD04 /* ExchangeRateSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeRateSettingsView.swift; sourceTree = "<group>"; };
+		944ACF2DB3F1EF911E76FB78 /* AddTransferView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTransferView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -173,6 +175,7 @@
 				5AA91C436EA64527214D120E /* AddEditAccountView.swift */,
 				87196A76F8540EA9918B575D /* AddEditRecurringTransactionView.swift */,
 				D0A00CBB4D610338F0B810C6 /* AddEditTransactionView.swift */,
+				944ACF2DB3F1EF911E76FB78 /* AddTransferView.swift */,
 				D5E887C892C53194E107C95F /* AddEditPrepaymentView.swift */,
 				125B9AC2D8CD958FFECBB5FA /* RecurrencesView.swift */,
 				775C52DD1AEBBCB4437D4D83 /* DashboardView.swift */,
@@ -372,6 +375,7 @@
 				167DD8D94BD2C94A5D09FCC6 /* RootView.swift in Sources */,
 				17D35A490B812757B7DA1041 /* SeedData.swift in Sources */,
 				FEBFF9935E3B84CAFF02F78B /* SettingsView.swift in Sources */,
+				3598C72B3530823F6E4641E8 /* AddTransferView.swift in Sources */,
 				74EBB369D0827AD07F40442F /* ExchangeRateManager.swift in Sources */,
 				E46B90B172447621BDD00575 /* ExchangeRateSettingsView.swift in Sources */,
 

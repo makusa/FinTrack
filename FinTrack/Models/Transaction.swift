@@ -49,6 +49,7 @@ final class Transaction {
     /// this entry. nil = saisie manuelle. Stored as plain Int (not a relationship)
     /// to avoid circular SwiftData constraints.
     var sourceRecurringId: Int?
+    var transferPairId: UUID? = nil   // links the two legs of a transfer
 
     var account: Account?
     var category: Category?

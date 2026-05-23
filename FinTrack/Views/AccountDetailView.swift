@@ -15,6 +15,7 @@ struct AccountDetailView: View {
 
     @State private var showEdit = false
     @State private var showAddTransaction = false
+    @State private var showAddTransfer = false
     @State private var confirmArchive = false
 
     private var sortedTransactions: [Transaction] {
@@ -107,6 +108,11 @@ struct AccountDetailView: View {
                         Label(lang["account.newTransaction"], systemImage: "plus")
                     }
                     Button {
+                        showAddTransfer = true
+                    } label: {
+                        Label(lang["transfer.create"], systemImage: "arrow.left.arrow.right")
+                    }
+                    Button {
                         showEdit = true
                     } label: {
                         Label(lang["account.edit"], systemImage: "pencil")
@@ -123,6 +129,9 @@ struct AccountDetailView: View {
             NavigationStack {
                 AddEditTransactionView(mode: .create, preselectedAccount: account)
             }
+        }
+        .sheet(isPresented: $showAddTransfer) {
+            AddTransferView(preselectedSource: account)
         }
         .confirmationDialog(
             account.isArchived ? lang["account.unarchivePrompt"] : lang["account.archivePrompt"],

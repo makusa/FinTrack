@@ -55,17 +55,46 @@ enum RecurringTransactionManager {
                 break
             }
 
-            let tx = Transaction(
-                amount: rule.amount,
-                type: rule.type,
-                date: dueDate,
-                account: rule.account,
-                category: rule.category,
-                note: rule.note,
-                payee: rule.payee,
-                sourceRecurringId: rule.persistentModelID.hashValue  // link for traceability
-            )
-            context.insert(tx)
+            if rule.isTransfer, let destination = rule.destinationAccount {
+                // Transfer: generate two linked transactions
+                let pairId = UUID()
+                let debit = Transaction(
+                    amount: rule.amount,
+                    type: .expense,
+                    date: dueDate,
+                    account: rule.account,
+                    category: nil,
+                    note: rule.note.isEmpty ? "Virement vers \(destination.name)" : rule.note,
+                    payee: destination.name,
+                    sourceRecurringId: rule.persistentModelID.hashValue
+                )
+                debit.transferPairId = pairId
+                let credit = Transaction(
+                    amount: rule.amount,
+                    type: .income,
+                    date: dueDate,
+                    account: destination,
+                    category: nil,
+                    note: rule.note.isEmpty ? "Virement depuis \(rule.account?.name ?? "")" : rule.note,
+                    payee: rule.account?.name,
+                    sourceRecurringId: rule.persistentModelID.hashValue
+                )
+                credit.transferPairId = pairId
+                context.insert(debit)
+                context.insert(credit)
+            } else {
+                let tx = Transaction(
+                    amount: rule.amount,
+                    type: rule.type,
+                    date: dueDate,
+                    account: rule.account,
+                    category: rule.category,
+                    note: rule.note,
+                    payee: rule.payee,
+                    sourceRecurringId: rule.persistentModelID.hashValue  // link for traceability
+                )
+                context.insert(tx)
+            }
             inserted = true
 
             dueDate = rule.frequency.nextDate(after: dueDate)
@@ -80,17 +109,26 @@ enum RecurringTransactionManager {
 
     /// Generate and save a single occurrence NOW (manual "post early" action).
     static func postNow(_ rule: RecurringTransaction, context: ModelContext) {
-        let tx = Transaction(
-            amount: rule.amount,
-            type: rule.type,
-            date: .now,
-            account: rule.account,
-            category: rule.category,
-            note: rule.note,
-            payee: rule.payee,
-            sourceRecurringId: rule.persistentModelID.hashValue
-        )
-        context.insert(tx)
+        if rule.isTransfer, let destination = rule.destinationAccount {
+            let pairId = UUID()
+            let debit = Transaction(amount: rule.amount, type: .expense, date: .now,
+                account: rule.account, note: rule.note.isEmpty ? "Virement vers \(destination.name)" : rule.note,
+                payee: destination.name, sourceRecurringId: rule.persistentModelID.hashValue)
+            debit.transferPairId = pairId
+            let credit = Transaction(amount: rule.amount, type: .income, date: .now,
+                account: destination, note: rule.note.isEmpty ? "Virement depuis \(rule.account?.name ?? "")" : rule.note,
+                payee: rule.account?.name, sourceRecurringId: rule.persistentModelID.hashValue)
+            credit.transferPairId = pairId
+            context.insert(debit); context.insert(credit)
+        } else {
+            let tx = Transaction(
+                amount: rule.amount, type: rule.type, date: .now,
+                account: rule.account, category: rule.category,
+                note: rule.note, payee: rule.payee,
+                sourceRecurringId: rule.persistentModelID.hashValue
+            )
+            context.insert(tx)
+        }
         // Advance the due date by one period.
         rule.nextDueDate = rule.frequency.nextDate(after: rule.nextDueDate)
         try? context.save()
