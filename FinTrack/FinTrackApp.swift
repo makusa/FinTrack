@@ -43,14 +43,15 @@ struct FinTrackApp: App {
         CreditLineInterestManager.applyPending(context: modelContainer.mainContext)
     }
 
-    // Keep a reference to the shared language manager so the @Observable
-    // machinery propagates changes to all views in the hierarchy.
+    // Keep a reference to shared singletons so @Observable propagates changes.
     @State private var languageManager = LanguageManager.shared
+    @State private var lockManager = AppLockManager.shared
 
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environment(languageManager)
+                .environment(lockManager)
         }
         .modelContainer(container)
     }

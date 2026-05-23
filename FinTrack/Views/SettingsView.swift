@@ -44,7 +44,17 @@ struct SettingsView: View {
                 
                 // MARK: - Notifications
                 
-                // MARK: - iCloud (désactivé — nécessite Apple Developer Program)
+
+                // MARK: - Security
+                Section(lang["security.title"]) {
+                    NavigationLink {
+                        SecuritySettingsView()
+                    } label: {
+                        Label(lang["security.title"], systemImage: "lock.shield")
+                    }
+                }
+
+                                // MARK: - iCloud (désactivé — nécessite Apple Developer Program)
                 // Section(lang["icloud.section"]) { ... }
 
                 Section(lang["notification.settings"]) {
