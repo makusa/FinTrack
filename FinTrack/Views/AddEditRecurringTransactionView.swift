@@ -362,6 +362,7 @@ struct AddEditRecurringTransactionView: View {
 
 private struct CategoryPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(LanguageManager.self) private var lang
     let type: TransactionType
     let categories: [Category]
     @Binding var selected: Category?

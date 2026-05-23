@@ -25,7 +25,7 @@ struct TransactionsView: View {
     enum TypeFilter: String, CaseIterable, Identifiable {
         case all, income, expense
         var id: String { rawValue }
-        var labelFR: String {
+        func label(using lang: LanguageManager) -> String {
             switch self {
             case .all:     return lang["label.all"]
             case .income:  return lang["label.incomes"]
@@ -135,7 +135,7 @@ struct TransactionsView: View {
         Menu {
             Picker("Type", selection: $filterType) {
                 ForEach(TypeFilter.allCases) { f in
-                    Text(f.label).tag(f)
+                    Text(f.label(using: lang)).tag(f)
                 }
             }
             Divider()

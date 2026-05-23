@@ -14,6 +14,8 @@ import Charts
 // MARK: - Container
 
 struct BudgetDashboardSection: View {
+    @Environment(LanguageManager.self) private var lang
+
     let recurring: [RecurringTransaction]
     let loans: [Loan]
     let currency: String
@@ -54,6 +56,8 @@ struct BudgetDashboardSection: View {
 // MARK: - 1. Cash Flow Card
 
 struct CashFlowCard: View {
+    @Environment(LanguageManager.self) private var lang
+
     let summary: CashFlowSummary
 
     var body: some View {

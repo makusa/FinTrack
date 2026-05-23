@@ -10,10 +10,8 @@ import UniformTypeIdentifiers
 struct SettingsView: View {
     @Environment(\.modelContext) private var context
 
-    @Query(sort: \Transaction.date, order: .reverse)
     @Environment(LanguageManager.self) private var lang
-    private var allTransactions: [Transaction]
-
+    @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query(sort: \Account.createdAt) private var allAccounts: [Account]
 
     @State private var showExporter = false
@@ -235,9 +233,8 @@ struct CSVDocument: FileDocument {
 struct ManageCategoriesView: View {
     @Environment(\.modelContext) private var context
 
-    @Query(sort: \Category.name, order: .forward)
     @Environment(LanguageManager.self) private var lang
-    private var categories: [Category]
+    @Query(sort: \Category.name, order: .forward) private var categories: [Category]
 
     @State private var showAddCategory = false
 

@@ -20,6 +20,8 @@ private extension Decimal {
 
 // MARK: - Container
 struct AnalyticsDashboardSection: View {
+    @Environment(LanguageManager.self) private var lang
+
     let accounts: [Account]
     let transactions: [Transaction]
     let activeRecurring: [RecurringTransaction]
@@ -72,6 +74,8 @@ private struct RangePill: View {
 // MARK: - 1. Balance Projection Card ─────────────────────────────────────────
 
 struct BalanceProjectionCard: View {
+    @Environment(LanguageManager.self) private var lang
+
     let accounts: [Account]
     let transactions: [Transaction]
     let activeRecurring: [RecurringTransaction]
@@ -416,6 +420,8 @@ struct BalanceProjectionCard: View {
 // MARK: - 2. Income / Expense Card ────────────────────────────────────────────
 
 struct IncomeExpenseCard: View {
+    @Environment(LanguageManager.self) private var lang
+
     let transactions: [Transaction]
     let currency: String
 
@@ -605,6 +611,8 @@ struct IncomeExpenseCard: View {
 // MARK: - 3. Category Breakdown Card ──────────────────────────────────────────
 
 struct CategoryBreakdownCard: View {
+    @Environment(LanguageManager.self) private var lang
+
     let transactions: [Transaction]
     let currency: String
 

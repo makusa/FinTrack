@@ -60,7 +60,7 @@ struct AccountDetailView: View {
                 }
             }
 
-            Section("\(lang[\"label.type\"])s (\(sortedTransactions.count))") {
+            Section("\(lang["tx.title"]) (\(sortedTransactions.count))") {
                 if sortedTransactions.isEmpty {
                     Text(lang["account.noTransactions"])
                         .font(.callout)

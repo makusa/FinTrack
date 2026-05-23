@@ -6,6 +6,8 @@
 import SwiftUI
 
 struct CashFlowView: View {
+    @Environment(LanguageManager.self) private var lang
+
     let summary: CashFlowSummary
 
     var body: some View {

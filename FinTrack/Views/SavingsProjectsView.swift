@@ -171,6 +171,7 @@ struct SavingsProjectRow: View {
 
 struct SavingsProjectDetailView: View {
     @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
     @Bindable var project: SavingsProject
     @State private var showEdit       = false
     @State private var scrubDate:    Date?   = nil
