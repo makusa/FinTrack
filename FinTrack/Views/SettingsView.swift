@@ -43,6 +43,16 @@ struct SettingsView: View {
 
                 
                 // MARK: - Notifications
+                
+                // MARK: - iCloud
+                Section(lang["icloud.section"]) {
+                    NavigationLink {
+                        CloudSyncSettingsView()
+                    } label: {
+                        Label(lang["icloud.manage"], systemImage: "icloud")
+                    }
+                }
+
                 Section(lang["notification.settings"]) {
                     NavigationLink {
                         NotificationSettingsView()

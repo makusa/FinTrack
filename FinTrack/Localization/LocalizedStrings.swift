@@ -370,6 +370,19 @@ enum LocalizedStrings {
 
 
 
+
+        // MARK: - iCloud / CloudKit
+        "icloud.section":      ["fr": "iCloud",                                    "en": "iCloud",                                  "es": "iCloud",                                  "pt": "iCloud"],
+        "icloud.manage":       ["fr": "Synchronisation iCloud",                    "en": "iCloud Sync",                             "es": "Sincronización iCloud",                   "pt": "Sincronização iCloud"],
+        "icloud.status":       ["fr": "Statut",                                    "en": "Status",                                  "es": "Estado",                                  "pt": "Status"],
+        "icloud.available":    ["fr": "iCloud disponible ✓",                       "en": "iCloud Available ✓",                      "es": "iCloud disponible ✓",                     "pt": "iCloud disponível ✓"],
+        "icloud.unavailable":  ["fr": "iCloud non disponible",                     "en": "iCloud Not Available",                    "es": "iCloud no disponible",                    "pt": "iCloud não disponível"],
+        "icloud.restricted":   ["fr": "iCloud restreint (contrôle parental)",      "en": "iCloud Restricted (Parental Controls)",   "es": "iCloud restringido (control parental)",   "pt": "iCloud restrito (controle parental)"],
+        "icloud.noAccount":    ["fr": "Aucun compte iCloud — connectez-vous dans Réglages iOS", "en": "No iCloud Account — sign in via iOS Settings", "es": "Sin cuenta iCloud — inicia sesión en Ajustes", "pt": "Sem conta iCloud — entre nas Configurações iOS"],
+        "icloud.sync.info":    ["fr": "Vos données sont synchronisées automatiquement entre tous vos appareils Apple connectés au même compte iCloud.", "en": "Your data is automatically synced across all your Apple devices signed in to the same iCloud account.", "es": "Tus datos se sincronizan automáticamente en todos tus dispositivos Apple con la misma cuenta iCloud.", "pt": "Seus dados são sincronizados automaticamente em todos os seus dispositivos Apple com a mesma conta iCloud."],
+        "icloud.openSettings": ["fr": "Ouvrir Réglages iOS",                       "en": "Open iOS Settings",                       "es": "Abrir Ajustes de iOS",                    "pt": "Abrir Configurações do iOS"],
+        "icloud.container":    ["fr": "Conteneur CloudKit",                        "en": "CloudKit Container",                      "es": "Contenedor CloudKit",                     "pt": "Container CloudKit"],
+
         // MARK: - Notifications
         "notification.section":      ["fr": "Rappel",                              "en": "Reminder",                       "es": "Recordatorio",                  "pt": "Lembrete"],
         "notification.enable":       ["fr": "Activer le rappel",                   "en": "Enable Reminder",                "es": "Activar recordatorio",          "pt": "Ativar lembrete"],

@@ -51,11 +51,11 @@ enum CreditLineEntryType: String, CaseIterable, Identifiable {
 
 @Model
 final class CreditLineEntry {
-    var typeRaw: String
-    var amount: Decimal          // always positive
-    var date: Date
-    var note: String
-    var createdAt: Date
+    var typeRaw: String = CreditLineEntryType.draw.rawValue
+    var amount: Decimal = 0          // always positive
+    var date: Date = .now
+    var note: String = ""
+    var createdAt: Date = .now
 
     var creditLine: CreditLine?
 
@@ -120,16 +120,16 @@ enum MinimumPaymentType: String, CaseIterable, Identifiable {
 
 @Model
 final class CreditLine {
-    var name: String
-    var lenderName: String
-    var currency: String
-    var creditLimit: Decimal
-    var annualInterestRate: Decimal   // percent, e.g. 7.2
-    var compoundingRaw: String
-    var minimumPaymentTypeRaw: String
-    var minimumPaymentValue: Decimal  // percent OR fixed amount, ignored for interestOnly
-    var lastInterestAccrualDate: Date
-    var isActive: Bool
+    var name: String = ""
+    var lenderName: String = ""
+    var currency: String = "CAD"
+    var creditLimit: Decimal = 0
+    var annualInterestRate: Decimal = 0    // percent, e.g. 7.2
+    var compoundingRaw: String = CreditLineCompounding.daily.rawValue
+    var minimumPaymentTypeRaw: String = MinimumPaymentType.interestOnly.rawValue
+    var minimumPaymentValue: Decimal = 0  // percent OR fixed amount, ignored for interestOnly
+    var lastInterestAccrualDate: Date = .now
+    var isActive: Bool = true
     // MARK: Notification settings
     var notificationEnabled: Bool = false
     var notificationDaysBefore: Int = 3

@@ -19,13 +19,13 @@ enum CategoryApplicability: String, CaseIterable, Identifiable {
 
 @Model
 final class Category {
-    var name: String
-    var iconSystemName: String
-    var colorHex: String
-    var applicabilityRaw: String
-    var isSystem: Bool         // built-in categories cannot be deleted, only hidden
-    var isHidden: Bool
-    var createdAt: Date
+    var name: String = ""
+    var iconSystemName: String = "tag.fill"
+    var colorHex: String = "#3478F6"
+    var applicabilityRaw: String = CategoryApplicability.expense.rawValue
+    var isSystem: Bool = false    // built-in categories cannot be deleted, only hidden
+    var isHidden: Bool = false
+    var createdAt: Date = .now
 
     @Relationship(deleteRule: .nullify, inverse: \Transaction.category)
     var transactions: [Transaction] = []

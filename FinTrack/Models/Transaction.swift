@@ -33,18 +33,18 @@ enum TransactionType: String, CaseIterable, Identifiable {
 
 @Model
 final class Transaction {
-    var amount: Decimal           // always positive
-    var typeRaw: String
-    var date: Date
-    var note: String
+    var amount: Decimal = 0          // always positive
+    var typeRaw: String = TransactionType.expense.rawValue
+    var date: Date = .now
+    var note: String = ""
     var payee: String?
-    var createdAt: Date
+    var createdAt: Date = .now
     // MARK: Notification settings
     var notificationEnabled: Bool = false
     var notificationDaysBefore: Int = 1
 
 
-    var ownerId: UUID             // foyer-readiness: solo mode uses a constant
+    var ownerId: UUID = AppConstants.soloOwnerId  // foyer-readiness: solo mode uses a constant
     /// Hash of the PersistentModelID of the RecurringTransaction that generated
     /// this entry. nil = saisie manuelle. Stored as plain Int (not a relationship)
     /// to avoid circular SwiftData constraints.

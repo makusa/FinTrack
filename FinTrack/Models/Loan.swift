@@ -457,24 +457,24 @@ extension LoanCalculator {
 
 @Model
 final class Loan {
-    var label: String
-    var lenderName: String
-    var typeRaw: String
-    var currency: String
-    var originalPrincipal: Decimal
-    var annualInterestRate: Decimal   // percent, e.g. 5.5 (NOT 0.055)
-    var termMonths: Int
-    var frequencyRaw: String
-    var compoundingRaw: String
-    var firstPaymentDate: Date
-    var isActive: Bool
+    var label: String = ""
+    var lenderName: String = ""
+    var typeRaw: String = LoanType.mortgage.rawValue
+    var currency: String = "CAD"
+    var originalPrincipal: Decimal = 0
+    var annualInterestRate: Decimal = 0    // percent, e.g. 5.5 (NOT 0.055)
+    var termMonths: Int = 0
+    var frequencyRaw: String = LoanPaymentFrequency.monthly.rawValue
+    var compoundingRaw: String = LoanCompounding.semiAnnual.rawValue
+    var firstPaymentDate: Date = .now
+    var isActive: Bool = true
     // MARK: Notification settings
     var notificationEnabled: Bool = false
     var notificationDaysBefore: Int = 3
 
 
     var notes: String?
-    var createdAt: Date
+    var createdAt: Date = .now
 
     var account: Account?
 

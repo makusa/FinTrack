@@ -54,6 +54,7 @@
 		7D059B45A90CB57BC3BFC495 /* BankPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C574E73ABDB03518FD603080 /* BankPicker.swift */; };
 		C75FD39211FB65E073E06050 /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52E6CA305937C42E1A7876E1 /* NotificationManager.swift */; };
 		D2E79662D386F09A8C63CAB6 /* NotificationSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91BA447ECCCEE2FB354E8567 /* NotificationSettingsView.swift */; };
+		6CDB792AA2777C3185F37CFB /* CloudSyncSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E64FF7387150CEBF8373B32B /* CloudSyncSettingsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -105,6 +106,8 @@
 		C574E73ABDB03518FD603080 /* BankPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankPicker.swift; sourceTree = "<group>"; };
 		52E6CA305937C42E1A7876E1 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		91BA447ECCCEE2FB354E8567 /* NotificationSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationSettingsView.swift; sourceTree = "<group>"; };
+		DD57FF2A7B0E5E204F511B08 /* FinTrack.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FinTrack.entitlements; sourceTree = "<group>"; };
+		E64FF7387150CEBF8373B32B /* CloudSyncSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSyncSettingsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -147,6 +150,7 @@
 				775C52DD1AEBBCB4437D4D83 /* DashboardView.swift */,
 				A85E6C13F1FA6E8EA17F750A /* RootView.swift */,
 				5A597BF7A45068D64338863D /* SettingsView.swift */,
+				E64FF7387150CEBF8373B32B /* CloudSyncSettingsView.swift */,
 				91BA447ECCCEE2FB354E8567 /* NotificationSettingsView.swift */,
 				73D14C95CDD0E974493F20BB /* TransactionsView.swift */,
 				C587C942D6C553E71658CD6D /* Components */,
@@ -167,6 +171,7 @@
 			children = (
 				FF689CB36E8CEEFF2657D413 /* Assets.xcassets */,
 				FA75C9EEFB489048F50342E4 /* FinTrackApp.swift */,
+				DD57FF2A7B0E5E204F511B08 /* FinTrack.entitlements */,
 				A96289E687731417561F7EB0 /* Models */,
 				0792ABF971B545FD80425FD6 /* Utilities */,
 				B0CC6F0D2B7879414A9D82D5 /* Localization */,
@@ -323,6 +328,7 @@
 				167DD8D94BD2C94A5D09FCC6 /* RootView.swift in Sources */,
 				17D35A490B812757B7DA1041 /* SeedData.swift in Sources */,
 				FEBFF9935E3B84CAFF02F78B /* SettingsView.swift in Sources */,
+				6CDB792AA2777C3185F37CFB /* CloudSyncSettingsView.swift in Sources */,
 				C75FD39211FB65E073E06050 /* NotificationManager.swift in Sources */,
 				D2E79662D386F09A8C63CAB6 /* NotificationSettingsView.swift in Sources */,
 				774109B734D18248ECD4F416 /* BankDirectory.swift in Sources */,
@@ -348,6 +354,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_ENTITLEMENTS = FinTrack/FinTrack.entitlements;
+				CODE_SIGN_ENTITLEMENTS = FinTrack/FinTrack.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_LANGUAGE = fr;
@@ -380,6 +388,8 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_ENTITLEMENTS = FinTrack/FinTrack.entitlements;
+				CODE_SIGN_ENTITLEMENTS = FinTrack/FinTrack.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_LANGUAGE = fr;

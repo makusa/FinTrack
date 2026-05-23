@@ -44,16 +44,16 @@ enum AccountType: String, CaseIterable, Identifiable {
 
 @Model
 final class Account {
-    var name: String
-    var institution: String
-    var typeRaw: String
-    var currency: String        // ISO 4217 code
-    var initialBalance: Decimal
-    var colorHex: String
-    var iconSystemName: String
-    var isArchived: Bool
+    var name: String = ""
+    var institution: String = ""
+    var typeRaw: String = AccountType.checking.rawValue
+    var currency: String = Currencies.default  // ISO 4217 code
+    var initialBalance: Decimal = 0
+    var colorHex: String = "#3478F6"
+    var iconSystemName: String = AccountType.checking.defaultIconSystemName
+    var isArchived: Bool = false
     var notes: String?
-    var createdAt: Date
+    var createdAt: Date = .now
 
     @Relationship(deleteRule: .cascade, inverse: \Transaction.account)
     var transactions: [Transaction] = []

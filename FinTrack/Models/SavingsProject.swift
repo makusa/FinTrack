@@ -8,28 +8,28 @@ import SwiftData
 
 @Model
 final class SavingsProject {
-    var name: String
-    var iconSystemName: String
-    var colorHex: String
-    var currency: String
+    var name: String = ""
+    var iconSystemName: String = "star.fill"
+    var colorHex: String = "#3478F6"
+    var currency: String = "CAD"
 
     /// Amount already saved (manually maintained, OR derived from linked account).
-    var manualCurrentAmount: Decimal
+    var manualCurrentAmount: Decimal = 0
     /// If true, currentAmount is read from the linked account's balance.
-    var trackViaAccount: Bool
+    var trackViaAccount: Bool = false
 
     /// nil = open-ended accumulation (no finish line).
     var targetAmount: Decimal?
 
     /// Fixed monthly contribution assigned from surplus.
-    var monthlyContribution: Decimal
+    var monthlyContribution: Decimal = 0
 
     /// Optional deadline. When set, drives the required contribution calculation.
     var targetDate: Date?
 
     var notes: String?
-    var isActive: Bool
-    var createdAt: Date
+    var isActive: Bool = true
+    var createdAt: Date = .now
 
     /// Optional savings account (e.g., a dedicated TFSA or FHSA).
     var account: Account?
