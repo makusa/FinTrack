@@ -211,9 +211,9 @@
 				DD57FF2A7B0E5E204F511B08 /* FinTrack.entitlements */,
 				A96289E687731417561F7EB0 /* Models */,
 				0792ABF971B545FD80425FD6 /* Utilities */,
+				6DF5D9E7880853763F1CB8FC /* Dashboard */,
 				B0CC6F0D2B7879414A9D82D5 /* Localization */,
 				472D159D5C5EAF9F408C3FBD /* Views */,
-				6DF5D9E7880853763F1CB8FC /* Dashboard */,
 				B5FE33CACB118BD231844E12 /* Security */,
 			);
 			path = FinTrack;
@@ -283,7 +283,7 @@
 				AD02028420919E962EC6515B /* DashboardLibraryView.swift */,
 				77738FEA3FCE12F17CE4AE08 /* DashboardView.swift */,
 			);
-			path = Dashboard;
+			path = Views/Dashboard;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
