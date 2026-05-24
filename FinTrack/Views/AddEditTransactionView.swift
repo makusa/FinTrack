@@ -48,7 +48,9 @@ struct AddEditTransactionView: View {
     }
 
     private var isEditing: Bool {
-        if case .edit = mode { return true }
+        notificationSection
+
+                if case .edit = mode { return true }
         return false
     }
 

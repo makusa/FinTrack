@@ -129,6 +129,8 @@ struct AddEditPrepaymentView: View {
                 }
 
                 // MARK: Delete (edit mode)
+                notificationSection
+
                 if isEditing {
                     Section {
                         Button(role: .destructive) {

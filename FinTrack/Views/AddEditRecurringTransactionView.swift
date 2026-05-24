@@ -50,7 +50,9 @@ struct AddEditRecurringTransactionView: View {
     @FocusState private var amountFocused: Bool
 
     private var isEditing: Bool {
-        if case .edit = mode { return true }
+        notificationSection
+
+                if case .edit = mode { return true }
         return false
     }
 

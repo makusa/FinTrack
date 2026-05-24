@@ -75,6 +75,7 @@ struct AddEditCreditLineView: View {
                 accountSection
                 recurringSection
                 notesSection
+                notificationSection
                 if isEditing { deleteSection }
             }
             .navigationTitle(navTitle)
