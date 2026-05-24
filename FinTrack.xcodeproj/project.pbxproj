@@ -68,6 +68,9 @@
 		74EBB369D0827AD07F40442F /* ExchangeRateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FC0CC86DA61D06F99CD1CB /* ExchangeRateManager.swift */; };
 		E46B90B172447621BDD00575 /* ExchangeRateSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17B390EE919DEAF6F07ECD04 /* ExchangeRateSettingsView.swift */; };
 		3598C72B3530823F6E4641E8 /* AddTransferView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 944ACF2DB3F1EF911E76FB78 /* AddTransferView.swift */; };
+		0F110FF181996EAE70EBC1C4 /* DashboardConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 463CBE4A88AA24FE4083149D /* DashboardConfigManager.swift */; };
+		336772ACCF8780F4F65CB683 /* DashboardLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD02028420919E962EC6515B /* DashboardLibraryView.swift */; };
+		3FD49AE71F6573F35F2ADF0C /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77738FEA3FCE12F17CE4AE08 /* DashboardView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -134,6 +137,9 @@
 		26FC0CC86DA61D06F99CD1CB /* ExchangeRateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeRateManager.swift; sourceTree = "<group>"; };
 		17B390EE919DEAF6F07ECD04 /* ExchangeRateSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeRateSettingsView.swift; sourceTree = "<group>"; };
 		944ACF2DB3F1EF911E76FB78 /* AddTransferView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTransferView.swift; sourceTree = "<group>"; };
+		463CBE4A88AA24FE4083149D /* DashboardConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardConfigManager.swift; sourceTree = "<group>"; };
+		AD02028420919E962EC6515B /* DashboardLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardLibraryView.swift; sourceTree = "<group>"; };
+		77738FEA3FCE12F17CE4AE08 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -178,7 +184,6 @@
 				944ACF2DB3F1EF911E76FB78 /* AddTransferView.swift */,
 				D5E887C892C53194E107C95F /* AddEditPrepaymentView.swift */,
 				125B9AC2D8CD958FFECBB5FA /* RecurrencesView.swift */,
-				775C52DD1AEBBCB4437D4D83 /* DashboardView.swift */,
 				A85E6C13F1FA6E8EA17F750A /* RootView.swift */,
 				5A597BF7A45068D64338863D /* SettingsView.swift */,
 				17B390EE919DEAF6F07ECD04 /* ExchangeRateSettingsView.swift */,
@@ -208,6 +213,7 @@
 				0792ABF971B545FD80425FD6 /* Utilities */,
 				B0CC6F0D2B7879414A9D82D5 /* Localization */,
 				472D159D5C5EAF9F408C3FBD /* Views */,
+				6DF5D9E7880853763F1CB8FC /* Dashboard */,
 				B5FE33CACB118BD231844E12 /* Security */,
 			);
 			path = FinTrack;
@@ -268,6 +274,16 @@
 				FAA915273C2BA2663313592B /* SecuritySettingsView.swift */,
 			);
 			path = Security;
+			sourceTree = "<group>";
+		};
+		6DF5D9E7880853763F1CB8FC /* Dashboard */ = {
+			isa = PBXGroup;
+			children = (
+				463CBE4A88AA24FE4083149D /* DashboardConfigManager.swift */,
+				AD02028420919E962EC6515B /* DashboardLibraryView.swift */,
+				77738FEA3FCE12F17CE4AE08 /* DashboardView.swift */,
+			);
+			path = Dashboard;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -370,7 +386,10 @@
 				4E799AAC5FE4E53DE66E999A /* Category.swift in Sources */,
 				E84D84543E5267B1FE8DC415 /* ColorPalette.swift in Sources */,
 				552850B5EC610AD21FD28F95 /* Currency.swift in Sources */,
-				2BE98E5E17B28677AC3D2AD8 /* DashboardView.swift in Sources */,
+								0F110FF181996EAE70EBC1C4 /* DashboardConfigManager.swift in Sources */,
+				336772ACCF8780F4F65CB683 /* DashboardLibraryView.swift in Sources */,
+				3FD49AE71F6573F35F2ADF0C /* DashboardView.swift in Sources */,
+
 				BDDA758C9D4C28BFA7174B8A /* FinTrackApp.swift in Sources */,
 				167DD8D94BD2C94A5D09FCC6 /* RootView.swift in Sources */,
 				17D35A490B812757B7DA1041 /* SeedData.swift in Sources */,

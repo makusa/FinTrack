@@ -26,6 +26,7 @@ struct AnalyticsDashboardSection: View {
     let transactions: [Transaction]
     let activeRecurring: [RecurringTransaction]
     let currency: String
+    var visibleWidgets: Set<DashboardWidgetID> = [.balanceProjection, .incomeVsExpenses, .categoryBreakdown]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -34,16 +35,22 @@ struct AnalyticsDashboardSection: View {
                 .foregroundStyle(.secondary)
                 .padding(.horizontal)
 
-            BalanceProjectionCard(
-                accounts: accounts,
-                transactions: transactions,
-                activeRecurring: activeRecurring,
-                currency: currency
-            )
+            if visibleWidgets.contains(.balanceProjection) {
+                BalanceProjectionCard(
+                    accounts: accounts,
+                    transactions: transactions,
+                    activeRecurring: activeRecurring,
+                    currency: currency
+                )
+            }
 
-            IncomeExpenseCard(transactions: transactions, currency: currency)
+            if visibleWidgets.contains(.incomeVsExpenses) {
+                IncomeExpenseCard(transactions: transactions, currency: currency)
+            }
 
-            CategoryBreakdownCard(transactions: transactions, currency: currency)
+            if visibleWidgets.contains(.categoryBreakdown) {
+                CategoryBreakdownCard(transactions: transactions, currency: currency)
+            }
         }
     }
 }
@@ -80,6 +87,7 @@ struct BalanceProjectionCard: View {
     let transactions: [Transaction]
     let activeRecurring: [RecurringTransaction]
     let currency: String
+    var visibleWidgets: Set<DashboardWidgetID> = [.balanceProjection, .incomeVsExpenses, .categoryBreakdown]
 
     // MARK: Time range
     enum Range: String, CaseIterable {
