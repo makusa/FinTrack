@@ -25,6 +25,9 @@ struct AddEditRecurringTransactionView: View {
     @Query(filter: #Predicate<Category> { !$0.isHidden },
            sort: \Category.name, order: .forward)
     private var categories: [Category]
+    
+    // Constants
+    private let notificationDaysOptions = [1, 2, 3, 5, 7]
 
     // Form state
     @State private var title: String = ""
@@ -63,13 +66,36 @@ struct AddEditRecurringTransactionView: View {
     }
 
     private var canSave: Bool {
-        guard let amount = parseAmount(), amount > 0 else { return false }
-        return selectedAccount != nil
+        guard let amount = parsedAmount, amount > 0 else { return false }
+        guard selectedAccount != nil else { return false }
+        // Transfers require a destination account
+        if isTransfer && destinationAccount == nil { return false }
+        return true
     }
 
     private var applicableCategories: [Category] {
         categories.filter { $0.matches(type) }
     }
+    
+    // Memoized amount parsing to avoid repeated calculations
+    private var parsedAmount: Decimal? {
+        let normalized = amountText
+            .replacingOccurrences(of: ",", with: ".")
+            .trimmingCharacters(in: .whitespaces)
+        guard !normalized.isEmpty else { return nil }
+        return Decimal(string: normalized)
+    }
+    
+    // Reusable number formatter (created once)
+    private static let decimalFormatter: NumberFormatter = {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = Locale(identifier: "fr_CA")
+        formatter.maximumFractionDigits = 2
+        formatter.minimumFractionDigits = 0
+        formatter.usesGroupingSeparator = false
+        return formatter
+    }()
 
     var body: some View {
         NavigationStack {
@@ -85,6 +111,7 @@ struct AddEditRecurringTransactionView: View {
                 }
                 detailsSection
                 if isEditing { statusSection }
+                notificationSection
                 if isEditing { deleteSection }
             }
             .navigationTitle(navTitle)
@@ -143,7 +170,13 @@ struct AddEditRecurringTransactionView: View {
     private var typeSection: some View {
         Section {
             // Transfer toggle — when enabled, hides income/expense picker
-            Toggle(lang["transfer.recurring.toggle"], isOn: $isTransfer.animation())
+            Toggle(lang["transfer.recurring.toggle"], isOn: $isTransfer)
+                .onChange(of: isTransfer) { _, newValue in
+                    // Clear destination when toggling off transfer mode
+                    if !newValue {
+                        destinationAccount = nil
+                    }
+                }
 
             if !isTransfer {
                 Picker(lang["label.type"], selection: $type) {
@@ -152,6 +185,7 @@ struct AddEditRecurringTransactionView: View {
                 }
                 .pickerStyle(.segmented)
                 .onChange(of: type) { _, _ in
+                    // Clear category if it doesn't match new type
                     if let cat = selectedCategory, !cat.matches(type) {
                         selectedCategory = nil
                     }
@@ -167,22 +201,30 @@ struct AddEditRecurringTransactionView: View {
 
             Picker(lang["label.frequency"], selection: $frequency) {
                 ForEach(RecurrenceFrequency.allCases) { f in
-                    HStack {
-                        Image(systemName: f.iconSystemName)
+                    Label {
                         Text(f.label)
+                    } icon: {
+                        Image(systemName: f.iconSystemName)
                     }
                     .tag(f)
                 }
             }
 
-            DatePicker(lang["recurring.firstOccurrence"], selection: $startDate, displayedComponents: .date)
+            DatePicker(lang["recurring.firstOccurrence"], 
+                      selection: $startDate, 
+                      displayedComponents: .date)
 
-            Toggle(lang["recurring.endDate"], isOn: $hasEndDate.animation())
+            Toggle(lang["recurring.endDate"], isOn: $hasEndDate)
+            
             if hasEndDate {
-                DatePicker(lang["recurring.endDate"], selection: $endDate,
-                           in: startDate..., displayedComponents: .date)
+                DatePicker(lang["recurring.endDate"], 
+                          selection: $endDate,
+                          in: startDate..., 
+                          displayedComponents: .date)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
+        .animation(.easeInOut(duration: 0.2), value: hasEndDate)
     }
 
     private var accountSection: some View {
@@ -204,6 +246,14 @@ struct AddEditRecurringTransactionView: View {
                         .tag(Optional(account))
                     }
                 }
+                .onChange(of: selectedAccount) { _, newAccount in
+                    // Clear destination if it's the same as newly selected account
+                    if let dest = destinationAccount, 
+                       let new = newAccount,
+                       dest.persistentModelID == new.persistentModelID {
+                        destinationAccount = nil
+                    }
+                }
             }
         }
     }
@@ -213,7 +263,7 @@ struct AddEditRecurringTransactionView: View {
         Section(lang["transfer.to"]) {
             Picker(lang["transfer.to"], selection: $destinationAccount) {
                 Text(lang["label.none"] + "…").tag(Account?.none)
-                ForEach(accounts.filter { $0.persistentModelID != selectedAccount?.persistentModelID }) { a in
+                ForEach(availableDestinationAccounts) { a in
                     HStack {
                         Image(systemName: a.iconSystemName)
                             .foregroundStyle(Color(hex: a.colorHex))
@@ -224,6 +274,12 @@ struct AddEditRecurringTransactionView: View {
                 }
             }
         }
+    }
+    
+    // Computed property for destination accounts (filters out selected account)
+    private var availableDestinationAccounts: [Account] {
+        guard let selected = selectedAccount else { return accounts }
+        return accounts.filter { $0.persistentModelID != selected.persistentModelID }
     }
 
     private var categorySection: some View {
@@ -312,7 +368,8 @@ struct AddEditRecurringTransactionView: View {
         guard case .edit(let rule) = mode else {
             // Create mode: default account
             selectedAccount = accounts.first
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            Task { @MainActor in
+                try? await Task.sleep(for: .milliseconds(150))
                 amountFocused = true
             }
             return
@@ -333,10 +390,12 @@ struct AddEditRecurringTransactionView: View {
         isActive = rule.isActive
         isTransfer = rule.isTransfer
         destinationAccount = rule.destinationAccount
+        notifEnabled = rule.notificationEnabled
+        notifDaysBefore = rule.notificationDaysBefore
     }
 
     private func save() {
-        guard let amount = parseAmount(), amount > 0,
+        guard let amount = parsedAmount, amount > 0,
               let account = selectedAccount else { return }
 
         let trimmedTitle  = title.trimmingCharacters(in: .whitespaces)
@@ -362,8 +421,20 @@ struct AddEditRecurringTransactionView: View {
             rule.notificationEnabled = notifEnabled
             rule.notificationDaysBefore = notifDaysBefore
             context.insert(rule)
-            // Immediately apply if the start date is today or earlier.
-            RecurringTransactionManager.applyPending(context: context)
+            
+            // Save context first, then apply pending async
+            do {
+                try context.save()
+                dismiss()
+                
+                // Apply pending transactions in background after UI dismisses
+                Task {
+                    RecurringTransactionManager.applyPending(context: context)
+                    await NotificationManager.shared.scheduleAll(context: context)
+                }
+            } catch {
+                print("AddEditRecurringTransactionView: save failed — \(error)")
+            }
 
         case .edit(let rule):
             rule.title = trimmedTitle
@@ -377,27 +448,40 @@ struct AddEditRecurringTransactionView: View {
             rule.note = trimmedNote
             rule.payee = trimmedPayee.isEmpty ? nil : trimmedPayee
             rule.isActive = isActive
+            rule.isTransfer = isTransfer
+            rule.destinationAccount = isTransfer ? destinationAccount : nil
             rule.notificationEnabled = notifEnabled
             rule.notificationDaysBefore = notifDaysBefore
-        }
-
-        do {
-            try context.save()
-            dismiss()
-        } catch {
-            print("AddEditRecurringTransactionView: save failed — \(error)")
+            
+            do {
+                try context.save()
+                dismiss()
+                
+                // Schedule notifications async after UI dismisses
+                Task {
+                    await NotificationManager.shared.scheduleAll(context: context)
+                }
+            } catch {
+                print("AddEditRecurringTransactionView: save failed — \(error)")
+            }
         }
     }
 
     private func deleteIfEditing() {
         guard case .edit(let rule) = mode else { return }
         context.delete(rule)
-        rule.notificationEnabled = notifEnabled
-        rule.notificationDaysBefore = notifDaysBefore
-        try? context.save()
-        let ctx = context
-        Task { await NotificationManager.shared.scheduleAll(context: ctx) }
-        dismiss()
+        
+        do {
+            try context.save()
+            dismiss()
+            
+            // Schedule notifications async after successful deletion and UI dismisses
+            Task {
+                await NotificationManager.shared.scheduleAll(context: context)
+            }
+        } catch {
+            print("AddEditRecurringTransactionView: delete failed — \(error)")
+        }
     }
 
     private func parseAmount() -> Decimal? {
@@ -409,13 +493,7 @@ struct AddEditRecurringTransactionView: View {
     }
 
     private func decimalToText(_ d: Decimal) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_CA")
-        formatter.maximumFractionDigits = 2
-        formatter.minimumFractionDigits = 0
-        formatter.usesGroupingSeparator = false
-        return formatter.string(from: NSDecimalNumber(decimal: d)) ?? "\(d)"
+        Self.decimalFormatter.string(from: NSDecimalNumber(decimal: d)) ?? "\(d)"
     }
 }
 
@@ -427,19 +505,34 @@ private struct CategoryPickerSheet: View {
     let type: TransactionType
     let categories: [Category]
     @Binding var selected: Category?
-    private let columns = [GridItem(.adaptive(minimum: 90), spacing: 12)]
+    
+    private let columns = [
+        GridItem(.adaptive(minimum: 90, maximum: 120), spacing: 12)
+    ]
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 12) {
-                    tile(name: "Aucune", icon: "circle.dashed", color: .gray, isSelected: selected == nil) {
-                        selected = nil; dismiss()
+                    CategoryTile(
+                        name: "Aucune",
+                        icon: "circle.dashed",
+                        color: .gray,
+                        isSelected: selected == nil
+                    ) {
+                        selected = nil
+                        dismiss()
                     }
+                    
                     ForEach(categories) { cat in
-                        tile(name: cat.name, icon: cat.iconSystemName,
-                             color: Color(hex: cat.colorHex), isSelected: selected?.id == cat.id) {
-                            selected = cat; dismiss()
+                        CategoryTile(
+                            name: cat.name,
+                            icon: cat.iconSystemName,
+                            color: Color(hex: cat.colorHex),
+                            isSelected: selected?.id == cat.id
+                        ) {
+                            selected = cat
+                            dismiss()
                         }
                     }
                 }
@@ -448,25 +541,49 @@ private struct CategoryPickerSheet: View {
             .navigationTitle("Catégorie")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) { Button(lang["action.close"]) { dismiss() } }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(lang["action.close"]) { dismiss() }
+                }
             }
         }
     }
+}
 
-    private func tile(name: String, icon: String, color: Color, isSelected: Bool,
-                      action: @escaping () -> Void) -> some View {
+// Extract tile to separate view for better performance
+private struct CategoryTile: View {
+    let name: String
+    let icon: String
+    let color: Color
+    let isSelected: Bool
+    let action: () -> Void
+    
+    var body: some View {
         Button(action: action) {
             VStack(spacing: 6) {
                 ZStack {
-                    Circle().fill(isSelected ? color : color.opacity(0.15)).frame(width: 52, height: 52)
-                    Image(systemName: icon).font(.title3).foregroundStyle(isSelected ? .white : color)
+                    Circle()
+                        .fill(isSelected ? color : color.opacity(0.15))
+                        .frame(width: 52, height: 52)
+                    Image(systemName: icon)
+                        .font(.title3)
+                        .foregroundStyle(isSelected ? .white : color)
                 }
-                Text(name).font(.caption).foregroundStyle(.primary)
-                    .multilineTextAlignment(.center).lineLimit(2).frame(height: 30)
+                Text(name)
+                    .font(.caption)
+                    .foregroundStyle(.primary)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .frame(height: 30)
             }
-            .frame(maxWidth: .infinity).padding(.vertical, 6)
-            .background(RoundedRectangle(cornerRadius: 12)
-                .stroke(isSelected ? color : Color(.separator), lineWidth: isSelected ? 2 : 0.5))
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 6)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(
+                        isSelected ? color : Color(.separator),
+                        lineWidth: isSelected ? 2 : 0.5
+                    )
+            )
         }
         .buttonStyle(.plain)
     }
