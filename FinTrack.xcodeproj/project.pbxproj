@@ -71,6 +71,9 @@
 		0F110FF181996EAE70EBC1C4 /* DashboardConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 463CBE4A88AA24FE4083149D /* DashboardConfigManager.swift */; };
 		336772ACCF8780F4F65CB683 /* DashboardLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD02028420919E962EC6515B /* DashboardLibraryView.swift */; };
 		3FD49AE71F6573F35F2ADF0C /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77738FEA3FCE12F17CE4AE08 /* DashboardView.swift */; };
+		F4F89D55CA4BD29F454EAB63 /* NetWorthWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 841D946E03117B34F4132CB0 /* NetWorthWidget.swift */; };
+		69EABEC908369CF74407C175 /* ExchangeRateWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41D3284883D16E3D213FDF35 /* ExchangeRateWidget.swift */; };
+		29B81DE9E9428D65D874B3B4 /* UpcomingTransfersWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF1698420AA85505923B701F /* UpcomingTransfersWidget.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -140,6 +143,9 @@
 		463CBE4A88AA24FE4083149D /* DashboardConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardConfigManager.swift; sourceTree = "<group>"; };
 		AD02028420919E962EC6515B /* DashboardLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardLibraryView.swift; sourceTree = "<group>"; };
 		77738FEA3FCE12F17CE4AE08 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
+		841D946E03117B34F4132CB0 /* NetWorthWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetWorthWidget.swift; sourceTree = "<group>"; };
+		41D3284883D16E3D213FDF35 /* ExchangeRateWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeRateWidget.swift; sourceTree = "<group>"; };
+		EF1698420AA85505923B701F /* UpcomingTransfersWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpcomingTransfersWidget.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -279,6 +285,10 @@
 		6DF5D9E7880853763F1CB8FC /* Dashboard */ = {
 			isa = PBXGroup;
 			children = (
+				841D946E03117B34F4132CB0 /* NetWorthWidget.swift */,
+				41D3284883D16E3D213FDF35 /* ExchangeRateWidget.swift */,
+				EF1698420AA85505923B701F /* UpcomingTransfersWidget.swift */,
+
 				463CBE4A88AA24FE4083149D /* DashboardConfigManager.swift */,
 				AD02028420919E962EC6515B /* DashboardLibraryView.swift */,
 				77738FEA3FCE12F17CE4AE08 /* DashboardView.swift */,
@@ -394,6 +404,10 @@
 				167DD8D94BD2C94A5D09FCC6 /* RootView.swift in Sources */,
 				17D35A490B812757B7DA1041 /* SeedData.swift in Sources */,
 				FEBFF9935E3B84CAFF02F78B /* SettingsView.swift in Sources */,
+				F4F89D55CA4BD29F454EAB63 /* NetWorthWidget.swift in Sources */,
+				69EABEC908369CF74407C175 /* ExchangeRateWidget.swift in Sources */,
+				29B81DE9E9428D65D874B3B4 /* UpcomingTransfersWidget.swift in Sources */,
+
 				3598C72B3530823F6E4641E8 /* AddTransferView.swift in Sources */,
 				74EBB369D0827AD07F40442F /* ExchangeRateManager.swift in Sources */,
 				E46B90B172447621BDD00575 /* ExchangeRateSettingsView.swift in Sources */,

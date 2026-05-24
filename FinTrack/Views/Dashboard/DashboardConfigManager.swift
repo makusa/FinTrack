@@ -31,6 +31,11 @@ enum DashboardWidgetID: String, CaseIterable, Codable, Identifiable {
     case upcomingRecurring  = "upcomingRecurring"
     case recentTransactions = "recentTransactions"
 
+    // New widgets
+    case netWorth           = "netWorth"
+    case exchangeRates      = "exchangeRates"
+    case upcomingTransfers  = "upcomingTransfers"
+
     var id: String { rawValue }
 
     var isPinned: Bool { self == .globalBalance }
@@ -51,6 +56,9 @@ enum DashboardWidgetID: String, CaseIterable, Codable, Identifiable {
         case .categoryBreakdown:  return lang["analytics.categoryBreakdown"]
         case .upcomingRecurring:  return lang["dashboard.upcoming"]
         case .recentTransactions: return lang["dashboard.recentTx"]
+        case .netWorth:          return lang["widget.netWorth.title"]
+        case .exchangeRates:     return lang["widget.fx.title"]
+        case .upcomingTransfers: return lang["widget.transfers.title"]
         }
     }
 
@@ -69,6 +77,9 @@ enum DashboardWidgetID: String, CaseIterable, Codable, Identifiable {
         case .categoryBreakdown:  return "chart.pie.fill"
         case .upcomingRecurring:  return "clock.fill"
         case .recentTransactions: return "list.bullet.rectangle"
+        case .netWorth:          return "chart.pie"
+        case .exchangeRates:     return "arrow.left.arrow.right.circle"
+        case .upcomingTransfers: return "arrow.left.arrow.right"
         }
     }
 
@@ -88,6 +99,9 @@ enum DashboardWidgetID: String, CaseIterable, Codable, Identifiable {
         case .categoryBreakdown:  return lang["widget.desc.categoryBreakdown"]
         case .upcomingRecurring:  return lang["widget.desc.upcoming"]
         case .recentTransactions: return lang["widget.desc.recent"]
+        case .netWorth:          return lang["widget.desc.netWorth"]
+        case .exchangeRates:     return lang["widget.desc.fx"]
+        case .upcomingTransfers: return lang["widget.desc.transfers"]
         }
     }
 }
