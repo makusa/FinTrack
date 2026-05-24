@@ -141,7 +141,7 @@ final class RecurringTransaction {
         let days  = cal.dateComponents([.day], from: today, to: due).day ?? 0
         switch days {
         case ..<0:   return "En retard"
-        case 0:      return "Aujourd'hui"
+        case 0:      return LanguageManager.shared["label.today"]
         case 1:      return "Demain"
         case 2...6:  return "Dans \(days) jours"
         default:

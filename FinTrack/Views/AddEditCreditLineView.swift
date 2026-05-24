@@ -203,7 +203,7 @@ struct AddEditCreditLineView: View {
 
     private var accountSection: some View {
         Section(lang["cl.associatedAccount"]) {
-            Picker("Compte", selection: $selectedAccount) {
+            Picker(lang["label.account"], selection: $selectedAccount) {
                 Text(lang["label.none"]).tag(Account?.none)
                 ForEach(accounts) { acc in
                     HStack {

@@ -152,7 +152,7 @@ struct TransactionsView: View {
                 }
             }
             Divider()
-            Picker("Compte", selection: $filterAccount) {
+            Picker(lang["label.account"], selection: $filterAccount) {
                 Text(lang["tx.allAccounts"]).tag(Account?.none)
                 ForEach(accounts) { a in
                     Text(a.name).tag(Optional(a))
@@ -171,8 +171,8 @@ struct TransactionsView: View {
 
     private func headerLabel(for date: Date) -> String {
         let cal = Calendar.current
-        if cal.isDateInToday(date) { return "Aujourd'hui" }
-        if cal.isDateInYesterday(date) { return "Hier" }
+        if cal.isDateInToday(date) { return lang["label.today"] }
+        if cal.isDateInYesterday(date) { return lang["label.yesterday"] }
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "fr_CA")
         formatter.dateFormat = "EEEE d MMMM yyyy"
