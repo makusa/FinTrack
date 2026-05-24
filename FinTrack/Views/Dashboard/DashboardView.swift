@@ -33,6 +33,11 @@ struct DashboardView: View {
            sort: \RecurringTransaction.nextDueDate, order: .forward)
     private var activeRecurring: [RecurringTransaction]
 
+    // Future one-time transfer transactions (expense leg, next 60 days)
+    @Query(filter: #Predicate<Transaction> { $0.transferPairId != nil && $0.typeRaw == "expense" },
+           sort: \Transaction.date, order: .forward)
+    private var futureTransferExpenses: [Transaction]
+
     @State private var config           = DashboardConfigManager.shared
     @State private var showAddTransaction = false
     @State private var showAddAccount     = false
@@ -48,6 +53,17 @@ struct DashboardView: View {
     }
 
     private var recentTransactions: [Transaction]    { Array(allTransactions.prefix(10)) }
+    private var recurringTransfers: [RecurringTransaction] {
+        let horizon = Calendar.current.date(byAdding: .day, value: 60, to: .now) ?? .now
+        return activeRecurring.filter { $0.isTransfer && $0.nextDueDate <= horizon }
+    }
+
+    private var upcomingTransferTx: [Transaction] {
+        let now     = Date()
+        let horizon = Calendar.current.date(byAdding: .day, value: 60, to: now) ?? now
+        return futureTransferExpenses.filter { $0.date > now && $0.date <= horizon }
+    }
+
     private var upcomingRecurrences: [RecurringTransaction] {
         let horizon = Calendar.current.date(byAdding: .day, value: 30, to: .now) ?? .now
         return Array(activeRecurring.filter { $0.nextDueDate <= horizon }.prefix(5))
@@ -211,6 +227,24 @@ struct DashboardView: View {
 
         case .recentTransactions:
             recentWidget
+
+        case .netWorth:
+            NetWorthWidget(
+                accounts: totalsByCurrency,
+                loans: activeLoans,
+                creditLines: activeCreditLines
+            )
+
+        case .exchangeRates:
+            ExchangeRateWidget(
+                accountCurrencies: Array(Set(accounts.map { $0.currency }))
+            )
+
+        case .upcomingTransfers:
+            UpcomingTransfersWidget(
+                recurringTransfers: recurringTransfers,
+                futureTransferTx: upcomingTransferTx
+            )
         }
     }
 

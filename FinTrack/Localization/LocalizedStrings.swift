@@ -376,6 +376,19 @@ enum LocalizedStrings {
 
 
 
+
+        // MARK: - New widgets (Net Worth, FX, Upcoming Transfers)
+        "widget.netWorth.title":   ["fr": "Valeur nette",                          "en": "Net Worth",                       "es": "Patrimonio neto",               "pt": "Patrimônio líquido"],
+        "widget.netWorth.subtitle":["fr": "Actif − Passif",                        "en": "Assets − Liabilities",            "es": "Activos − Pasivos",             "pt": "Ativos − Passivos"],
+        "widget.netWorth.assets":  ["fr": "Actif (comptes)",                       "en": "Assets (accounts)",               "es": "Activos (cuentas)",             "pt": "Ativos (contas)"],
+        "widget.netWorth.debtRatio":["fr":"taux d'endettement",                    "en": "debt ratio",                      "es": "ratio de deuda",                "pt": "índice de endiv."],
+        "widget.fx.title":         ["fr": "Taux de change",                        "en": "Exchange Rates",                  "es": "Tipos de cambio",               "pt": "Câmbio"],
+        "widget.transfers.title":  ["fr": "Prochains virements",                   "en": "Upcoming Transfers",              "es": "Próximas transferencias",       "pt": "Próximas transferências"],
+        "widget.transfers.empty":  ["fr": "Aucun virement planifié.",              "en": "No transfers scheduled.",         "es": "Sin transferencias planificadas.","pt": "Sem transferências programadas."],
+        "widget.desc.netWorth":    ["fr": "Actif total moins passif (prêts + marges) dans la devise d'affichage", "en": "Total assets minus liabilities (loans + credit lines) in display currency", "es": "Activos totales menos pasivos en la divisa de visualización", "pt": "Ativos totais menos passivos na moeda de exibição"],
+        "widget.desc.fx":          ["fr": "Taux en temps réel pour vos paires de devises clés (CAD/XAF, CAD/USD…)", "en": "Live rates for your key currency pairs (CAD/XAF, CAD/USD…)", "es": "Tasas en tiempo real para tus pares de divisas clave", "pt": "Taxas ao vivo para seus pares de moedas principais"],
+        "widget.desc.transfers":   ["fr": "Prochains virements récurrents et ponctuels entre vos comptes (60 jours)", "en": "Upcoming recurring and one-time transfers between your accounts (60 days)", "es": "Próximas transferencias recurrentes y únicas entre cuentas (60 días)", "pt": "Próximas transferências recorrentes e pontuais entre contas (60 dias)"],
+
         // MARK: - Dashboard Library
         "library.title":            ["fr": "Personnaliser le tableau de bord",      "en": "Customize Dashboard",            "es": "Personalizar panel",            "pt": "Personalizar painel"],
         "library.active":           ["fr": "Affichés",                              "en": "Visible",                        "es": "Visibles",                      "pt": "Visíveis"],

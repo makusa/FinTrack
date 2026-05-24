@@ -100,7 +100,7 @@ struct DashboardLibraryView: View {
                             .padding(.vertical, 2)
                             .background(Color.accentColor.opacity(0.12),
                                         in: Capsule())
-                            .foregroundStyle(.accentColor)
+                            .foregroundStyle(Color.accentColor)
                     }
                 }
                 Text(widget.description)
