@@ -77,6 +77,7 @@ struct AddEditTransactionView: View {
             accountSection
             categorySection
             detailsSection
+            notificationSection
 
             if case .edit = mode {
                 Section {

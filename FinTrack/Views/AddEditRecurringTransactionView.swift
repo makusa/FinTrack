@@ -85,6 +85,7 @@ struct AddEditRecurringTransactionView: View {
                 }
                 detailsSection
                 if isEditing { statusSection }
+                notificationSection
                 if isEditing { deleteSection }
             }
             .navigationTitle(navTitle)
