@@ -90,6 +90,8 @@ struct AddEditLoanView: View {
                 if calculator != nil { summarySection }
                 recurringSection
                 notesSection
+                notificationSection
+
                 if isEditing { deleteSection }
             }
             .navigationTitle(navTitle)
