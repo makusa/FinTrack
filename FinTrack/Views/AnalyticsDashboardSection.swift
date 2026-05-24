@@ -686,7 +686,7 @@ struct CategoryBreakdownCard: View {
                 Text(lang["analytics.categoryBreakdown"])
                     .font(.subheadline.weight(.semibold))
                 Spacer()
-                Text("Ce mois · \(currency)")
+                Text(lang["analytics.thisMonth"] + " · \(currency)")
                     .font(.caption2).foregroundStyle(.secondary)
             }
 

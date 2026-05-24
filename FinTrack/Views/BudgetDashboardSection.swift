@@ -154,7 +154,7 @@ struct CashFlowCard: View {
                     }
 
                     HStack {
-                        Text("Libre (non alloué)")
+                        Text(lang["cashflow.free"])
                             .font(.caption.weight(.semibold))
                         Spacer()
                         Text(summary.monthlyFree.formatted(asCurrency: summary.currency))

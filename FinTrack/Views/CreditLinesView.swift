@@ -91,7 +91,7 @@ struct CreditLinesView: View {
                             }
                         }
                     } label: {
-                        Text("Archivées (\(archivedLines.count))")
+                        Text(lang.f("account.archived", archivedLines.count))
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }

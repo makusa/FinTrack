@@ -221,7 +221,7 @@ struct SavingsProjectDetailView: View {
                     Text(String(format: "%.1f%% atteint", project.progressFraction * 100))
                         .font(.caption).foregroundStyle(.secondary)
                 } else {
-                    Text("Accumulation libre").font(.subheadline).foregroundStyle(.secondary)
+                    Text(lang["savings.freeAccumulation"]).font(.subheadline).foregroundStyle(.secondary)
                 }
             }
             .frame(maxWidth: .infinity).padding(.vertical, 8)
@@ -377,7 +377,7 @@ struct SavingsProjectDetailView: View {
                 }
             }
         } header: {
-            Text("Projection")
+            Text(lang["savings.projection"])
         }
     }
 

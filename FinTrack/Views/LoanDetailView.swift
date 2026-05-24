@@ -100,7 +100,7 @@ struct LoanDetailView: View {
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                         Spacer()
-                        Text("Fin: \(payoffDate.formatted(date: .abbreviated, time: .omitted))")
+                        Text(lang["loan.endDateLabel"] + ": \(payoffDate.formatted(date: .abbreviated, time: .omitted))")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }

@@ -230,7 +230,7 @@ struct AddEditRecurringTransactionView: View {
     private var accountSection: some View {
         Section(lang["label.account"]) {
             if accounts.isEmpty {
-                Text("Aucun compte. Créez-en un d'abord.")
+                Text(lang["loan.noAccount"])
                     .foregroundStyle(.secondary)
             } else {
                 Picker(lang["label.account"], selection: $selectedAccount) {

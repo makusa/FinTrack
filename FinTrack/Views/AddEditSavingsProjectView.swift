@@ -116,7 +116,7 @@ struct AddEditSavingsProjectView: View {
 
             // Icon picker
             VStack(alignment: .leading, spacing: 8) {
-                Text("Icône").font(.subheadline)
+                Text(lang["label.icon"]).font(.subheadline)
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
                         ForEach(iconChoices, id: \.self) { icon in
@@ -138,7 +138,7 @@ struct AddEditSavingsProjectView: View {
 
             // Color picker
             VStack(alignment: .leading, spacing: 8) {
-                Text("Couleur").font(.subheadline)
+                Text(lang["label.color"]).font(.subheadline)
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 10) {
                         ForEach(ColorPalette.accountColors, id: \.self) { hex in
@@ -166,14 +166,14 @@ struct AddEditSavingsProjectView: View {
         Section {
             Toggle(isOn: $trackViaAccount.animation()) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Suivre via un compte")
+                    Text(lang["savings.trackViaAccount"])
                     Text(lang["savings.trackViaAccount.sub"])
                         .font(.caption).foregroundStyle(.secondary)
                 }
             }
             if trackViaAccount {
                 Picker(lang["label.account"], selection: $selectedAccount) {
-                    Text("Choisir…").tag(Account?.none)
+                    Text(lang["label.none"] + "…").tag(Account?.none)
                     ForEach(accounts) { acc in
                         HStack {
                             Image(systemName: acc.iconSystemName).foregroundStyle(Color(hex: acc.colorHex))
@@ -183,7 +183,7 @@ struct AddEditSavingsProjectView: View {
                 }
                 if let acc = selectedAccount {
                     HStack {
-                        Text("Solde actuel").foregroundStyle(.secondary)
+                        Text(lang["savings.currentAmount"]).foregroundStyle(.secondary)
                         Spacer()
                         Text(acc.balance.formatted(asCurrency: acc.currency))
                             .font(.body.weight(.semibold))
@@ -198,7 +198,7 @@ struct AddEditSavingsProjectView: View {
                     Text(Currencies.info(for: currency).symbol).foregroundStyle(.secondary)
                 }
             }
-        } header: { Text("Montant actuel") }
+        } header: { Text(lang["savings.currentAmount.section"]) }
     }
 
     private var targetSection: some View {
@@ -214,7 +214,7 @@ struct AddEditSavingsProjectView: View {
                 }
                 Toggle(isOn: $hasDeadline.animation()) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Date limite")
+                        Text(lang["savings.deadline"])
                         Text(lang["savings.deadline.sub"])
                             .font(.caption).foregroundStyle(.secondary)
                     }
@@ -224,7 +224,7 @@ struct AddEditSavingsProjectView: View {
                                in: Date()..., displayedComponents: .date)
                 }
             }
-        } header: { Text("Objectif") }
+        } header: { Text(lang["savings.target"]) }
     }
 
     private var contributionSection: some View {
@@ -237,7 +237,7 @@ struct AddEditSavingsProjectView: View {
                 Text(Currencies.info(for: currency).symbol).foregroundStyle(.secondary)
             }
         } header: {
-            Text("Versement mensuel depuis le surplus")
+            Text(lang["savings.contribution.section"])
         } footer: {
             Text(lang["savings.contribution.footer"])
         }
@@ -258,7 +258,7 @@ struct AddEditSavingsProjectView: View {
                     Label("Objectif déjà atteint ! 🎉", systemImage: "checkmark.circle.fill")
                         .foregroundStyle(.green)
                 }
-            } header: { Text("Projection") }
+            } header: { Text(lang["savings.projection"]) }
         }
     }
 
@@ -272,7 +272,7 @@ struct AddEditSavingsProjectView: View {
                            emphasis: true,
                            color: req > contributionDecimal && (contributionDecimal as NSDecimalNumber).doubleValue > 0 ? .orange : .green)
             }
-        } header: { Text("Calcul automatique") }
+        } header: { Text(lang["savings.requiredContrib"]) }
     }
 
     private var notesSection: some View {

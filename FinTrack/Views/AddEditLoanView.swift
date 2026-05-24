@@ -170,7 +170,7 @@ struct AddEditLoanView: View {
                     .foregroundStyle(.secondary)
             }
         } header: {
-            Text("Montant et taux")
+            Text(lang["loan.amountRate"])
         }
     }
 
@@ -229,7 +229,7 @@ struct AddEditLoanView: View {
                 ForEach(LoanCompounding.allCases) { c in Text(c.label).tag(c) }
             }
         } header: {
-            Text("Avancé")
+            Text(lang["loan.compound.section"])
         } footer: {
             Text(lang["loan.compound.footer"])
         }
@@ -283,7 +283,7 @@ struct AddEditLoanView: View {
                 summaryRow(lang["loan.estimatedEnd"],
                            value: calc.payoffDate.formatted(date: .long, time: .omitted))
             } header: {
-                Text("Résumé calculé")
+                Text(lang["loan.summary"])
             } footer: {
                 Text(lang["loan.summary.footer"])
             }

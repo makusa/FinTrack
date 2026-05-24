@@ -80,7 +80,7 @@ struct CashFlowView: View {
             Section {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Surplus mensuel estimé")
+                        Text(lang["cashflow.surplus"])
                             .font(.headline)
                         Text(lang["cashflow.surplus.before"])
                             .font(.caption2)
@@ -113,7 +113,7 @@ struct CashFlowView: View {
                     }
                     Divider()
                     HStack {
-                        Text("Reste disponible")
+                        Text(lang["cashflow.free"])
                             .font(.subheadline.weight(.semibold))
                         Spacer()
                         Text(summary.monthlyFree.formatted(asCurrency: summary.currency))

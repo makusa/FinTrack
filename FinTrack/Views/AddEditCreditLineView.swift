@@ -145,7 +145,7 @@ struct AddEditCreditLineView: View {
             }
             .buttonStyle(.plain)
         } header: {
-            Text("Montant et taux")
+            Text(lang["cl.amountRate"])
         }
     }
 
@@ -154,7 +154,7 @@ struct AddEditCreditLineView: View {
             Picker("Capitalisation", selection: $compounding) {
                 ForEach(CreditLineCompounding.allCases) { c in Text(c.label).tag(c) }
             }
-        } header: { Text("Avancé") } footer: {
+        } header: { Text(lang["loan.compound.section"]) } footer: {
             Text(lang["cl.compound.daily"])
         }
     }
@@ -176,7 +176,7 @@ struct AddEditCreditLineView: View {
                         .foregroundStyle(.orange).fontWeight(.medium)
                 }
             }
-        } header: { Text("Solde initial") } footer: {
+        } header: { Text(lang["cl.initialBalance.section"]) } footer: {
             Text(lang["cl.initialBalance.footer"])
         }
     }
@@ -196,7 +196,7 @@ struct AddEditCreditLineView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-        } header: { Text("Paiement minimum") } footer: {
+        } header: { Text(lang["cl.minPayment"]) } footer: {
             Text(lang["cl.minPayment.footer"])
         }
     }
@@ -226,7 +226,7 @@ struct AddEditCreditLineView: View {
             }
             if createRecurring {
                 HStack {
-                    Text("Montant")
+                    Text(lang["label.amount"])
                     Spacer()
                     TextField("0", text: $recurringAmountText)
                         .keyboardType(.decimalPad).multilineTextAlignment(.trailing).frame(maxWidth: 120)
@@ -236,7 +236,7 @@ struct AddEditCreditLineView: View {
                     ForEach(RecurrenceFrequency.allCases) { f in Text(f.label).tag(f) }
                 }
             }
-        } header: { Text("Remboursement automatique") }
+        } header: { Text(lang["cl.recurringRepayment"]) }
     }
 
     private var notesSection: some View {
