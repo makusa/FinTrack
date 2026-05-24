@@ -51,6 +51,7 @@ struct FinTrackApp: App {
     @State private var languageManager = LanguageManager.shared
     @State private var lockManager = AppLockManager.shared
     @State private var rateManager = ExchangeRateManager.shared
+    @State private var dashboardConfig = DashboardConfigManager.shared
 
     var body: some Scene {
         WindowGroup {
@@ -58,6 +59,7 @@ struct FinTrackApp: App {
                 .environment(languageManager)
                 .environment(lockManager)
                 .environment(rateManager)
+                .environment(dashboardConfig)
         }
         .modelContainer(container)
     }

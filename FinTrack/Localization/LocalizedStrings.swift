@@ -375,6 +375,29 @@ enum LocalizedStrings {
 
 
 
+
+        // MARK: - Dashboard Library
+        "library.title":            ["fr": "Personnaliser le tableau de bord",      "en": "Customize Dashboard",            "es": "Personalizar panel",            "pt": "Personalizar painel"],
+        "library.active":           ["fr": "Affichés",                              "en": "Visible",                        "es": "Visibles",                      "pt": "Visíveis"],
+        "library.active.footer":    ["fr": "Glissez pour réordonner. Balayez à gauche pour masquer.", "en": "Drag to reorder. Swipe left to hide.", "es": "Arrastra para reordenar. Desliza para ocultar.", "pt": "Arraste para reordenar. Deslize para ocultar."],
+        "library.available":        ["fr": "Bibliothèque",                          "en": "Library",                        "es": "Biblioteca",                    "pt": "Biblioteca"],
+        "library.available.footer": ["fr": "Touchez + pour ajouter au tableau de bord.", "en": "Tap + to add to dashboard.", "es": "Toca + para añadir al panel.", "pt": "Toque em + para adicionar ao painel."],
+        "library.pinned":           ["fr": "Épinglé",                               "en": "Pinned",                         "es": "Fijado",                        "pt": "Fixado"],
+        "library.reset":            ["fr": "Rétablir la disposition par défaut",    "en": "Reset to Default Layout",        "es": "Restablecer disposición",       "pt": "Restaurar layout padrão"],
+        "widget.desc.globalBalance":["fr": "Solde total converti + détail par devise", "en": "Total balance with per-currency breakdown", "es": "Saldo total con desglose por divisa", "pt": "Saldo total com detalhamento por moeda"],
+        "widget.desc.accounts":     ["fr": "Carousel horizontal de vos comptes",   "en": "Horizontal carousel of your accounts", "es": "Carrusel de tus cuentas",   "pt": "Carrossel das suas contas"],
+        "widget.desc.monthSummary": ["fr": "Revenus et dépenses du mois en cours", "en": "Income and expenses for the current month", "es": "Ingresos y gastos del mes actual", "pt": "Receitas e despesas do mês atual"],
+        "widget.desc.loans":        ["fr": "Soldes restants de vos prêts actifs",  "en": "Remaining balances of your active loans", "es": "Saldos de tus préstamos activos", "pt": "Saldos dos seus empréstimos ativos"],
+        "widget.desc.creditLines":  ["fr": "Utilisation de vos marges de crédit",  "en": "Usage of your credit lines",     "es": "Uso de tus líneas de crédito",  "pt": "Uso das suas linhas de crédito"],
+        "widget.desc.cashFlow":     ["fr": "Flux mensuel estimé et surplus",        "en": "Estimated monthly cash flow and surplus", "es": "Flujo mensual estimado", "pt": "Fluxo mensal estimado e excedente"],
+        "widget.desc.budgets":      ["fr": "Top 3 budgets les plus utilisés",       "en": "Top 3 most-used budgets",        "es": "Top 3 presupuestos más usados", "pt": "Top 3 orçamentos mais utilizados"],
+        "widget.desc.savings":      ["fr": "Progression de vos projets d'épargne", "en": "Progress of your savings goals", "es": "Progreso de tus metas de ahorro", "pt": "Progresso das suas metas de poupança"],
+        "widget.desc.balanceProjection": ["fr": "Projection interactive du solde sur 3 mois à 3 ans", "en": "Interactive balance projection from 3 months to 3 years", "es": "Proyección interactiva del saldo", "pt": "Projeção interativa do saldo"],
+        "widget.desc.incomeVsExpenses":  ["fr": "Graphique revenus vs dépenses sur 3/6/12 mois", "en": "Income vs expenses chart for 3/6/12 months", "es": "Gráfico ingresos vs gastos", "pt": "Gráfico receitas vs despesas"],
+        "widget.desc.categoryBreakdown": ["fr": "Répartition des dépenses par catégorie ce mois", "en": "Expense breakdown by category this month", "es": "Desglose de gastos por categoría", "pt": "Detalhamento de despesas por categoria"],
+        "widget.desc.upcoming":     ["fr": "Prochaines échéances dans les 30 jours","en": "Upcoming due dates in the next 30 days", "es": "Próximos vencimientos en 30 días", "pt": "Próximos vencimentos em 30 dias"],
+        "widget.desc.recent":       ["fr": "Les 10 dernières transactions",         "en": "The 10 most recent transactions","es": "Las 10 transacciones más recientes", "pt": "As 10 transações mais recentes"],
+
         // MARK: - Transfers
         "transfer.title":             ["fr": "Virement",                           "en": "Transfer",                       "es": "Transferencia",                 "pt": "Transferência"],
         "transfer.create":            ["fr": "Nouveau virement",                   "en": "New Transfer",                   "es": "Nueva transferencia",           "pt": "Nova transferência"],
