@@ -74,6 +74,9 @@
 		F4F89D55CA4BD29F454EAB63 /* NetWorthWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 841D946E03117B34F4132CB0 /* NetWorthWidget.swift */; };
 		69EABEC908369CF74407C175 /* ExchangeRateWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41D3284883D16E3D213FDF35 /* ExchangeRateWidget.swift */; };
 		29B81DE9E9428D65D874B3B4 /* UpcomingTransfersWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF1698420AA85505923B701F /* UpcomingTransfersWidget.swift */; };
+		E54D4594FC37CC3817EF2118 /* PlaidManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125E09D6B0F8129A95535E90 /* PlaidManager.swift */; };
+		5EA3E788FD6EE67BE18217DD /* PlaidSyncEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C021D3CD3FF3501EF49F4A6 /* PlaidSyncEngine.swift */; };
+		8A4B948BBF24E30637FD86EF /* PlaidConnectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5EF762014F98681AF2AEF89 /* PlaidConnectionView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -146,6 +149,9 @@
 		841D946E03117B34F4132CB0 /* NetWorthWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetWorthWidget.swift; sourceTree = "<group>"; };
 		41D3284883D16E3D213FDF35 /* ExchangeRateWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeRateWidget.swift; sourceTree = "<group>"; };
 		EF1698420AA85505923B701F /* UpcomingTransfersWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpcomingTransfersWidget.swift; sourceTree = "<group>"; };
+		125E09D6B0F8129A95535E90 /* PlaidManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaidManager.swift; sourceTree = "<group>"; };
+		4C021D3CD3FF3501EF49F4A6 /* PlaidSyncEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaidSyncEngine.swift; sourceTree = "<group>"; };
+		D5EF762014F98681AF2AEF89 /* PlaidConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaidConnectionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -217,6 +223,7 @@
 				DD57FF2A7B0E5E204F511B08 /* FinTrack.entitlements */,
 				A96289E687731417561F7EB0 /* Models */,
 				0792ABF971B545FD80425FD6 /* Utilities */,
+				49B28BCCF606326BC81DE014 /* Plaid */,
 				6DF5D9E7880853763F1CB8FC /* Dashboard */,
 				B0CC6F0D2B7879414A9D82D5 /* Localization */,
 				472D159D5C5EAF9F408C3FBD /* Views */,
@@ -294,6 +301,16 @@
 				77738FEA3FCE12F17CE4AE08 /* DashboardView.swift */,
 			);
 			path = Views/Dashboard;
+			sourceTree = "<group>";
+		};
+		49B28BCCF606326BC81DE014 /* Plaid */ = {
+			isa = PBXGroup;
+			children = (
+				125E09D6B0F8129A95535E90 /* PlaidManager.swift */,
+				4C021D3CD3FF3501EF49F4A6 /* PlaidSyncEngine.swift */,
+				D5EF762014F98681AF2AEF89 /* PlaidConnectionView.swift */,
+			);
+			path = Plaid;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -404,6 +421,10 @@
 				167DD8D94BD2C94A5D09FCC6 /* RootView.swift in Sources */,
 				17D35A490B812757B7DA1041 /* SeedData.swift in Sources */,
 				FEBFF9935E3B84CAFF02F78B /* SettingsView.swift in Sources */,
+				E54D4594FC37CC3817EF2118 /* PlaidManager.swift in Sources */,
+				5EA3E788FD6EE67BE18217DD /* PlaidSyncEngine.swift in Sources */,
+				8A4B948BBF24E30637FD86EF /* PlaidConnectionView.swift in Sources */,
+
 				F4F89D55CA4BD29F454EAB63 /* NetWorthWidget.swift in Sources */,
 				69EABEC908369CF74407C175 /* ExchangeRateWidget.swift in Sources */,
 				29B81DE9E9428D65D874B3B4 /* UpcomingTransfersWidget.swift in Sources */,

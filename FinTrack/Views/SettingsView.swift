@@ -66,6 +66,28 @@ struct SettingsView: View {
                     }
                 }
 
+                
+                // MARK: - Comptes connectés (Plaid)
+                Section(lang["plaid.settings.section"]) {
+                    NavigationLink {
+                        ConnectedAccountsView()
+                    } label: {
+                        HStack {
+                            Label(lang["plaid.title"], systemImage: "building.columns.badge.plus")
+                            Spacer()
+                            let count = PlaidManager.shared.connectedItems.count
+                            if count > 0 {
+                                Text("\(count)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 3)
+                                    .background(Color(.systemGray5), in: Capsule())
+                            }
+                        }
+                    }
+                }
+
                                 // MARK: - Security
                 Section(lang["security.title"]) {
                     NavigationLink {

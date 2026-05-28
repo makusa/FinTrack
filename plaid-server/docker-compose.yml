@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  fintrack-plaid:
+    build: .
+    container_name: fintrack-plaid-server
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      # ⚠️  Ne jamais commiter ce fichier avec les vraies valeurs
+      # Modifie ces valeurs directement dans Docker Compose sur le NAS
+      PLAID_CLIENT_ID: "6a14a9bcb256e9000e75d151"
+      PLAID_SECRET: "${PLAID_SECRET}"         # lu depuis .env
+      PLAID_ENV: "production"
+      API_KEY: "${API_KEY}"                   # clé que tu inventes, ex: fintrack_2026_xxxxx
+      PORT: "3000"
+    env_file:
+      - .env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
