@@ -469,6 +469,30 @@ enum LocalizedStrings {
         "budget.history":                ["fr": "Historique (6 périodes)",              "en": "History (6 periods)",            "es": "Historial (6 períodos)",        "pt": "Histórico (6 períodos)"],
         "budget.period.transactions":    ["fr": "Transactions de la période",           "en": "Period Transactions",            "es": "Transacciones del período",     "pt": "Transações do período"],
 
+
+        // MARK: - Plaid Bank Connection
+        "plaid.title":             ["fr": "Comptes bancaires",                   "en": "Bank Accounts",                  "es": "Cuentas bancarias",             "pt": "Contas bancárias"],
+        "plaid.settings.section":  ["fr": "Connexions bancaires",                "en": "Bank Connections",               "es": "Conexiones bancarias",          "pt": "Conexões bancárias"],
+        "plaid.connect.title":     ["fr": "Connecter une banque",                "en": "Connect a Bank",                 "es": "Conectar un banco",             "pt": "Conectar um banco"],
+        "plaid.connect.cta":       ["fr": "Connecter mon premier compte",        "en": "Connect My First Account",       "es": "Conectar mi primera cuenta",    "pt": "Conectar minha primeira conta"],
+        "plaid.connect.add":       ["fr": "Ajouter une connexion",               "en": "Add Connection",                 "es": "Añadir conexión",               "pt": "Adicionar conexão"],
+        "plaid.empty.title":       ["fr": "Aucun compte connecté",               "en": "No Connected Accounts",          "es": "Sin cuentas conectadas",        "pt": "Sem contas conectadas"],
+        "plaid.empty.sub":         ["fr": "Connectez vos comptes bancaires pour importer automatiquement vos transactions.", "en": "Connect your bank accounts to automatically import your transactions.", "es": "Conecta tus cuentas bancarias para importar automáticamente tus transacciones.", "pt": "Conecte suas contas bancárias para importar automaticamente suas transações."],
+        "plaid.connecting":        ["fr": "Connexion en cours…",                 "en": "Connecting…",                    "es": "Conectando…",                   "pt": "Conectando…"],
+        "plaid.sync.now":          ["fr": "Synchroniser",                        "en": "Sync Now",                       "es": "Sincronizar",                   "pt": "Sincronizar"],
+        "plaid.sync.summary":      ["fr": "Résultat de la synchro",              "en": "Sync Summary",                   "es": "Resumen de sincronización",     "pt": "Resumo da sincronização"],
+        "plaid.last.sync":         ["fr": "Synchronisé",                         "en": "Synced",                         "es": "Sincronizado",                  "pt": "Sincronizado"],
+        "plaid.never.synced":      ["fr": "Jamais synchronisé — mappez les comptes d'abord", "en": "Never synced — map accounts first", "es": "Nunca sincronizado — mapea cuentas primero", "pt": "Nunca sincronizado — mapeie contas primeiro"],
+        "plaid.map.title":         ["fr": "Associer les comptes",                "en": "Map Accounts",                   "es": "Mapear cuentas",                "pt": "Mapear contas"],
+        "plaid.map.subtitle":      ["fr": "Associez chaque compte bancaire Plaid à un compte FinTrack pour y importer les transactions.", "en": "Link each Plaid bank account to a FinTrack account to import transactions into it.", "es": "Vincula cada cuenta bancaria Plaid a una cuenta FinTrack para importar transacciones.", "pt": "Vincule cada conta bancária Plaid a uma conta FinTrack para importar transações."],
+        "plaid.map.to":            ["fr": "Associer à",                          "en": "Map to",                         "es": "Mapear a",                      "pt": "Mapear para"],
+        "plaid.map.none":          ["fr": "Ne pas importer",                     "en": "Don't import",                   "es": "No importar",                   "pt": "Não importar"],
+        "plaid.map.accounts":      ["fr": "Associer les comptes",                "en": "Map Accounts",                   "es": "Mapear cuentas",                "pt": "Mapear contas"],
+        "plaid.disconnect":        ["fr": "Déconnecter cette banque",            "en": "Disconnect this Bank",           "es": "Desconectar este banco",        "pt": "Desconectar este banco"],
+        "plaid.disconnect.prompt": ["fr": "Déconnecter ?",                       "en": "Disconnect?",                    "es": "¿Desconectar?",                 "pt": "Desconectar?"],
+        "plaid.disconnect.message":["fr": "Les transactions déjà importées seront conservées. Les futures synchronisations seront arrêtées.", "en": "Already imported transactions will be kept. Future syncs will stop.", "es": "Las transacciones ya importadas se conservarán. Las sincronizaciones futuras se detendrán.", "pt": "As transações já importadas serão mantidas. As sincronizações futuras serão interrompidas."],
+        "plaid.security.note":     ["fr": "Vos identifiants bancaires ne sont jamais stockés par FinTrack. La connexion est sécurisée par Plaid.", "en": "Your banking credentials are never stored by FinTrack. The connection is secured by Plaid.", "es": "Tus credenciales bancarias nunca son almacenadas por FinTrack. La conexión está asegurada por Plaid.", "pt": "Suas credenciais bancárias nunca são armazenadas pelo FinTrack. A conexão é protegida pelo Plaid."],
+
         // MARK: - Security / Lock
         "security.title":               ["fr": "Sécurité",                              "en": "Security",                           "es": "Seguridad",                         "pt": "Segurança"],
         "security.account":             ["fr": "Compte",                                "en": "Account",                            "es": "Cuenta",                            "pt": "Conta"],
