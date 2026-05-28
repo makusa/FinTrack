@@ -113,7 +113,8 @@ app.post('/create_link_token', requireApiKey, async (req, res) => {
     const response = await plaidClient.linkTokenCreate({
       user:          { client_user_id: userId },
       client_name:   'FinTrack',
-      products:      [Products.Transactions, Products.Balance],
+      products:      [Products.Transactions],
+      // Note: Balance is automatically included — do not add it explicitly
       country_codes: [CountryCode.Ca, CountryCode.Us],
       language:      'fr',
       // Webhook pour les mises à jour automatiques (optionnel — à configurer plus tard)
