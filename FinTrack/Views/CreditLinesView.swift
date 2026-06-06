@@ -9,6 +9,7 @@ import SwiftData
 struct CreditLinesView: View {
     @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
+    @State private var entitlements = EntitlementManager.shared
 
     @Query(filter: #Predicate<CreditLine> { $0.isActive },
            sort: \CreditLine.createdAt, order: .forward)

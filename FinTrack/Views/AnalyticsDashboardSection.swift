@@ -26,6 +26,7 @@ struct AnalyticsDashboardSection: View {
     let transactions: [Transaction]
     let activeRecurring: [RecurringTransaction]
     let currency: String
+    @State private var entitlements = EntitlementManager.shared
     var visibleWidgets: Set<DashboardWidgetID> = [.balanceProjection, .incomeVsExpenses, .categoryBreakdown]
 
     var body: some View {
@@ -87,6 +88,7 @@ struct BalanceProjectionCard: View {
     let transactions: [Transaction]
     let activeRecurring: [RecurringTransaction]
     let currency: String
+    @State private var entitlements = EntitlementManager.shared
     var visibleWidgets: Set<DashboardWidgetID> = [.balanceProjection, .incomeVsExpenses, .categoryBreakdown]
 
     // MARK: Time range
@@ -432,6 +434,7 @@ struct IncomeExpenseCard: View {
 
     let transactions: [Transaction]
     let currency: String
+    @State private var entitlements = EntitlementManager.shared
 
     enum Window: String, CaseIterable {
         case threeMonths = "3m"
@@ -623,6 +626,7 @@ struct CategoryBreakdownCard: View {
 
     let transactions: [Transaction]
     let currency: String
+    @State private var entitlements = EntitlementManager.shared
 
     struct Slice: Identifiable {
         var id: String { name }

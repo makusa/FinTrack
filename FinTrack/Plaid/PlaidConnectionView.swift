@@ -18,6 +18,7 @@ struct ConnectedAccountsView: View {
     @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
     @State private var plaid = PlaidManager.shared
+    @State private var entitlements = EntitlementManager.shared
 
     @Query(filter: #Predicate<Account> { !$0.isArchived }, sort: \Account.createdAt)
     private var fintrackAccounts: [Account]
@@ -32,6 +33,9 @@ struct ConnectedAccountsView: View {
 
     var body: some View {
         NavigationStack {
+            if !entitlements.hasPlaid {
+                ProGateView(feature: .plaidSync)
+            } else {
             List {
                 // ── Status banner ──────────────────────────────────────────
                 if let err = errorMessage {
@@ -451,6 +455,7 @@ struct AccountMappingView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(LanguageManager.self) private var lang
     @State private var plaid = PlaidManager.shared
+    @State private var entitlements = EntitlementManager.shared
 
     var item: PlaidConnectedItem
     let fintrackAccounts: [Account]

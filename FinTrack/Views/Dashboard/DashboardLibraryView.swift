@@ -12,6 +12,7 @@ import SwiftUI
 struct DashboardLibraryView: View {
     @Environment(\.dismiss)      private var dismiss
     @Environment(LanguageManager.self) private var lang
+    @State private var entitlements = EntitlementManager.shared
 
     @State private var config = DashboardConfigManager.shared
     @State private var isEditMode: EditMode = .active

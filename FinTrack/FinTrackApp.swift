@@ -42,6 +42,9 @@ struct FinTrackApp: App {
         // Refresh exchange rates
         Task { await ExchangeRateManager.shared.refreshIfNeeded() }
 
+        // Start StoreKit entitlement listener
+        Task { await EntitlementManager.shared.start() }
+
         // Generate any pending recurring transactions (salary, rent, subscriptions…).
         RecurringTransactionManager.applyPending(context: modelContainer.mainContext)
         CreditLineInterestManager.applyPending(context: modelContainer.mainContext)
@@ -51,6 +54,7 @@ struct FinTrackApp: App {
     @State private var languageManager = LanguageManager.shared
     @State private var lockManager = AppLockManager.shared
     @State private var rateManager = ExchangeRateManager.shared
+    @State private var entitlements = EntitlementManager.shared
     @State private var dashboardConfig = DashboardConfigManager.shared
 
     var body: some Scene {
@@ -59,6 +63,7 @@ struct FinTrackApp: App {
                 .environment(languageManager)
                 .environment(lockManager)
                 .environment(rateManager)
+                .environment(entitlements)
                 .environment(dashboardConfig)
         }
         .modelContainer(container)

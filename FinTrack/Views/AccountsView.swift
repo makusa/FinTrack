@@ -10,6 +10,7 @@ struct AccountsView: View {
     @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
     @Environment(ExchangeRateManager.self) private var rates
+    @State private var entitlements = EntitlementManager.shared
 
     @Query(filter: #Predicate<Account> { !$0.isArchived },
            sort: \Account.createdAt, order: .forward)
@@ -72,10 +73,15 @@ struct AccountsView: View {
                     } label: {
                         Image(systemName: "plus.circle.fill").font(.title3)
                     }
+                    .disabled(!entitlements.hasPro && activeAccounts.count >= FinTrackLimit.freeMaxAccounts)
                 }
             }
             .sheet(isPresented: $showAddAccount) {
-                AddEditAccountView(mode: .create)
+                if !entitlements.hasPro && activeAccounts.count >= FinTrackLimit.freeMaxAccounts {
+                    NavigationStack { ProGateView(feature: .unlimitedAccounts) }
+                } else {
+                    AddEditAccountView(mode: .create)
+                }
             }
         }
     }

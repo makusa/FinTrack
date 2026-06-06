@@ -8,6 +8,7 @@ import SwiftUI
 struct RootView: View {
     @Environment(LanguageManager.self) private var lang
     @State private var lockManager = AppLockManager.shared
+    @State private var entitlements = EntitlementManager.shared
 
     var body: some View {
         Group {
@@ -48,7 +49,7 @@ struct RootView: View {
             TransactionsView()
                 .tabItem { Label(lang["tab.transactions"], systemImage: "list.bullet.rectangle") }
 
-            BudgetsView()
+            ProGated(feature: .budgets) { BudgetsView() }
                 .tabItem { Label(lang["tab.budgets"], systemImage: "chart.bar.xaxis") }
 
             SettingsView()

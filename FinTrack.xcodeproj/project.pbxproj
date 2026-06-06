@@ -77,6 +77,9 @@
 		E54D4594FC37CC3817EF2118 /* PlaidManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125E09D6B0F8129A95535E90 /* PlaidManager.swift */; };
 		5EA3E788FD6EE67BE18217DD /* PlaidSyncEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C021D3CD3FF3501EF49F4A6 /* PlaidSyncEngine.swift */; };
 		8A4B948BBF24E30637FD86EF /* PlaidConnectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D5EF762014F98681AF2AEF89 /* PlaidConnectionView.swift */; };
+		E3D472CBE91E66DEEE5E40CD /* EntitlementManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0693E0E8756D791306AA53BF /* EntitlementManager.swift */; };
+		2E2C0669E0DEC2D674586D93 /* ProGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AA33BEA702AC895F7996618 /* ProGateView.swift */; };
+		D80931AF4F47C09297ACCFDF /* SubscriptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A0AD383BE4701E81D73CA2 /* SubscriptionView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -152,6 +155,9 @@
 		125E09D6B0F8129A95535E90 /* PlaidManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaidManager.swift; sourceTree = "<group>"; };
 		4C021D3CD3FF3501EF49F4A6 /* PlaidSyncEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaidSyncEngine.swift; sourceTree = "<group>"; };
 		D5EF762014F98681AF2AEF89 /* PlaidConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaidConnectionView.swift; sourceTree = "<group>"; };
+		0693E0E8756D791306AA53BF /* EntitlementManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementManager.swift; sourceTree = "<group>"; };
+		2AA33BEA702AC895F7996618 /* ProGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProGateView.swift; sourceTree = "<group>"; };
+		F9A0AD383BE4701E81D73CA2 /* SubscriptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -223,6 +229,7 @@
 				DD57FF2A7B0E5E204F511B08 /* FinTrack.entitlements */,
 				A96289E687731417561F7EB0 /* Models */,
 				0792ABF971B545FD80425FD6 /* Utilities */,
+				64D56626EE2D424C64CD8DE4 /* Entitlements */,
 				49B28BCCF606326BC81DE014 /* Plaid */,
 				6DF5D9E7880853763F1CB8FC /* Dashboard */,
 				B0CC6F0D2B7879414A9D82D5 /* Localization */,
@@ -311,6 +318,16 @@
 				D5EF762014F98681AF2AEF89 /* PlaidConnectionView.swift */,
 			);
 			path = Plaid;
+			sourceTree = "<group>";
+		};
+		64D56626EE2D424C64CD8DE4 /* Entitlements */ = {
+			isa = PBXGroup;
+			children = (
+				0693E0E8756D791306AA53BF /* EntitlementManager.swift */,
+				2AA33BEA702AC895F7996618 /* ProGateView.swift */,
+				F9A0AD383BE4701E81D73CA2 /* SubscriptionView.swift */,
+			);
+			path = Entitlements;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -421,6 +438,10 @@
 				167DD8D94BD2C94A5D09FCC6 /* RootView.swift in Sources */,
 				17D35A490B812757B7DA1041 /* SeedData.swift in Sources */,
 				FEBFF9935E3B84CAFF02F78B /* SettingsView.swift in Sources */,
+				E3D472CBE91E66DEEE5E40CD /* EntitlementManager.swift in Sources */,
+				2E2C0669E0DEC2D674586D93 /* ProGateView.swift in Sources */,
+				D80931AF4F47C09297ACCFDF /* SubscriptionView.swift in Sources */,
+
 				E54D4594FC37CC3817EF2118 /* PlaidManager.swift in Sources */,
 				5EA3E788FD6EE67BE18217DD /* PlaidSyncEngine.swift in Sources */,
 				8A4B948BBF24E30637FD86EF /* PlaidConnectionView.swift in Sources */,

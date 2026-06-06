@@ -95,7 +95,8 @@ docs:     documentation uniquement
 | Taux de change temps réel | ✅ Mergé | — |
 | Virements entre comptes | ✅ Mergé | — |
 | Dashboard personnalisable | ✅ Mergé | — |
-| Connexion Plaid bancaire | 🔄 En cours | develop |
+| Connexion Plaid bancaire | ✅ Mergé | — |
+| EntitlementManager StoreKit 2 | ✅ Mergé | — |
 
 ## Features à venir
 
@@ -106,3 +107,27 @@ docs:     documentation uniquement
 | CloudKit sync | Bloqué (Developer Program) |
 | Mode foyer multi-utilisateurs | Moyenne |
 | Commandes vocales (Speech + Claude) | Basse |
+
+
+## Tiers de fonctionnalités
+
+| Fonctionnalité | 🆓 Gratuit | 🔒 Pro ($19,99) | 💳 Plaid ($3,99/mois) |
+|----------------|:----------:|:---------------:|:---------------------:|
+| Comptes (max 3) | ✅ | ✅ | ✅ |
+| Comptes illimités | ❌ | ✅ | ✅ |
+| Transactions manuelles | ✅ | ✅ | ✅ |
+| Dashboard basique | ✅ | ✅ | ✅ |
+| Dashboard personnalisable | ❌ | ✅ | ✅ |
+| Budgets | ❌ | ✅ | ✅ |
+| Prêts & marges | ❌ | ✅ | ✅ |
+| Projets d'épargne | ❌ | ✅ | ✅ |
+| Récurrences | ❌ | ✅ | ✅ |
+| Virements | ❌ | ✅ | ✅ |
+| Analytiques & graphiques | ❌ | ✅ | ✅ |
+| Taux de change live | ❌ | ✅ | ✅ |
+| Export CSV | ❌ | ✅ | ✅ |
+| Sync bancaire Plaid | ❌ | ❌ | ✅ |
+
+StoreKit 2 product IDs:
+- `ca.regis.fintrack.pro` — Non-consumable, $19,99 CAD
+- `ca.regis.fintrack.plaid_monthly` — Auto-renewable, $3,99 CAD/mois
