@@ -26,7 +26,7 @@ struct AddEditSavingsProjectView: View {
 
     @State private var name: String = ""
     @State private var iconSystemName: String = "star.fill"
-    @State private var colorHex: String = ColorPalette.accountColors[1] // green
+    @State private var colorHex: String = ColorPalette.accountColors[1]
     @State private var currency: String = Currencies.default
     @State private var currentAmountText: String = "0"
     @State private var trackViaAccount: Bool = false
@@ -39,12 +39,15 @@ struct AddEditSavingsProjectView: View {
     @State private var notes: String = ""
     @State private var showDeleteConfirm: Bool = false
 
+    // Recurring contribution
+    @State private var createRecurring: Bool = false
+    @State private var contributionSourceAccount: Account? = nil
+
     private var isEditing: Bool { if case .edit = mode { return true }; return false }
     private var navTitle: String { isEditing ? lang["savings.edit"] : lang["savings.createNew"] }
-
     private var canSave: Bool { !name.trimmingCharacters(in: .whitespaces).isEmpty }
 
-    // MARK: Live preview
+    // MARK: Computed
 
     private var currentDecimal: Decimal {
         Decimal(Double(currentAmountText.replacingOccurrences(of: ",", with: ".")) ?? 0)
@@ -55,9 +58,12 @@ struct AddEditSavingsProjectView: View {
     private var contributionDecimal: Decimal {
         Decimal(Double(contributionText.replacingOccurrences(of: ",", with: ".")) ?? 0)
     }
+    private var hasContribution: Bool {
+        (contributionDecimal as NSDecimalNumber).doubleValue > 0
+    }
 
     private var previewProject: SavingsProject {
-        let p = SavingsProject(
+        SavingsProject(
             name: name, iconSystemName: iconSystemName, colorHex: colorHex,
             currency: currency,
             currentAmount: trackViaAccount ? (selectedAccount?.balance ?? currentDecimal) : currentDecimal,
@@ -66,7 +72,6 @@ struct AddEditSavingsProjectView: View {
             monthlyContribution: contributionDecimal,
             targetDate: hasDeadline ? targetDate : nil
         )
-        return p
     }
 
     // MARK: Icon choices
@@ -79,6 +84,8 @@ struct AddEditSavingsProjectView: View {
         "fork.knife", "pawprint.fill", "cross.case.fill"
     ]
 
+    // MARK: - Body
+
     var body: some View {
         NavigationStack {
             Form {
@@ -87,7 +94,7 @@ struct AddEditSavingsProjectView: View {
                 targetSection
                 contributionSection
                 if hasTarget && !hasDeadline { livePreviewSection }
-                if hasDeadline           { deadlinePreviewSection }
+                if hasDeadline              { deadlinePreviewSection }
                 notesSection
                 if isEditing { deleteSection }
             }
@@ -111,10 +118,9 @@ struct AddEditSavingsProjectView: View {
     // MARK: - Sections
 
     private var identitySection: some View {
-        Section("Identification") {
-            TextField("Nom du projet (ex. Voyage Cameroun)", text: $name)
+        Section(lang["savings.project.identify"]) {
+            TextField(lang["savings.project.name.hint"], text: $name)
 
-            // Icon picker
             VStack(alignment: .leading, spacing: 8) {
                 Text(lang["label.icon"]).font(.subheadline)
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -129,14 +135,15 @@ struct AddEditSavingsProjectView: View {
                                         : Color(.tertiarySystemBackground),
                                     in: Circle()
                                 )
-                                .foregroundStyle(icon == iconSystemName ? .white : .primary)
+                                .foregroundStyle(icon == iconSystemName
+                                                 ? ColorPalette.foregroundColor(on: colorHex)
+                                                 : .primary)
                                 .onTapGesture { iconSystemName = icon }
                         }
                     }.padding(.vertical, 4)
                 }
             }
 
-            // Color picker
             VStack(alignment: .leading, spacing: 8) {
                 Text(lang["label.color"]).font(.subheadline)
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -144,9 +151,11 @@ struct AddEditSavingsProjectView: View {
                         ForEach(ColorPalette.accountColors, id: \.self) { hex in
                             Circle().fill(Color(hex: hex)).frame(width: 32, height: 32)
                                 .overlay {
+                                    Circle().strokeBorder(Color(.separator),
+                                                          lineWidth: hex == "#F2F2F7" ? 1 : 0)
                                     if hex == colorHex {
                                         Image(systemName: "checkmark")
-                                            .foregroundStyle(.white)
+                                            .foregroundStyle(ColorPalette.foregroundColor(on: hex))
                                             .font(.system(size: 14, weight: .bold))
                                     }
                                 }
@@ -220,8 +229,10 @@ struct AddEditSavingsProjectView: View {
                     }
                 }
                 if hasDeadline {
-                    DatePicker("Atteindre l'objectif avant le", selection: $targetDate,
-                               in: Date()..., displayedComponents: .date)
+                    DatePicker(lang["savings.deadline.before"],
+                               selection: $targetDate,
+                               in: Date()...,
+                               displayedComponents: .date)
                 }
             }
         } header: { Text(lang["savings.target"]) }
@@ -229,6 +240,7 @@ struct AddEditSavingsProjectView: View {
 
     private var contributionSection: some View {
         Section {
+            // Contribution amount
             HStack {
                 Text(lang["savings.contribution"])
                 Spacer()
@@ -236,25 +248,74 @@ struct AddEditSavingsProjectView: View {
                     .keyboardType(.decimalPad).multilineTextAlignment(.trailing).frame(maxWidth: 120)
                 Text(Currencies.info(for: currency).symbol).foregroundStyle(.secondary)
             }
+
+            // Recurring transfer toggle (only relevant when a contribution is set)
+            if hasContribution {
+                Toggle(isOn: $createRecurring.animation()) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(lang["savings.recurring.toggle"])
+                        Text(lang["savings.recurring.toggle.sub"])
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+
+                if createRecurring {
+                    // Source account picker (where money is debited from)
+                    Picker(lang["savings.recurring.source"], selection: $contributionSourceAccount) {
+                        Text(lang["prepayment.account.none"]).tag(Account?.none)
+                        ForEach(accounts.filter { $0.id != selectedAccount?.id }) { acc in
+                            Label {
+                                HStack {
+                                    Text(acc.name)
+                                    Text("(\(acc.currency))").foregroundStyle(.secondary)
+                                }
+                            } icon: {
+                                Image(systemName: acc.iconSystemName.isEmpty
+                                      ? acc.type.defaultIconSystemName
+                                      : acc.iconSystemName)
+                                    .foregroundStyle(Color(hex: acc.colorHex))
+                            }
+                            .tag(Optional(acc))
+                        }
+                    }
+
+                    // Destination preview (savings account if tracked, or none)
+                    if trackViaAccount, let savings = selectedAccount {
+                        HStack {
+                            Text(lang["savings.recurring.destination"])
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            Text(savings.name)
+                                .foregroundStyle(.green)
+                        }
+                    }
+                }
+            }
         } header: {
             Text(lang["savings.contribution.section"])
         } footer: {
-            Text(lang["savings.contribution.footer"])
+            if createRecurring && hasContribution {
+                Text(lang["savings.recurring.toggle.sub"])
+            } else {
+                Text(lang["savings.contribution.footer"])
+            }
         }
     }
 
     @ViewBuilder
     private var livePreviewSection: some View {
         let p = previewProject
-        if (contributionDecimal as NSDecimalNumber).doubleValue > 0,
-           let target = targetDecimal, (target as NSDecimalNumber).doubleValue > 0 {
+        if hasContribution,
+           let target = targetDecimal,
+           (target as NSDecimalNumber).doubleValue > 0 {
             Section {
                 if let reachDate = p.targetReachDate, let months = p.monthsToTarget {
                     summaryRow(lang["savings.projection.onTrack"],
                                value: reachDate.formatted(date: .long, time: .omitted),
                                emphasis: true)
-                    summaryRow(lang["savings.projection.duration"], value: String(format: lang["savings.projection.months"], months))
-                } else if (currentDecimal as NSDecimalNumber).doubleValue >= (target as NSDecimalNumber).doubleValue {
+                    summaryRow(lang["savings.projection.duration"],
+                               value: String(format: lang["savings.projection.months"], months))
+                } else if (currentDecimal as NSDecimalNumber).doubleValue >= ((target) as NSDecimalNumber).doubleValue {
                     Label(lang["savings.projection.reached"], systemImage: "checkmark.circle.fill")
                         .foregroundStyle(.green)
                 }
@@ -268,16 +329,17 @@ struct AddEditSavingsProjectView: View {
         Section {
             if let req = p.requiredMonthlyForDeadline {
                 summaryRow(lang["savings.projection.required"],
-                           value: req.formatted(asCurrency: currency) + "/mois",
+                           value: req.formatted(asCurrency: currency) + lang["savings.perMonth"],
                            emphasis: true,
-                           color: req > contributionDecimal && (contributionDecimal as NSDecimalNumber).doubleValue > 0 ? .orange : .green)
+                           color: req > contributionDecimal && hasContribution ? .orange : .green)
             }
         } header: { Text(lang["savings.requiredContrib"]) }
     }
 
     private var notesSection: some View {
-        Section("Notes (optionnel)") {
-            TextField(lang["savings.notes.placeholder"], text: $notes, axis: .vertical).lineLimit(2...4)
+        Section(lang["savings.notes.section"]) {
+            TextField(lang["savings.notes.placeholder"], text: $notes, axis: .vertical)
+                .lineLimit(2...4)
         }
     }
 
@@ -289,7 +351,7 @@ struct AddEditSavingsProjectView: View {
         }
     }
 
-    // MARK: Helpers
+    // MARK: - Helpers
 
     private func summaryRow(_ label: String, value: String,
                             emphasis: Bool = false, color: Color = .primary) -> some View {
@@ -303,28 +365,31 @@ struct AddEditSavingsProjectView: View {
         }
     }
 
-    // MARK: Logic
+    // MARK: - Logic
 
     private func loadIfEditing() {
         guard case .edit(let p) = mode else { return }
-        name = p.name
-        iconSystemName = p.iconSystemName
-        colorHex = p.colorHex
-        currency = p.currency
-        trackViaAccount = p.trackViaAccount
-        selectedAccount = p.account
-        currentAmountText = decimalToText(p.manualCurrentAmount)
-        hasTarget = p.targetAmount != nil
-        targetAmountText = p.targetAmount.map { decimalToText($0) } ?? ""
-        contributionText = decimalToText(p.monthlyContribution)
-        hasDeadline = p.targetDate != nil
+        name                 = p.name
+        iconSystemName       = p.iconSystemName
+        colorHex             = p.colorHex
+        currency             = p.currency
+        trackViaAccount      = p.trackViaAccount
+        selectedAccount      = p.account
+        currentAmountText    = decimalToText(p.manualCurrentAmount)
+        hasTarget            = p.targetAmount != nil
+        targetAmountText     = p.targetAmount.map { decimalToText($0) } ?? ""
+        contributionText     = decimalToText(p.monthlyContribution)
+        hasDeadline          = p.targetDate != nil
         if let d = p.targetDate { targetDate = d }
-        notes = p.notes ?? ""
+        notes                = p.notes ?? ""
+        // createRecurring stays false in edit mode — manage existing rules separately
     }
 
     private func save() {
         let trimName = name.trimmingCharacters(in: .whitespaces)
-        let current = trackViaAccount ? (selectedAccount?.balance ?? currentDecimal) : currentDecimal
+        let current  = trackViaAccount
+            ? (selectedAccount?.balance ?? currentDecimal)
+            : currentDecimal
 
         switch mode {
         case .create:
@@ -336,31 +401,92 @@ struct AddEditSavingsProjectView: View {
                 monthlyContribution: contributionDecimal,
                 targetDate: hasTarget && hasDeadline ? targetDate : nil,
                 account: selectedAccount,
-                notes: notes.trimmingCharacters(in: .whitespaces).isEmpty ? nil : notes.trimmingCharacters(in: .whitespaces)
+                notes: notes.trimmingCharacters(in: .whitespaces).isEmpty
+                    ? nil : notes.trimmingCharacters(in: .whitespaces)
             )
             context.insert(p)
+
+            // Create recurring monthly transfer if requested
+            if createRecurring, hasContribution, let source = contributionSourceAccount {
+                let startDate = firstOfNextMonth()
+                let ruleName  = trimName.isEmpty ? lang["savings.title"] : trimName
+
+                if trackViaAccount, let savings = selectedAccount {
+                    // Transfer: debit source → credit savings account
+                    let rule = RecurringTransaction(
+                        title: ruleName,
+                        amount: contributionDecimal,
+                        type: .expense,
+                        frequency: .monthly,
+                        startDate: startDate,
+                        account: source,
+                        note: lang["savings.contribution"] + " — " + ruleName,
+                        payee: nil,
+                        isLoanPayment: false
+                    )
+                    rule.isTransfer        = true
+                    rule.destinationAccount = savings
+                    context.insert(rule)
+                } else {
+                    // Simple expense on source account
+                    let rule = RecurringTransaction(
+                        title: ruleName,
+                        amount: contributionDecimal,
+                        type: .expense,
+                        frequency: .monthly,
+                        startDate: startDate,
+                        account: source,
+                        note: lang["savings.contribution"] + " — " + ruleName,
+                        payee: nil,
+                        isLoanPayment: false
+                    )
+                    context.insert(rule)
+                }
+            }
+
         case .edit(let p):
-            p.name = trimName; p.iconSystemName = iconSystemName; p.colorHex = colorHex
-            p.currency = currency; p.manualCurrentAmount = current
-            p.trackViaAccount = trackViaAccount; p.account = selectedAccount
-            p.targetAmount = hasTarget ? targetDecimal : nil
+            p.name              = trimName
+            p.iconSystemName    = iconSystemName
+            p.colorHex          = colorHex
+            p.currency          = currency
+            p.manualCurrentAmount = current
+            p.trackViaAccount   = trackViaAccount
+            p.account           = selectedAccount
+            p.targetAmount      = hasTarget ? targetDecimal : nil
             p.monthlyContribution = contributionDecimal
-            p.targetDate = hasTarget && hasDeadline ? targetDate : nil
-            p.notes = notes.trimmingCharacters(in: .whitespaces).isEmpty ? nil : notes
+            p.targetDate        = hasTarget && hasDeadline ? targetDate : nil
+            p.notes = notes.trimmingCharacters(in: .whitespaces).isEmpty
+                ? nil : notes.trimmingCharacters(in: .whitespaces)
         }
+
         try? context.save()
+        // Generate any past occurrences immediately (synchronous, like AddEditLoanView)
+        RecurringTransactionManager.applyPending(context: context)
         dismiss()
     }
 
     private func deleteIfEditing() {
         guard case .edit(let p) = mode else { return }
-        context.delete(p); try? context.save(); dismiss()
+        context.delete(p)
+        try? context.save()
+        dismiss()
+    }
+
+    /// Returns the 1st day of next month as the first contribution date.
+    private func firstOfNextMonth() -> Date {
+        let cal = Calendar.current
+        let now = Date()
+        guard let nextMonth = cal.date(byAdding: .month, value: 1, to: now) else { return now }
+        let components = cal.dateComponents([.year, .month], from: nextMonth)
+        return cal.date(from: components) ?? nextMonth
     }
 
     private func decimalToText(_ d: Decimal) -> String {
         let fmt = NumberFormatter()
-        fmt.numberStyle = .decimal; fmt.locale = Locale(identifier: "fr_CA")
-        fmt.maximumFractionDigits = 2; fmt.minimumFractionDigits = 0
+        fmt.numberStyle = .decimal
+        fmt.locale = Locale(identifier: "fr_CA")
+        fmt.maximumFractionDigits = 2
+        fmt.minimumFractionDigits = 0
         fmt.usesGroupingSeparator = false
         return fmt.string(from: NSDecimalNumber(decimal: d)) ?? "\(d)"
     }
