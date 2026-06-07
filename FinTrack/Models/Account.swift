@@ -53,6 +53,7 @@ final class Account {
     var iconSystemName: String = AccountType.checking.defaultIconSystemName
     var isArchived: Bool = false
     var notes: String?
+    var bankDomain: String? = nil   // Clearbit/favicon domain for logo; nil = SF Symbol
     var createdAt: Date = Date.now
 
     @Relationship(deleteRule: .cascade, inverse: \Transaction.account)

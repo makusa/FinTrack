@@ -86,9 +86,13 @@ struct AccountsView: View {
                 Circle()
                     .fill(Color(hex: account.colorHex))
                     .frame(width: 40, height: 40)
-                Image(systemName: account.iconSystemName)
-                    .foregroundStyle(.white)
-                    .font(.system(size: 17, weight: .semibold))
+                if let domain = account.bankDomain {
+                    BankLogoView(domain: domain, size: 26, cornerRadius: 6)
+                } else {
+                    Image(systemName: account.iconSystemName)
+                        .foregroundStyle(.white)
+                        .font(.system(size: 17, weight: .semibold))
+                }
             }
 
             VStack(alignment: .leading, spacing: 2) {

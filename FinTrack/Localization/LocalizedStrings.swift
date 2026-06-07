@@ -102,6 +102,7 @@ enum LocalizedStrings {
         "account.noAccounts.sub":  ["fr": "Appuyez sur + pour ajouter un compte.", "en": "Tap + to add an account.", "es": "Toca + para añadir una cuenta.", "pt": "Toque em + para adicionar uma conta."],
         "account.create":          ["fr": "Nouveau compte",        "en": "New Account",          "es": "Nueva cuenta",         "pt": "Nova conta"],
         "account.edit":            ["fr": "Modifier le compte",    "en": "Edit Account",         "es": "Editar cuenta",        "pt": "Editar conta"],
+        "account.currency.proHint":  ["fr": "Toutes les devises disponibles avec Épargne", "en": "All currencies available with Épargne", "es": "Todas las divisas disponibles con Épargne", "pt": "Todas as moedas disponíveis com Épargne"],
         "account.initialBalance":  ["fr": "Solde initial",         "en": "Initial Balance",      "es": "Saldo inicial",        "pt": "Saldo inicial"],
         "account.archivePrompt":   ["fr": "Archiver ce compte ?",  "en": "Archive this account?","es": "¿Archivar esta cuenta?","pt": "Arquivar esta conta?"],
         "account.unarchivePrompt": ["fr": "Désarchiver ce compte ?","en": "Unarchive account?",  "es": "¿Desarchivar cuenta?", "pt": "Desarquivar conta?"],

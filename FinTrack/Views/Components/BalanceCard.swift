@@ -12,9 +12,13 @@ struct BalanceCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Image(systemName: account.iconSystemName)
-                    .font(.title2)
-                    .foregroundStyle(.white)
+                if let domain = account.bankDomain {
+                    BankLogoView(domain: domain, size: 32, cornerRadius: 8)
+                } else {
+                    Image(systemName: account.iconSystemName)
+                        .font(.title2)
+                        .foregroundStyle(.white)
+                }
                 Spacer()
                 Text(account.currency)
                     .font(.caption.weight(.semibold))

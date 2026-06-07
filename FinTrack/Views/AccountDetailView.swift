@@ -26,11 +26,18 @@ struct AccountDetailView: View {
         List {
             Section {
                 VStack(spacing: 8) {
-                    Image(systemName: account.iconSystemName)
-                        .font(.system(size: 36))
-                        .foregroundStyle(.white)
-                        .frame(width: 72, height: 72)
-                        .background(Color(hex: account.colorHex), in: Circle())
+                    Group {
+                        if let domain = account.bankDomain {
+                            BankLogoView(domain: domain, size: 52, cornerRadius: 12)
+                                .frame(width: 72, height: 72)
+                        } else {
+                            Image(systemName: account.iconSystemName)
+                                .font(.system(size: 36))
+                                .foregroundStyle(.white)
+                                .frame(width: 72, height: 72)
+                                .background(Color(hex: account.colorHex), in: Circle())
+                        }
+                    }
 
                     Text(account.balance.formatted(asCurrency: account.currency))
                         .font(.largeTitle.weight(.bold))

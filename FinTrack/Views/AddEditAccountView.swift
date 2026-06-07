@@ -14,6 +14,7 @@ enum AccountEditorMode {
 struct AddEditAccountView: View {
     @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
+    @Environment(EntitlementManager.self) private var entitlements
     @Environment(\.dismiss) private var dismiss
 
     let mode: AccountEditorMode
@@ -26,6 +27,13 @@ struct AddEditAccountView: View {
     @State private var colorHex: String = ColorPalette.accountColors.first ?? "#3478F6"
     @State private var iconSystemName: String = AccountType.checking.defaultIconSystemName
     @State private var notes: String = ""
+    @State private var bankDomain: String? = nil   // domain for logo; set on institution selection
+
+    /// CAD + EUR for free tier; all currencies for Pro.
+    private var availableCurrencies: [CurrencyInfo] {
+        if entitlements.hasPro { return Currencies.all }
+        return Currencies.all.filter { ["CAD", "EUR"].contains($0.code) }
+    }
 
     private var isEditing: Bool {
         if case .edit = mode { return true }
@@ -46,7 +54,18 @@ struct AddEditAccountView: View {
             Form {
                 Section(lang["label.information"]) {
                     TextField(lang["label.name"], text: $name)
-                    InstitutionPickerField(text: $institution, placeholder: lang["label.institution"])
+                    InstitutionPickerField(
+                        text: $institution,
+                        placeholder: lang["label.institution"],
+                        onBankSelected: { bank in
+                            bankDomain = bank.domain
+                            // Auto-set icon color matching institution type
+                            if let hex = institutionColor(for: bank) {
+                                colorHex = hex
+                            }
+                        },
+                        hasPro: entitlements.hasPro
+                    )
                     Picker(lang["label.type"], selection: $type) {
                         ForEach(AccountType.allCases) { t in
                             Text(t.label).tag(t)
@@ -63,9 +82,14 @@ struct AddEditAccountView: View {
 
                 Section(lang["label.currency"]) {
                     Picker(lang["label.currency"], selection: $currency) {
-                        ForEach(Currencies.all) { c in
-                            Text("\(c.code) — \(c.nameFR)").tag(c.code)
+                        ForEach(availableCurrencies) { cur in
+                            Text("\(cur.code) — \(cur.nameFR)").tag(cur.code)
                         }
+                    }
+                    if !entitlements.hasPro {
+                        Label(lang["account.currency.proHint"], systemImage: "lock.fill")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                     HStack {
                         Text(lang["account.initialBalance"])
@@ -113,7 +137,13 @@ struct AddEditAccountView: View {
                         .fontWeight(.semibold)
                 }
             }
-            .onAppear(perform: loadIfEditing)
+            .onAppear {
+                loadIfEditing()
+                // Ensure selected currency is available in current tier
+                if !availableCurrencies.contains(where: { $0.code == currency }) {
+                    currency = Currencies.default
+                }
+            }
         }
     }
 
@@ -174,6 +204,19 @@ struct AddEditAccountView: View {
 
     // MARK: - Logic
 
+    /// Maps a known bank to a brand-appropriate color from the palette.
+    private func institutionColor(for bank: BankInfo) -> String? {
+        switch bank.countryCode {
+        case "CA": return "#FF3B30"   // Canadian red
+        case "US": return "#3478F6"   // Blue
+        case "GB": return "#3478F6"   // Blue
+        case "FR": return "#3478F6"   // Blue
+        case "AF": return "#34C759"   // Green
+        default:   return nil
+        }
+    }
+
+
     private func loadIfEditing() {
         guard case .edit(let account) = mode else { return }
         name = account.name
@@ -183,6 +226,7 @@ struct AddEditAccountView: View {
         initialBalanceText = decimalToText(account.initialBalance)
         colorHex = account.colorHex
         iconSystemName = account.iconSystemName
+        bankDomain = account.bankDomain
         notes = account.notes ?? ""
     }
 
@@ -204,6 +248,7 @@ struct AddEditAccountView: View {
                 iconSystemName: iconSystemName,
                 notes: trimmedNotes.isEmpty ? nil : trimmedNotes
             )
+            account.bankDomain = bankDomain
             context.insert(account)
         case .edit(let account):
             account.name = trimmedName
@@ -213,6 +258,7 @@ struct AddEditAccountView: View {
             account.initialBalance = initial
             account.colorHex = colorHex
             account.iconSystemName = iconSystemName
+            account.bankDomain = bankDomain
             account.notes = trimmedNotes.isEmpty ? nil : trimmedNotes
         }
 

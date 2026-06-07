@@ -69,6 +69,46 @@ enum BankDirectory {
         return Array(ranked.prefix(limit))
     }
 
+
+    // MARK: - Tier filtering
+
+    /// Countries shown in the institution picker for the free tier.
+    static let freeTierCountries: Set<String> = ["CA", "US"]
+
+    /// Filtered bank list: free tier = CA+US only, pro tier = all.
+    static func search(_ query: String, hasPro: Bool, limit: Int = 12) -> [BankInfo] {
+        let filtered = hasPro ? all : all.filter { freeTierCountries.contains($0.countryCode) }
+        let q = query.trimmingCharacters(in: .whitespaces).lowercased()
+        guard !q.isEmpty else { return [] }
+
+        var exact:    [BankInfo] = []
+        var starts:   [BankInfo] = []
+        var contains: [BankInfo] = []
+
+        for bank in filtered {
+            let fields = ([bank.name] + bank.aliases).map { $0.lowercased() }
+            if fields.contains(q)                               { exact.append(bank) }
+            else if fields.contains(where: { $0.hasPrefix(q) }){ starts.append(bank) }
+            else if fields.contains(where: { $0.contains(q) }) { contains.append(bank) }
+        }
+        return Array((exact + starts + contains).prefix(limit))
+    }
+
+    /// Countries to display in grouped picker, filtered by tier.
+    static func availableCountries(hasPro: Bool) -> [String] {
+        let allowed: Set<String> = hasPro ? Set(all.map { $0.countryCode }) : freeTierCountries
+        let preferred = hasPro
+            ? ["CA", "US", "GB", "FR", "DE", "ES", "PT", "NL", "BE", "CH", "AF", "INT"]
+            : ["CA", "US"]
+        return preferred.filter { allowed.contains($0) && !banks(for: $0).isEmpty }
+    }
+
+    /// Banks for a country, respecting tier.
+    static func banks(for countryCode: String, hasPro: Bool = true) -> [BankInfo] {
+        guard hasPro || freeTierCountries.contains(countryCode) else { return [] }
+        return all.filter { $0.countryCode == countryCode }.sorted { $0.name < $1.name }
+    }
+
     // MARK: Grouped by country
 
     static var countries: [String] {

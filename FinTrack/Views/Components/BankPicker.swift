@@ -143,6 +143,11 @@ struct BankLogoView: View {
 struct InstitutionPickerField: View {
     @Binding var text: String
     var placeholder: String = "Institution"
+    /// Called when the user selects a known bank from the picker.
+    /// Provides the matched BankInfo so the caller can set the logo domain etc.
+    var onBankSelected: ((BankInfo) -> Void)? = nil
+    /// Restricts the picker to free-tier institutions (CA + US) when false.
+    var hasPro: Bool = true
 
     @State private var showPicker = false
 
@@ -165,7 +170,11 @@ struct InstitutionPickerField: View {
             .buttonStyle(.plain)
         }
         .sheet(isPresented: $showPicker) {
-            BankPickerSheet(selectedName: $text)
+            BankPickerSheet(
+                selectedName: $text,
+                hasPro: hasPro,
+                onBankSelected: onBankSelected
+            )
         }
     }
 }
@@ -177,16 +186,14 @@ struct BankPickerSheet: View {
     @Environment(LanguageManager.self) private var lang
 
     @Binding var selectedName: String
+    var hasPro: Bool = true
+    var onBankSelected: ((BankInfo) -> Void)? = nil
 
     @State private var query: String = ""
 
-    private let preferredOrder = ["CA", "US", "GB", "FR", "DE", "ES", "PT", "NL", "BE", "CH", "AF", "INT"]
-
     private var isSearching: Bool { !query.trimmingCharacters(in: .whitespaces).isEmpty }
-    private var searchResults: [BankInfo] { BankDirectory.search(query) }
-    private var countries: [String] {
-        preferredOrder.filter { !BankDirectory.banks(for: $0).isEmpty }
-    }
+    private var searchResults: [BankInfo] { BankDirectory.search(query, hasPro: hasPro) }
+    private var countries: [String] { BankDirectory.availableCountries(hasPro: hasPro) }
 
     var body: some View {
         NavigationStack {
@@ -223,7 +230,7 @@ struct BankPickerSheet: View {
                 } else {
                     ForEach(countries, id: \.self) { code in
                         Section {
-                            ForEach(BankDirectory.banks(for: code)) { bank in
+                            ForEach(BankDirectory.banks(for: code, hasPro: hasPro)) { bank in
                                 bankRow(bank)
                             }
                         } header: {
@@ -248,6 +255,7 @@ struct BankPickerSheet: View {
     private func bankRow(_ bank: BankInfo) -> some View {
         Button {
             selectedName = bank.name
+            onBankSelected?(bank)
             dismiss()
         } label: {
             HStack(spacing: 12) {
