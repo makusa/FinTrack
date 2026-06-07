@@ -320,18 +320,26 @@ struct BalanceProjectionCard: View {
                     AreaMark(x: .value("Date", p.date), y: .value("Solde", p.balance))
                         .foregroundStyle(Color.accentColor.opacity(0.12))
                         .interpolationMethod(.monotone)
-                    LineMark(x: .value("Date", p.date), y: .value("Solde", p.balance))
-                        .foregroundStyle(Color.accentColor)
-                        .lineStyle(StrokeStyle(lineWidth: 2.5))
-                        .interpolationMethod(.monotone)
+                    LineMark(
+                        x: .value("Date", p.date),
+                        y: .value("Solde", p.balance),
+                        series: .value("Série", lang["analytics.real"])
+                    )
+                    .foregroundStyle(Color.accentColor)
+                    .lineStyle(StrokeStyle(lineWidth: 2.5))
+                    .interpolationMethod(.monotone)
                 }
 
                 // Projected dashed line
                 ForEach(proj) { p in
-                    LineMark(x: .value("Date", p.date), y: .value("Solde", p.balance))
-                        .foregroundStyle(Color.teal)
-                        .lineStyle(StrokeStyle(lineWidth: 2, dash: [6, 4]))
-                        .interpolationMethod(.stepEnd)
+                    LineMark(
+                        x: .value("Date", p.date),
+                        y: .value("Solde", p.balance),
+                        series: .value("Série", lang["analytics.projection"])
+                    )
+                    .foregroundStyle(Color.teal)
+                    .lineStyle(StrokeStyle(lineWidth: 2, dash: [6, 4]))
+                    .interpolationMethod(.stepEnd)
                 }
 
                 // Zero baseline
