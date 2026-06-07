@@ -178,6 +178,7 @@ struct LoansView: View {
             Button { showAdd = true } label: {
                 Label(lang["loan.add"], systemImage: "plus")
                     .font(.body.weight(.semibold))
+                    .foregroundStyle(.white)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 12)
             }
