@@ -185,8 +185,6 @@ struct AddCreditLineEntryView: View {
                 HStack {
                     Text(acc.name).foregroundStyle(.secondary)
                     Spacer()
-                    // Show projected account balance impact
-                    let impact: Decimal = entryType == .draw ? amt : -amt
                     let sign = entryType == .draw ? "+" : "−"
                     Text(sign + amt.formatted(asCurrency: creditLine.currency))
                         .foregroundStyle(entryType == .draw ? .green : .red)
