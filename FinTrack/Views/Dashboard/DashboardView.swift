@@ -158,10 +158,26 @@ struct DashboardView: View {
 
     // MARK: - Populated (widget-driven)
 
+    /// Collapsed render list — the three analytics widget IDs (.balanceProjection,
+    /// .incomeVsExpenses, .categoryBreakdown) all map to a single AnalyticsDashboardSection.
+    /// Only the first analytics ID found in the enabled list triggers a render;
+    /// the others are skipped here but still passed via analyticsWidgets so all
+    /// enabled sub-charts appear within the single section.
+    private var renderOrder: [DashboardWidgetID] {
+        let analyticsIDs: Set<DashboardWidgetID> = [.balanceProjection, .incomeVsExpenses, .categoryBreakdown]
+        var seenAnalytics = false
+        return config.enabled.filter { id in
+            guard analyticsIDs.contains(id) else { return true }
+            if seenAnalytics { return false }
+            seenAnalytics = true
+            return true
+        }
+    }
+
     private var populated: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                ForEach(config.enabled) { widgetId in
+                ForEach(renderOrder) { widgetId in
                     widgetView(for: widgetId)
                 }
             }
