@@ -57,6 +57,10 @@ final class CreditLineEntry {
     var note: String = ""
     var createdAt: Date = Date.now
 
+    /// Account debited (repayment) or credited (draw) when this entry is saved.
+    /// nil = entry not linked to an account (e.g. auto-generated interest accruals).
+    var account: Account? = nil
+
     var creditLine: CreditLine?
 
     var type: CreditLineEntryType {

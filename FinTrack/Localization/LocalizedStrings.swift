@@ -250,6 +250,11 @@ enum LocalizedStrings {
         "cl.minPayment.footer":["fr": "Utilisé pour estimer l'obligation mensuelle dans le flux de trésorerie.", "en": "Used to estimate the monthly obligation in cash flow.", "es": "Usado para estimar la obligación mensual en el flujo de caja.", "pt": "Usado para estimar a obrigação mensal no fluxo de caixa."],
         "cl.dailyRate":        ["fr": "Taux journalier",         "en": "Daily Rate",          "es": "Tasa diaria",        "pt": "Taxa diária"],
         "cl.entry.repayment":  ["fr": "Remboursement",           "en": "Repayment",           "es": "Pago",               "pt": "Pagamento"],
+        
+        "cl.entry.account.draw":             ["fr": "Compte à créditer",                                     "en": "Account to credit",                                   "es": "Cuenta a acreditar",                                  "pt": "Conta a creditar"],
+        "cl.entry.account.draw.footer":      ["fr": "Le montant du retrait sera crédité sur ce compte.",     "en": "The withdrawal amount will be credited to this account.", "es": "El monto del retiro se acreditará en esta cuenta.",   "pt": "O valor do saque será creditado nesta conta."],
+        "cl.entry.account.repayment":        ["fr": "Compte à débiter",                                      "en": "Account to debit",                                    "es": "Cuenta a debitar",                                    "pt": "Conta a debitar"],
+        "cl.entry.account.repayment.footer": ["fr": "Le montant du remboursement sera débité de ce compte.", "en": "The repayment amount will be debited from this account.", "es": "El monto del reembolso se debitará de esta cuenta.",  "pt": "O valor do reembolso será debitado desta conta."],
         "cl.entry.draw":       ["fr": "Retrait",                 "en": "Draw",                "es": "Retiro",             "pt": "Saque"],
         "cl.entry.interest":   ["fr": "Intérêts courus",         "en": "Accrued Interest",    "es": "Intereses acumulados","pt": "Juros acumulados"],
         "cl.addRepayment":     ["fr": "Enregistrer un remboursement","en": "Record Repayment", "es": "Registrar pago",     "pt": "Registrar pagamento"],
