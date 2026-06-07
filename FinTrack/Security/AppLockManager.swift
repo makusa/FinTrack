@@ -73,7 +73,12 @@ final class AppLockManager {
     private init() {
         loadFromKeychain()
         checkBiometricCapability()
-        if isSetup { isLocked = true }
+        // Lock on launch unless the user explicitly chose "never lock".
+        // A forced kill + relaunch is treated as a security event for all
+        // other delay settings (immediately / 1 min / 5 min).
+        if isSetup && autoLockDelay != .never {
+            isLocked = true
+        }
     }
 
     // MARK: - Setup (first launch)
@@ -221,6 +226,8 @@ final class AppLockManager {
         guard isSetup else { return }
         checkBiometricCapability()  // refresh in case user enrolled biometrics since last launch
         guard autoLockDelay != .never else { return }
+        // If backgroundDate is nil (e.g. app was killed without going to background first),
+        // elapsed = .infinity → always locks. Intentional: kill+relaunch = security event.
         let elapsed = backgroundDate.map { Date().timeIntervalSince($0) } ?? .infinity
         let threshold = TimeInterval(autoLockDelay.rawValue)
         if threshold == 0 || elapsed >= threshold {
