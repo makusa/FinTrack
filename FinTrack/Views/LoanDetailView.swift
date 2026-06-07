@@ -426,7 +426,7 @@ private struct PrepaymentRow: View {
                     if !prep.isRecurring {
                         Text("· \(prep.startDate.formatted(date: .abbreviated, time: .omitted))")
                     } else {
-                        Text("\(lang[\"loan.detail.from\"]) \(prep.startDate.formatted(date: .abbreviated, time: .omitted))")
+                        Text(lang["loan.detail.from"] + " " + prep.startDate.formatted(date: .abbreviated, time: .omitted))
                     }
                 }
                 .font(.caption)

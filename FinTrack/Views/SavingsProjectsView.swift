@@ -42,7 +42,7 @@ struct SavingsProjectsView: View {
                 Section {
                     ForEach(totalsByCurrency, id: \.currency) { row in
                         HStack {
-                            Label("\(lang[\"savings.total.byCurrency\"]) (\(row.currency))", systemImage: "checkmark.seal.fill")
+                            Label(lang["savings.total.byCurrency"] + " (\(row.currency))", systemImage: "checkmark.seal.fill")
                                 .foregroundStyle(.green)
                             Spacer()
                             Text(row.total.formatted(asCurrency: row.currency))
@@ -399,10 +399,10 @@ struct SavingsProjectDetailView: View {
                     value: reachDate.formatted(date: .long, time: .omitted),
                     emphasis: true)
                 if let months = project.monthsToTarget {
-                    row(lang["savings.monthsLeft"], value: "\(months) mois")
+                    row(lang["savings.monthsLeft"], value: String(format: lang["savings.projection.months"], months))
                 }
             } else if project.targetAmount != nil {
-                row("Date d'atteinte", value: lang["savings.detail.noContrib"])
+                row(lang["savings.detail.reachDate"], value: lang["savings.detail.noContrib"])
             }
 
             if let req = project.requiredMonthlyForDeadline {

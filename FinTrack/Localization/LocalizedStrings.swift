@@ -342,6 +342,7 @@ enum LocalizedStrings {
         "savings.detail.saved":      ["fr": "Épargné",                             "en": "Saved",                          "es": "Ahorrado",                      "pt": "Poupado"],
         "savings.detail.remaining":  ["fr": "Restant",                             "en": "Remaining",                      "es": "Restante",                      "pt": "Restante"],
         "savings.detail.noDeadline": ["fr": "Non définie",                         "en": "Not set",                        "es": "No definida",                   "pt": "Não definida"],
+        "savings.detail.reachDate":  ["fr": "Date d'atteinte",                   "en": "Reach date",                    "es": "Fecha de alcance",              "pt": "Data de alcance"],
         "savings.detail.noContrib":  ["fr": "Définissez une contribution mensuelle","en": "Set a monthly contribution",    "es": "Define una contribución mensual","pt": "Defina uma contribuição mensal"],
         "savings.projection.onTrack":["fr": "À ce rythme, vous atteindrez l'objectif le","en": "At this rate, you will reach your goal on","es": "A este ritmo, alcanzarás tu meta el","pt": "Neste ritmo, você atingirá seu objetivo em"],
         "savings.projection.duration":["fr":"Durée estimée",                       "en": "Estimated duration",             "es": "Duración estimada",             "pt": "Duração estimada"],
