@@ -173,84 +173,82 @@ struct DashboardView: View {
 
     @ViewBuilder
     private func widgetView(for id: DashboardWidgetID) -> some View {
-        // Pro-only widgets are hidden for Courant users
         if id.requiresPro && !entitlements.hasPro {
+            // Pro-only widget — show upsell teaser for Courant users
             proTeaser(for: id)
-            return
-        }
-        switch id {
-        case .globalBalance:
-            globalBalanceWidget
+        } else {
+            switch id {
+            case .globalBalance:
+                globalBalanceWidget
 
-        case .accountsCarousel:
-            accountsCarouselWidget
+            case .accountsCarousel:
+                accountsCarouselWidget
 
-        case .monthSummary:
-            monthSummaryWidget
+            case .monthSummary:
+                monthSummaryWidget
 
-        case .loans:
-            if !activeLoans.isEmpty { loanWidget }
+            case .loans:
+                if !activeLoans.isEmpty { loanWidget }
 
-        case .creditLines:
-            if !activeCreditLines.isEmpty { creditLineWidget }
+            case .creditLines:
+                if !activeCreditLines.isEmpty { creditLineWidget }
 
-        case .cashFlow:
-            if let cur = dominantCurrency {
-                BudgetDashboardSection(
-                    recurring: activeRecurring,
+            case .cashFlow:
+                if let cur = dominantCurrency {
+                    BudgetDashboardSection(
+                        recurring: activeRecurring,
+                        loans: activeLoans,
+                        currency: cur
+                    )
+                    .id("cashFlow")
+                }
+
+            case .budgets:
+                if let cur = dominantCurrency {
+                    budgetSectionWidget(currency: cur)
+                }
+
+            case .savingsGoals:
+                if let cur = dominantCurrency {
+                    savingsWidget(currency: cur)
+                }
+
+            case .balanceProjection, .incomeVsExpenses, .categoryBreakdown:
+                if let cur = dominantCurrency {
+                    AnalyticsDashboardSection(
+                        accounts: accounts,
+                        transactions: allTransactions,
+                        activeRecurring: activeRecurring,
+                        currency: cur,
+                        visibleWidgets: analyticsWidgets
+                    )
+                    .id("analytics")
+                }
+
+            case .upcomingRecurring:
+                if !upcomingRecurrences.isEmpty { upcomingWidget }
+
+            case .recentTransactions:
+                recentWidget
+
+            case .netWorth:
+                NetWorthWidget(
+                    accounts: totalsByCurrency,
                     loans: activeLoans,
-                    currency: cur
+                    creditLines: activeCreditLines
                 )
-                .id("cashFlow")
-            }
 
-        case .budgets:
-            if let cur = dominantCurrency {
-                // BudgetCard is included inside BudgetDashboardSection; here we
-                // want just the budgets card — injected via budgetSection helper
-                budgetSectionWidget(currency: cur)
-            }
-
-        case .savingsGoals:
-            if let cur = dominantCurrency {
-                savingsWidget(currency: cur)
-            }
-
-        case .balanceProjection, .incomeVsExpenses, .categoryBreakdown:
-            if let cur = dominantCurrency {
-                AnalyticsDashboardSection(
-                    accounts: accounts,
-                    transactions: allTransactions,
-                    activeRecurring: activeRecurring,
-                    currency: cur,
-                    visibleWidgets: analyticsWidgets
+            case .exchangeRates:
+                ExchangeRateWidget(
+                    accountCurrencies: Array(Set(accounts.map { $0.currency }))
                 )
-                .id("analytics")
+
+            case .upcomingTransfers:
+                UpcomingTransfersWidget(
+                    recurringTransfers: recurringTransfers,
+                    futureTransferTx: upcomingTransferTx
+                )
             }
-
-        case .upcomingRecurring:
-            if !upcomingRecurrences.isEmpty { upcomingWidget }
-
-        case .recentTransactions:
-            recentWidget
-
-        case .netWorth:
-            NetWorthWidget(
-                accounts: totalsByCurrency,
-                loans: activeLoans,
-                creditLines: activeCreditLines
-            )
-
-        case .exchangeRates:
-            ExchangeRateWidget(
-                accountCurrencies: Array(Set(accounts.map { $0.currency }))
-            )
-
-        case .upcomingTransfers:
-            UpcomingTransfersWidget(
-                recurringTransfers: recurringTransfers,
-                futureTransferTx: upcomingTransferTx
-            )
         }
     }
 

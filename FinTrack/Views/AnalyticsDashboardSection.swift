@@ -92,22 +92,6 @@ private struct RangePill: View {
     }
 }
 
-    var body: some View {
-        Button(action: action) {
-            Text(label)
-                .font(.caption2.weight(.semibold))
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(
-                    isSelected ? Color.accentColor : Color(.tertiarySystemBackground),
-                    in: Capsule()
-                )
-                .foregroundStyle(isSelected ? .white : .secondary)
-        }
-        .buttonStyle(.plain)
-    }
-}
-
 // MARK: - 1. Balance Projection Card ─────────────────────────────────────────
 
 struct BalanceProjectionCard: View {

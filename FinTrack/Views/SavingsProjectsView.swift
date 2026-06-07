@@ -312,7 +312,7 @@ struct SavingsProjectDetailView: View {
                                          ? lang["savings.goalReached.check"]
                                          : "Encore \(Decimal(remaining).formatted(asCurrency: project.currency))")
                                         .font(.caption2)
-                                        .foregroundStyle(remaining <= 0 ? .green : .secondary)
+                                        .foregroundStyle(remaining <= 0 ? AnyShapeStyle(Color.green) : AnyShapeStyle(.secondary))
                                 }
                             }
                             .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .leading)))

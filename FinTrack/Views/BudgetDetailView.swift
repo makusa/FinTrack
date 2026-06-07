@@ -79,7 +79,7 @@ struct BudgetDetailView: View {
                                 .font(.caption).foregroundStyle(.secondary)
                             Text(status.remaining.magnitude.formatted(asCurrency: budget.currency))
                                 .font(.title3.weight(.semibold))
-                                .foregroundStyle(status.isOverBudget ? .red : .secondary)
+                                .foregroundStyle(status.isOverBudget ? AnyShapeStyle(Color.red) : AnyShapeStyle(.secondary))
                         }
                     }
 

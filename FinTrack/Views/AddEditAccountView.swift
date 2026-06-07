@@ -211,7 +211,7 @@ struct AddEditAccountView: View {
                             // No institution matched yet — show a bank placeholder
                             Image(systemName: "building.columns")
                                 .font(.system(size: 16))
-                                .foregroundStyle(isLogoSelected ? iconForeground : .secondary)
+                                .foregroundStyle(isLogoSelected ? AnyShapeStyle(iconForeground) : AnyShapeStyle(.secondary))
                         }
                         if isLogoSelected {
                             // Small checkmark badge
@@ -241,7 +241,7 @@ struct AddEditAccountView: View {
                                     : Color(.tertiarySystemBackground),
                                 in: Circle()
                             )
-                            .foregroundStyle(isSelected ? iconForeground : .primary)
+                            .foregroundStyle(isSelected ? AnyShapeStyle(iconForeground) : AnyShapeStyle(.primary))
                             .onTapGesture { iconSystemName = name }
                     }
                 }
