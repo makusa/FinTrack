@@ -39,14 +39,16 @@ struct AddEditPrepaymentView: View {
 
     @FocusState private var amountFocused: Bool
 
+    // MARK: Helpers
+
     private var loan: Loan {
         switch mode {
         case .create(let l): return l
-        case .edit(let p): return p.loan ?? Loan(label: "", lenderName: "", type: .other,
-                                                  currency: "CAD", originalPrincipal: 0,
-                                                  annualInterestRate: 0, termMonths: 0,
-                                                  frequency: .monthly, compounding: .monthly,
-                                                  firstPaymentDate: .now)
+        case .edit(let p):   return p.loan ?? Loan(label: "", lenderName: "", type: .other,
+                                                   currency: "CAD", originalPrincipal: 0,
+                                                   annualInterestRate: 0, termMonths: 0,
+                                                   frequency: .monthly, compounding: .monthly,
+                                                   firstPaymentDate: .now)
         }
     }
 
@@ -67,110 +69,22 @@ struct AddEditPrepaymentView: View {
         return true
     }
 
-    // Frequencies relevant for prepayments
     private var availableFrequencies: [RecurrenceFrequency] {
         [.weekly, .biweekly, .monthly, .quarterly, .yearly]
     }
 
+    // MARK: - Body
+
     var body: some View {
         NavigationStack {
             Form {
-                // MARK: Amount
-                Section {
-                    HStack(spacing: 8) {
-                        TextField("0", text: $amountText)
-                            .font(.system(size: 40, weight: .light, design: .rounded))
-                            .keyboardType(.decimalPad)
-                            .multilineTextAlignment(.center)
-                            .focused($amountFocused)
-                        Text(Currencies.info(for: loan.currency).symbol)
-                            .font(.title2)
-                            .foregroundStyle(.secondary)
-                    }
-                    .padding(.vertical, 8)
-                }
-
-                // MARK: Type
-                Section {
-                    Picker(lang["label.type"], selection: $isRecurring.animation()) {
-                        Text(lang["prepayment.oneTime"]).tag(false)
-                        Text(lang["prepayment.recurring"]).tag(true)
-                    }
-                    .pickerStyle(.segmented)
-                }
-
-                // MARK: Schedule
-                Section(lang["recurring.schedule"]) {
-                    DatePicker(
-                        isRecurring ? lang["prepayment.startDate.recurring"] : lang["prepayment.startDate.oneTime"],
-                        selection: $startDate,
-                        displayedComponents: .date
-                    )
-
-                    if isRecurring {
-                        Picker(lang["label.frequency"], selection: $frequency) {
-                            ForEach(availableFrequencies) { f in
-                                Text(f.label).tag(f)
-                            }
-                        }
-
-                        Toggle(lang["recurring.endDate"], isOn: $hasEndDate.animation())
-
-                        if hasEndDate {
-                            DatePicker(
-                                lang["recurring.endDate"],
-                                selection: $endDate,
-                                in: startDate...,
-                                displayedComponents: .date
-                            )
-                        }
-                    }
-                }
-
-                // MARK: Source account
-                Section(lang["prepayment.account.section"]) {
-                    if accounts.isEmpty {
-                        Text(lang["loan.noAccount"])
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Picker(lang["label.account"], selection: $selectedAccount) {
-                            Text(lang["prepayment.account.none"]).tag(Account?.none)
-                            ForEach(accounts) { acc in
-                                HStack {
-                                    Image(systemName: acc.iconSystemName.isEmpty
-                                          ? acc.type.defaultIconSystemName
-                                          : acc.iconSystemName)
-                                        .foregroundStyle(Color(hex: acc.colorHex))
-                                    Text(acc.name)
-                                    Text("(\(acc.currency))")
-                                        .foregroundStyle(.secondary)
-                                }
-                                .tag(Optional(acc))
-                            }
-                        }
-                    }
-                } footer: {
-                    Text(lang["prepayment.account.footer"])
-                }
-
-                // MARK: Note
-                Section(lang["label.notes"] + " " + lang["label.optional"]) {
-                    TextField(lang["label.note"], text: $note, axis: .vertical)
-                        .lineLimit(1...3)
-                }
-
-                // MARK: Delete (edit mode)
+                amountSection
+                typeSection
+                scheduleSection
+                accountSection
+                noteSection
                 notificationSection
-
-                if isEditing {
-                    Section {
-                        Button(role: .destructive) {
-                            showDeleteConfirm = true
-                        } label: {
-                            Label(lang["prepayment.deletePrompt"], systemImage: "trash")
-                        }
-                    }
-                }
+                if isEditing { deleteSection }
             }
             .navigationTitle(isEditing ? lang["prepayment.edit"] : lang["prepayment.create"])
             .navigationBarTitleDisplayMode(.inline)
@@ -203,6 +117,103 @@ struct AddEditPrepaymentView: View {
         }
     }
 
+    // MARK: - Sections
+
+    private var amountSection: some View {
+        Section {
+            HStack(spacing: 8) {
+                TextField("0", text: $amountText)
+                    .font(.system(size: 40, weight: .light, design: .rounded))
+                    .keyboardType(.decimalPad)
+                    .multilineTextAlignment(.center)
+                    .focused($amountFocused)
+                Text(Currencies.info(for: loan.currency).symbol)
+                    .font(.title2)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.vertical, 8)
+        }
+    }
+
+    private var typeSection: some View {
+        Section {
+            Picker(lang["label.type"], selection: $isRecurring) {
+                Text(lang["prepayment.oneTime"]).tag(false)
+                Text(lang["prepayment.recurring"]).tag(true)
+            }
+            .pickerStyle(.segmented)
+        }
+    }
+
+    private var scheduleSection: some View {
+        Section(lang["recurring.schedule"]) {
+            DatePicker(
+                isRecurring ? lang["prepayment.startDate.recurring"] : lang["prepayment.startDate.oneTime"],
+                selection: $startDate,
+                displayedComponents: .date
+            )
+
+            if isRecurring {
+                Picker(lang["label.frequency"], selection: $frequency) {
+                    ForEach(availableFrequencies) { f in
+                        Text(f.label).tag(f)
+                    }
+                }
+
+                Toggle(lang["recurring.endDate"], isOn: $hasEndDate)
+
+                if hasEndDate {
+                    DatePicker(
+                        lang["recurring.endDate"],
+                        selection: $endDate,
+                        in: startDate...,
+                        displayedComponents: .date
+                    )
+                }
+            }
+        }
+    }
+
+    // Section compte source — header + footer avec la syntaxe labeled closures
+    private var accountSection: some View {
+        Section {
+            if accounts.isEmpty {
+                Text(lang["loan.noAccount"])
+                    .foregroundStyle(.secondary)
+            } else {
+                Picker(lang["label.account"], selection: $selectedAccount) {
+                    Text(lang["prepayment.account.none"]).tag(Account?.none)
+                    ForEach(accounts) { acc in
+                        Label {
+                            HStack {
+                                Text(acc.name)
+                                Text("(\(acc.currency))")
+                                    .foregroundStyle(.secondary)
+                            }
+                        } icon: {
+                            let iconName = acc.iconSystemName.isEmpty
+                                ? acc.type.defaultIconSystemName
+                                : acc.iconSystemName
+                            Image(systemName: iconName)
+                                .foregroundStyle(Color(hex: acc.colorHex))
+                        }
+                        .tag(Optional(acc))
+                    }
+                }
+            }
+        } header: {
+            Text(lang["prepayment.account.section"])
+        } footer: {
+            Text(lang["prepayment.account.footer"])
+        }
+    }
+
+    private var noteSection: some View {
+        Section(lang["label.notes"] + " " + lang["label.optional"]) {
+            TextField(lang["label.note"], text: $note, axis: .vertical)
+                .lineLimit(1...3)
+        }
+    }
 
     private var notificationSection: some View {
         Section {
@@ -220,19 +231,29 @@ struct AddEditPrepaymentView: View {
         }
     }
 
+    private var deleteSection: some View {
+        Section {
+            Button(role: .destructive) {
+                showDeleteConfirm = true
+            } label: {
+                Label(lang["prepayment.deletePrompt"], systemImage: "trash")
+            }
+        }
+    }
+
     // MARK: - Logic
 
     private func loadIfEditing() {
         guard case .edit(let prep) = mode else { return }
-        notifEnabled = prep.notificationEnabled
-        notifDaysBefore = prep.notificationDaysBefore
-        amountText = decimalToText(prep.amount)
-        isRecurring = prep.isRecurring
-        startDate = prep.startDate
+        notifEnabled      = prep.notificationEnabled
+        notifDaysBefore   = prep.notificationDaysBefore
+        amountText        = decimalToText(prep.amount)
+        isRecurring       = prep.isRecurring
+        startDate         = prep.startDate
         if let freq = prep.frequency { frequency = freq }
         if let ed = prep.endDate { endDate = ed; hasEndDate = true }
-        note = prep.note ?? ""
-        selectedAccount = prep.account
+        note              = prep.note ?? ""
+        selectedAccount   = prep.account
     }
 
     private func save() {
@@ -242,38 +263,41 @@ struct AddEditPrepaymentView: View {
         switch mode {
         case .create(let l):
             let prep = LoanPrepayment(
-                amount: amt,
+                amount:    amt,
                 startDate: startDate,
                 isRecurring: isRecurring,
                 frequency: isRecurring ? frequency : nil,
-                endDate: isRecurring && hasEndDate ? endDate : nil,
-                note: trimmedNote.isEmpty ? nil : trimmedNote
+                endDate:   isRecurring && hasEndDate ? endDate : nil,
+                note:      trimmedNote.isEmpty ? nil : trimmedNote
             )
-            prep.loan = l
-            prep.account = selectedAccount
-            prep.nextPostDate = selectedAccount != nil ? prep.startDate : nil
-            prep.notificationEnabled = notifEnabled
+            prep.loan            = l
+            prep.account         = selectedAccount
+            prep.nextPostDate    = selectedAccount != nil ? startDate : nil
+            prep.notificationEnabled    = notifEnabled
             prep.notificationDaysBefore = notifDaysBefore
             context.insert(prep)
 
         case .edit(let prep):
-            prep.amount = amt
-            prep.startDate = startDate
+            prep.amount      = amt
+            prep.startDate   = startDate
             prep.isRecurring = isRecurring
-            prep.frequency = isRecurring ? frequency : nil
-            prep.endDate = isRecurring && hasEndDate ? endDate : nil
-            prep.note = trimmedNote.isEmpty ? nil : trimmedNote
-            // If account changed, reset nextPostDate so the manager re-evaluates
-            if prep.account?.persistentModelID != selectedAccount?.persistentModelID {
-                prep.account = selectedAccount
-                prep.nextPostDate = selectedAccount != nil ? prep.startDate : nil
-            }
-            prep.notificationEnabled = notifEnabled
+            prep.frequency   = isRecurring ? frequency : nil
+            prep.endDate     = isRecurring && hasEndDate ? endDate : nil
+            prep.note        = trimmedNote.isEmpty ? nil : trimmedNote
+            prep.notificationEnabled    = notifEnabled
             prep.notificationDaysBefore = notifDaysBefore
+
+            // Compare account identity to decide if nextPostDate must be reset.
+            // Using ObjectIdentifier avoids depending on PersistentIdentifier state.
+            let prevID = prep.account.map { ObjectIdentifier($0) }
+            let newID  = selectedAccount.map { ObjectIdentifier($0) }
+            if prevID != newID {
+                prep.account      = selectedAccount
+                prep.nextPostDate = selectedAccount != nil ? startDate : nil
+            }
         }
 
         try? context.save()
-        // Generate any transactions due immediately
         let ctx = context
         Task { @MainActor in
             LoanPrepaymentManager.applyPending(context: ctx)
@@ -284,12 +308,15 @@ struct AddEditPrepaymentView: View {
 
     private func deleteIfEditing() {
         guard case .edit(let prep) = mode else { return }
+        let notifOn   = prep.notificationEnabled
+        let notifDays = prep.notificationDaysBefore
         context.delete(prep)
-        prep.notificationEnabled = notifEnabled
-        prep.notificationDaysBefore = notifDaysBefore
         try? context.save()
         let ctx = context
-        Task { await NotificationManager.shared.scheduleAll(context: ctx) }
+        Task {
+            await NotificationManager.shared.scheduleAll(context: ctx)
+        }
+        _ = notifOn; _ = notifDays   // suppress unused-variable warnings
         dismiss()
     }
 
