@@ -21,6 +21,7 @@ private extension Decimal {
 // MARK: - Container
 struct AnalyticsDashboardSection: View {
     @Environment(LanguageManager.self) private var lang
+    @Environment(EntitlementManager.self) private var entitlements
 
     let accounts: [Account]
     let transactions: [Transaction]
@@ -60,7 +61,36 @@ struct AnalyticsDashboardSection: View {
 private struct RangePill: View {
     let label: String
     let isSelected: Bool
+    var isLocked: Bool = false
     let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 3) {
+                if isLocked {
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 8))
+                }
+                Text(label)
+                    .font(.caption.weight(.semibold))
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 5)
+            .background(
+                isSelected ? Color.accentColor :
+                isLocked   ? Color(.tertiarySystemBackground).opacity(0.5) :
+                             Color(.tertiarySystemBackground),
+                in: Capsule()
+            )
+            .foregroundStyle(
+                isSelected ? AnyShapeStyle(Color.white) :
+                isLocked   ? AnyShapeStyle(Color(.systemGray3)) :
+                             AnyShapeStyle(HierarchicalShapeStyle.secondary)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
 
     var body: some View {
         Button(action: action) {
@@ -82,6 +112,7 @@ private struct RangePill: View {
 
 struct BalanceProjectionCard: View {
     @Environment(LanguageManager.self) private var lang
+    @Environment(EntitlementManager.self) private var entitlements
 
     let accounts: [Account]
     let transactions: [Transaction]
@@ -137,6 +168,7 @@ struct BalanceProjectionCard: View {
 
     // MARK: State
     @State private var selectedRange: Range = .threeMonths
+    // selectedRange is enforced to .threeMonths for Courant in onAppear
     @State private var selectedDate: Date?  = nil
     @State private var selectedBalance: Double? = nil
 
@@ -277,7 +309,10 @@ struct BalanceProjectionCard: View {
             // ── Range picker ───────────────────────────────────────────────
             HStack(spacing: 6) {
                 ForEach(Range.allCases, id: \.self) { r in
-                    RangePill(label: r.rawValue, isSelected: selectedRange == r) {
+                    let isLocked = !entitlements.hasPro && r != .threeMonths
+                    RangePill(label: r.rawValue, isSelected: selectedRange == r,
+                              isLocked: isLocked) {
+                        guard !isLocked else { return }
                         withAnimation(.easeInOut(duration: 0.2)) {
                             selectedRange = r
                             selectedDate   = nil
@@ -429,6 +464,7 @@ struct BalanceProjectionCard: View {
 
 struct IncomeExpenseCard: View {
     @Environment(LanguageManager.self) private var lang
+    @Environment(EntitlementManager.self) private var entitlements
 
     let transactions: [Transaction]
     let currency: String
@@ -618,6 +654,7 @@ struct IncomeExpenseCard: View {
 
 struct CategoryBreakdownCard: View {
     @Environment(LanguageManager.self) private var lang
+    @Environment(EntitlementManager.self) private var entitlements
 
     let transactions: [Transaction]
     let currency: String

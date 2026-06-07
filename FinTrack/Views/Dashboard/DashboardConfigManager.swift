@@ -40,6 +40,17 @@ enum DashboardWidgetID: String, CaseIterable, Codable, Identifiable {
 
     var isPinned: Bool { self == .globalBalance }
 
+    /// Widgets requiring Épargne or Placement tier.
+    /// Courant users cannot add or view these on their dashboard.
+    var requiresPro: Bool {
+        switch self {
+        case .netWorth, .exchangeRates, .upcomingTransfers, .savingsGoals:
+            return true
+        default:
+            return false
+        }
+    }
+
     var title: String {
         let lang = LanguageManager.shared
         switch self {
@@ -165,9 +176,9 @@ final class DashboardConfigManager {
         save()
     }
 
-    func resetToDefaults() {
-        enabled  = DashboardWidgetID.allCases
-        disabled = []
+    func resetToDefaults(hasPro: Bool = true) {
+        enabled  = DashboardWidgetID.allCases.filter { hasPro || !$0.requiresPro }
+        disabled = hasPro ? [] : DashboardWidgetID.allCases.filter { $0.requiresPro }
         save()
     }
 

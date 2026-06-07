@@ -12,6 +12,7 @@ import SwiftData
 struct DashboardView: View {
     @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
+    @Environment(EntitlementManager.self) private var entitlements
     @Environment(ExchangeRateManager.self) private var rates
 
     @Query(filter: #Predicate<Account> { !$0.isArchived },
@@ -172,6 +173,11 @@ struct DashboardView: View {
 
     @ViewBuilder
     private func widgetView(for id: DashboardWidgetID) -> some View {
+        // Pro-only widgets are hidden for Courant users
+        if id.requiresPro && !entitlements.hasPro {
+            proTeaser(for: id)
+            return
+        }
         switch id {
         case .globalBalance:
             globalBalanceWidget
@@ -253,6 +259,39 @@ struct DashboardView: View {
         Set(config.enabled.filter {
             $0 == .balanceProjection || $0 == .incomeVsExpenses || $0 == .categoryBreakdown
         })
+    }
+
+    // MARK: - Pro teaser (shown when Courant user has a pro-only widget in their layout)
+
+    private func proTeaser(for id: DashboardWidgetID) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: id.icon)
+                .font(.title3)
+                .foregroundStyle(.orange)
+                .frame(width: 36, height: 36)
+                .background(Color.orange.opacity(0.12), in: Circle())
+            VStack(alignment: .leading, spacing: 2) {
+                Text(id.label)
+                    .font(.callout.weight(.semibold))
+                Text(lang["entitlement.pro.teaser"])
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            NavigationLink {
+                SubscriptionView().environment(entitlements)
+            } label: {
+                Text(lang["entitlement.pro.cta"])
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 10).padding(.vertical, 5)
+                    .background(Color.orange.opacity(0.15), in: Capsule())
+                    .foregroundStyle(.orange)
+            }
+        }
+        .padding(14)
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.orange.opacity(0.2)))
+        .padding(.horizontal)
     }
 
     // MARK: - Individual widgets
