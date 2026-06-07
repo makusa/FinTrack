@@ -39,16 +39,23 @@ final class ExchangeRateManager {
     private(set) var isLoading: Bool = false
     private(set) var lastError: String? = nil
 
+    // User preferences — stored for fast access during rendering.
+    // UserDefaults writes happen only on mutation (not on every getter call).
+
     /// User-chosen display currency for the global balance.
-    var displayCurrency: String {
-        get { UserDefaults.standard.string(forKey: "displayCurrency") ?? "CAD" }
-        set { UserDefaults.standard.set(newValue, forKey: "displayCurrency") }
+    var displayCurrency: String = UserDefaults.standard.string(forKey: "displayCurrency") ?? "CAD" {
+        didSet {
+            guard displayCurrency != oldValue else { return }
+            UserDefaults.standard.set(displayCurrency, forKey: "displayCurrency")
+        }
     }
 
     /// Whether converted amounts are shown alongside native currency amounts.
-    var showConvertedAmounts: Bool {
-        get { UserDefaults.standard.bool(forKey: "showConvertedAmounts") }
-        set { UserDefaults.standard.set(newValue, forKey: "showConvertedAmounts") }
+    var showConvertedAmounts: Bool = UserDefaults.standard.bool(forKey: "showConvertedAmounts") {
+        didSet {
+            guard showConvertedAmounts != oldValue else { return }
+            UserDefaults.standard.set(showConvertedAmounts, forKey: "showConvertedAmounts")
+        }
     }
 
     private let cacheKey      = "exchangeRates_v1"

@@ -9,6 +9,10 @@ struct ExchangeRateSettingsView: View {
     @Environment(LanguageManager.self) private var lang
     @Environment(ExchangeRateManager.self) private var rates
     @Environment(EntitlementManager.self) private var entitlements
+    // Local state avoids triggering a global re-render cascade on every
+    // picker scroll tick. The actual change is applied via onChange.
+    @State private var selectedCurrency: String = ""
+    @State private var showConvertedLocal: Bool = false
 
     /// Devises sélectionnables : CAD + USD pour Courant, toutes pour Pro.
     private var selectableCurrencies: [CurrencyInfo] {
@@ -28,10 +32,7 @@ struct ExchangeRateSettingsView: View {
         List {
             // MARK: Display currency
             Section {
-                Picker(lang["fx.displayCurrency"], selection: Binding(
-                    get: { rates.displayCurrency },
-                    set: { rates.displayCurrency = $0 }
-                )) {
+                Picker(lang["fx.displayCurrency"], selection: $selectedCurrency) {
                     ForEach(selectableCurrencies) { c in
                         HStack {
                             Text(c.symbol)
@@ -49,10 +50,10 @@ struct ExchangeRateSettingsView: View {
                 }
                 .pickerStyle(.navigationLink)
 
-                Toggle(lang["fx.showConverted"], isOn: Binding(
-                    get: { rates.showConvertedAmounts },
-                    set: { rates.showConvertedAmounts = $0 }
-                ))
+                Toggle(lang["fx.showConverted"], isOn: $showConvertedLocal)
+                    .onChange(of: showConvertedLocal) { _, new in
+                        rates.showConvertedAmounts = new
+                    }
             } header: {
                 Text(lang["fx.displayCurrency"])
             } footer: {
@@ -118,6 +119,15 @@ struct ExchangeRateSettingsView: View {
         }
         .navigationTitle(lang["fx.title"])
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            selectedCurrency   = rates.displayCurrency
+            showConvertedLocal = rates.showConvertedAmounts
+        }
+        .onChange(of: selectedCurrency) { _, new in
+            // Guard avoids unnecessary re-renders if value didn't change
+            guard new != rates.displayCurrency else { return }
+            rates.displayCurrency = new
+        }
         .task { await rates.refreshIfNeeded() }
     }
 }

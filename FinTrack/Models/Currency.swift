@@ -15,17 +15,29 @@ struct CurrencyInfo: Identifiable, Hashable {
 
     var id: String { code }
 
-    /// Format a Decimal using fr_CA locale conventions plus the currency code.
-    /// We avoid relying on the OS's notion of which symbol to display because
-    /// it can be inconsistent (e.g. for XAF). The code is always shown.
+    // MARK: - Formatter cache
+    // NumberFormatter initialization is expensive (locale resolution, encodings).
+    // We keep one formatter per currency code and reuse it across all calls.
+    // Access is always on the MainActor (UI thread) so no locking needed.
+    private static var formatterCache: [String: NumberFormatter] = [:]
+
+    private static func cachedFormatter(code: String) -> NumberFormatter {
+        if let cached = formatterCache[code] { return cached }
+        let f = NumberFormatter()
+        f.numberStyle = .decimal
+        f.locale = Locale(identifier: "fr_CA")
+        let noDecimals = code == "JPY" || code == "XAF" || code == "XOF"
+        f.minimumFractionDigits = noDecimals ? 0 : 2
+        f.maximumFractionDigits = noDecimals ? 0 : 2
+        formatterCache[code] = f
+        return f
+    }
+
+    /// Format a Decimal using fr_CA locale conventions plus the currency symbol.
+    /// Uses a cached NumberFormatter — safe to call from hot render paths.
     func format(_ amount: Decimal) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_CA")
-        formatter.minimumFractionDigits = (code == "JPY" || code == "XAF") ? 0 : 2
-        formatter.maximumFractionDigits = (code == "JPY" || code == "XAF") ? 0 : 2
-        let nsAmount = NSDecimalNumber(decimal: amount)
-        let body = formatter.string(from: nsAmount) ?? "\(amount)"
+        let f = CurrencyInfo.cachedFormatter(code: code)
+        let body = f.string(from: amount as NSDecimalNumber) ?? "\(amount)"
         return "\(body) \(symbol)"
     }
 }
