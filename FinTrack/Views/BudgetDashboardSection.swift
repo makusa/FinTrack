@@ -28,39 +28,6 @@ struct BudgetDashboardSection: View {
            sort: \SavingsProject.createdAt, order: .forward)
     private var projects: [SavingsProject]
 
-    @Query(filter: #Predicate<Budget> { $0.isActive }, sort: \Budget.createdAt)
-    private var activeBudgets: [Budget]
-
-    @Query(sort: \Transaction.date, order: .reverse)
-    private var allTransactions: [Transaction]
-
-    private var budgetStatuses: [BudgetStatus] {
-        activeBudgets
-            .filter { $0.currency == currency }
-            .map { BudgetStatus(budget: $0, spent: BudgetCalculator.spent(for: $0, in: allTransactions)) }
-            .sorted { $0.fraction > $1.fraction }
-            .prefix(3)
-            .map { $0 }
-    }
-
-    @ViewBuilder
-    private var budgetSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(lang["budget.title"])
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.secondary)
-                Spacer()
-                NavigationLink(lang["action.seeAll"]) {
-                    BudgetsView()
-                }
-                .font(.caption)
-            }
-            .padding(.horizontal)
-            BudgetCard(statuses: budgetStatuses)
-        }
-    }
-
     private var summary: CashFlowSummary {
         CashFlowCalculator.summary(
             currency: currency,
@@ -72,20 +39,7 @@ struct BudgetDashboardSection: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text(lang["analytics.budget"])
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.secondary)
-                .padding(.horizontal)
-
-            CashFlowCard(summary: summary)
-            if !projects.isEmpty {
-                SavingsGoalsCard(projects: projects, currency: currency)
-            }
-            if !budgetStatuses.isEmpty {
-                budgetSection
-            }
-        }
+        CashFlowCard(summary: summary)
     }
 }
 
@@ -101,7 +55,7 @@ struct CashFlowCard: View {
             VStack(spacing: 0) {
                 // Header
                 HStack {
-                    Label("Flux mensuel estimé", systemImage: "arrow.left.arrow.right.circle.fill")
+                    Label(lang["cashflow.estimated"], systemImage: "arrow.left.arrow.right.circle.fill")
                         .font(.subheadline.weight(.semibold))
                     Spacer()
                     Image(systemName: "chevron.right")
@@ -111,12 +65,12 @@ struct CashFlowCard: View {
                 .padding(.bottom, 12)
 
                 // Breakdown rows
-                flowRow("+", label: "Revenus", amount: summary.monthlyIncome,
+                flowRow("+", label: lang["cashflow.monthlyIncome"], amount: summary.monthlyIncome,
                         currency: summary.currency, color: .green)
-                flowRow("−", label: "Dépenses", amount: summary.monthlyExpenses,
+                flowRow("−", label: lang["cashflow.recurringExp"], amount: summary.monthlyExpenses,
                         currency: summary.currency, color: .primary)
                 if summary.monthlyLoanPayments > 0 {
-                    flowRow("−", label: "Remboursements prêts", amount: summary.monthlyLoanPayments,
+                    flowRow("−", label: lang["cashflow.loanPayments"], amount: summary.monthlyLoanPayments,
                             currency: summary.currency, color: .primary)
                 }
 
