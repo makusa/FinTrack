@@ -294,6 +294,14 @@ final class NotificationManager: NSObject {
     }
 }
 
+// MARK: - Deep-link destination
+
+extension Notification.Name {
+    /// Posted when the user taps a FinTrack notification.
+    /// userInfo: ["tab": Int, "section": String]
+    static let fintrackDeepLink = Notification.Name("fintrackDeepLink")
+}
+
 // MARK: - Foreground presentation delegate
 
 extension NotificationManager: UNUserNotificationCenterDelegate {
@@ -303,5 +311,40 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
         completionHandler([.banner, .sound])
+    }
+
+    /// Called when the user taps a notification — deep-links to the relevant tab/section.
+    nonisolated func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let id = response.notification.request.identifier
+
+        // Map identifier prefix → (tab index, section key)
+        // Tabs: 0=Dashboard 1=Accounts 2=Transactions 3=Budgets 4=Settings
+        let tabIndex: Int
+        let section: String
+
+        if id.hasPrefix("fintrack.tx.") {
+            tabIndex = 2; section = ""
+        } else if id.hasPrefix("fintrack.loan.") || id.hasPrefix("fintrack.prep.") {
+            tabIndex = 4; section = "loans"
+        } else if id.hasPrefix("fintrack.cl.") {
+            tabIndex = 4; section = "creditlines"
+        } else if id.hasPrefix("fintrack.rec.") {
+            tabIndex = 4; section = "recurring"
+        } else {
+            tabIndex = 0; section = ""
+        }
+
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(
+                name: .fintrackDeepLink,
+                object: nil,
+                userInfo: ["tab": tabIndex, "section": section]
+            )
+        }
+        completionHandler()
     }
 }

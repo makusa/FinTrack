@@ -8,6 +8,8 @@ import SwiftData
 import UniformTypeIdentifiers
 
 struct SettingsView: View {
+    @Binding var deepLink: String
+
     @Environment(\.modelContext) private var context
 
     @Environment(LanguageManager.self) private var lang
@@ -19,9 +21,10 @@ struct SettingsView: View {
     @State private var showExporter = false
     @State private var exportDocument = CSVDocument(text: "")
     @State private var confirmReset = false
+    @State private var navPath = NavigationPath()
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navPath) {
             Form {
                 languageSection
                 exchangeRatesSection
@@ -38,6 +41,21 @@ struct SettingsView: View {
                 #endif
             }
             .navigationTitle(lang["settings.title"])
+            .navigationDestination(for: String.self) { section in
+                switch section {
+                case "loans":       LoansView()
+                case "creditlines": CreditLinesView()
+                case "recurring":   RecurrencesView()
+                default:            EmptyView()
+                }
+            }
+            .onChange(of: deepLink) { _, section in
+                guard !section.isEmpty else { return }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    handleDeepLink(section)
+                    deepLink = ""
+                }
+            }
             .fileExporter(
                 isPresented: $showExporter,
                 document: exportDocument,
@@ -61,6 +79,15 @@ struct SettingsView: View {
             } message: {
                 Text(lang["settings.resetMessage"])
             }
+        }
+    }
+
+    private func handleDeepLink(_ section: String) {
+        switch section {
+        case "loans":       navPath.append("loans")
+        case "creditlines": navPath.append("creditlines")
+        case "recurring":   navPath.append("recurring")
+        default:            break
         }
     }
 
@@ -496,7 +523,7 @@ struct AddCategoryView: View {
     ]
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navPath) {
             Form {
                 Section(lang["label.name"]) {
                     TextField(lang["category.namePlaceholder"], text: $name)
