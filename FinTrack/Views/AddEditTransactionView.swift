@@ -305,6 +305,8 @@ struct AddEditTransactionView: View {
         do {
             try context.save()
             dismiss()
+            let ctx = context
+            Task { await NotificationManager.shared.scheduleAll(context: ctx) }
         } catch {
             print("AddEditTransactionView: save failed — \(error)")
         }
