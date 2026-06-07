@@ -27,7 +27,7 @@ struct PlaidConnectedItem: Codable, Identifiable {
     let id:          String   // Plaid item_id
     let accessToken: String   // stored in Keychain, keyed by item_id
     let institutionName: String
-    let accounts:    [PlaidAccountMeta]
+    var accounts:    [PlaidAccountMeta]
     let connectedAt: Date
     var lastSyncCursor: String?   // for incremental sync
     var lastSyncDate:   Date?
@@ -278,7 +278,7 @@ final class PlaidManager {
     private func saveItems() {
         let stripped = connectedItems.map { item -> PlaidConnectedItem in
             // Never persist the access_token in UserDefaults
-            var copy = item
+            let copy = item
             return copy
         }
         if let data = try? JSONEncoder().encode(stripped) {
@@ -290,12 +290,8 @@ final class PlaidManager {
         guard let data  = UserDefaults.standard.data(forKey: itemsKey),
               let items = try? JSONDecoder().decode([PlaidConnectedItem].self, from: data)
         else { return }
-        // Restore access_token from Keychain
-        connectedItems = items.map { item in
-            let token = KeychainHelper.string(forKey: "plaid_token_\(item.id)") ?? ""
-            var copy = item
-            return copy
-        }
+        // access_token is read on-demand from Keychain in syncTransactions/fetchBalances/disconnect
+        connectedItems = items
     }
 
     @MainActor

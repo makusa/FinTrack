@@ -64,7 +64,7 @@ enum RecurringTransactionManager {
                     date: dueDate,
                     account: rule.account,
                     category: nil,
-                    note: rule.note.isEmpty ? "\(LanguageManager.shared[\"transfer.to.label\"]) \(destination.name)" : rule.note,
+                    note: rule.note.isEmpty ? "\(LanguageManager.shared["transfer.to.label"]) \(destination.name)" : rule.note,
                     payee: destination.name,
                     sourceRecurringId: rule.persistentModelID.hashValue
                 )
@@ -112,7 +112,7 @@ enum RecurringTransactionManager {
         if rule.isTransfer, let destination = rule.destinationAccount {
             let pairId = UUID()
             let debit = Transaction(amount: rule.amount, type: .expense, date: .now,
-                account: rule.account, note: rule.note.isEmpty ? "\(LanguageManager.shared[\"transfer.to.label\"]) \(destination.name)" : rule.note,
+                account: rule.account, note: rule.note.isEmpty ? "\(LanguageManager.shared["transfer.to.label"]) \(destination.name)" : rule.note,
                 payee: destination.name, sourceRecurringId: rule.persistentModelID.hashValue)
             debit.transferPairId = pairId
             let credit = Transaction(amount: rule.amount, type: .income, date: .now,

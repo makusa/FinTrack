@@ -167,7 +167,7 @@ final class EntitlementManager {
         var newHasPro   = false
         var newHasPlaid = false
 
-        for await result in Transaction.currentEntitlements {
+        for await result in StoreKit.Transaction.currentEntitlements {
             if let transaction = try? checkVerified(result) {
                 switch transaction.productID {
                 case FinTrackProduct.pro.rawValue:
@@ -188,7 +188,7 @@ final class EntitlementManager {
     // MARK: - Transaction listener
 
     private func listenForTransactions() async {
-        for await result in Transaction.updates {
+        for await result in StoreKit.Transaction.updates {
             if let transaction = try? checkVerified(result) {
                 await updateEntitlements(for: transaction)
                 await transaction.finish()
@@ -197,7 +197,7 @@ final class EntitlementManager {
     }
 
     @MainActor
-    private func updateEntitlements(for transaction: Transaction) async {
+    private func updateEntitlements(for transaction: StoreKit.Transaction) async {
         switch transaction.productID {
         case FinTrackProduct.pro.rawValue:
             hasPro = transaction.revocationDate == nil

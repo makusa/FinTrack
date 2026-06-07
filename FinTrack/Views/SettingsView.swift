@@ -23,174 +23,16 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                // MARK: - Language
-                Section(lang["settings.language.section"]) {
-                    ForEach(AppLanguage.allCases) { language in
-                        Button {
-                            lang.setLanguage(language)
-                        } label: {
-                            HStack {
-                                Text(language.flag + "  " + language.displayName)
-                                    .foregroundStyle(.primary)
-                                Spacer()
-                                if lang.current == language {
-                                    Image(systemName: "checkmark")
-                                        .foregroundStyle(.tint)
-                                        .fontWeight(.semibold)
-                                }
-                            }
-                        }
-                    }
-                }
-
-                
-                // MARK: - Notifications
-                
-
-
-                // MARK: - Exchange Rates
-                Section(lang["fx.settings.section"]) {
-                    NavigationLink {
-                        ExchangeRateSettingsView()
-                    } label: {
-                        HStack {
-                            Label(lang["fx.title"], systemImage: "arrow.left.arrow.right.circle")
-                            Spacer()
-                            if rateManager.isLoading {
-                                ProgressView().scaleEffect(0.8)
-                            } else if rateManager.lastUpdated != nil {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .foregroundStyle(.green)
-                                    .font(.caption)
-                            }
-                        }
-                    }
-                }
-
-                
-
-                // MARK: - Abonnement
-                Section {
-                    NavigationLink {
-                        SubscriptionView()
-                    } label: {
-                        HStack {
-                            Label(lang["entitlement.title"], systemImage: "star.circle.fill")
-                            Spacer()
-                            tierBadge
-                        }
-                    }
-                }
-
-                                // MARK: - Comptes connectés (Plaid)
-                Section(lang["plaid.settings.section"]) {
-                    NavigationLink {
-                        ConnectedAccountsView()
-                    } label: {
-                        HStack {
-                            Label(lang["plaid.title"], systemImage: "building.columns.badge.plus")
-                            Spacer()
-                            let count = PlaidManager.shared.connectedItems.count
-                            if count > 0 {
-                                Text("\(count)")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 3)
-                                    .background(Color(.systemGray5), in: Capsule())
-                            }
-                        }
-                    }
-                }
-
-                                // MARK: - Security
-                Section(lang["security.title"]) {
-                    NavigationLink {
-                        SecuritySettingsView()
-                    } label: {
-                        Label(lang["security.title"], systemImage: "lock.shield")
-                    }
-                }
-
-                                // MARK: - iCloud (désactivé — nécessite Apple Developer Program)
-                // Section(lang["icloud.section"]) { ... }
-
-                Section(lang["notification.settings"]) {
-                    NavigationLink {
-                        NotificationSettingsView()
-                    } label: {
-                        Label(lang["notification.manage"], systemImage: "bell.badge")
-                    }
-                }
-
-                Section(lang["settings.data"]) {
-                    NavigationLink {
-                        CreditLinesView()
-                    } label: {
-                        Label("Marges de crédit", systemImage: "creditcard.fill")
-                    }
-
-                    NavigationLink {
-                        SavingsProjectsView()
-                    } label: {
-                        Label("Projets d'épargne", systemImage: "target")
-                    }
-
-                    NavigationLink {
-                        LoansView()
-                    } label: {
-                        Label("Prêts", systemImage: "house.fill")
-                    }
-
-                    NavigationLink {
-                        RecurrencesView()
-                    } label: {
-                        Label("Récurrences", systemImage: "arrow.2.squarepath")
-                    }
-
-                    NavigationLink {
-                        ManageCategoriesView()
-                    } label: {
-                        Label(lang["category.manage"], systemImage: "tag")
-                    }
-
-                    Button {
-                        prepareExport()
-                    } label: {
-                        Label(lang["settings.exportCSV"], systemImage: "square.and.arrow.up")
-                    }
-                    .disabled(allTransactions.isEmpty)
-                }
-
-                Section(lang["settings.stats"]) {
-                    LabeledContent(lang["settings.accountCount"]) {
-                        Text("\(allAccounts.count)")
-                    }
-                    LabeledContent(lang["settings.txCount"]) {
-                        Text("\(allTransactions.count)")
-                    }
-                }
-
-                Section {
-                    Button(role: .destructive) {
-                        confirmReset = true
-                    } label: {
-                        Label(lang["settings.resetAll"], systemImage: "trash")
-                    }
-                } header: {
-                    Text(lang["settings.dangerZone"])
-                } footer: {
-                    Text(lang["settings.resetAll.footer"])
-                }
-
-                Section(lang["settings.about"]) {
-                    LabeledContent(lang["settings.version"]) {
-                        Text(appVersion)
-                    }
-                    LabeledContent(lang["settings.storage"]) {
-                        Text(lang["settings.storage.local"])
-                    }
-                }
+                languageSection
+                exchangeRatesSection
+                subscriptionSection
+                plaidSection
+                securitySection
+                notificationsSection
+                dataSection
+                statsSection
+                dangerZoneSection
+                aboutSection
             }
             .navigationTitle(lang["settings.title"])
             .fileExporter(
@@ -217,6 +59,216 @@ struct SettingsView: View {
                 Text(lang["settings.resetMessage"])
             }
         }
+    }
+
+    // MARK: - Sections
+
+    @ViewBuilder
+    private var languageSection: some View {
+        Section(lang["settings.language.section"]) {
+            ForEach(AppLanguage.allCases) { language in
+                Button {
+                    lang.setLanguage(language)
+                } label: {
+                    HStack {
+                        Text(language.flag + "  " + language.displayName)
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        if lang.current == language {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(.tint)
+                                .fontWeight(.semibold)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var exchangeRatesSection: some View {
+        Section(lang["fx.settings.section"]) {
+            NavigationLink {
+                ExchangeRateSettingsView()
+            } label: {
+                HStack {
+                    Label(lang["fx.title"], systemImage: "arrow.left.arrow.right.circle")
+                    Spacer()
+                    if rateManager.isLoading {
+                        ProgressView().scaleEffect(0.8)
+                    } else if rateManager.lastUpdated != nil {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                            .font(.caption)
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var subscriptionSection: some View {
+        Section {
+            NavigationLink {
+                SubscriptionView()
+            } label: {
+                HStack {
+                    Label(lang["entitlement.title"], systemImage: "star.circle.fill")
+                    Spacer()
+                    tierBadge
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var plaidSection: some View {
+        Section(lang["plaid.settings.section"]) {
+            NavigationLink {
+                ConnectedAccountsView()
+            } label: {
+                HStack {
+                    Label(lang["plaid.title"], systemImage: "building.columns.badge.plus")
+                    Spacer()
+                    let count = PlaidManager.shared.connectedItems.count
+                    if count > 0 {
+                        Text("\(count)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(Color(.systemGray5), in: Capsule())
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var securitySection: some View {
+        Section(lang["security.title"]) {
+            NavigationLink {
+                SecuritySettingsView()
+            } label: {
+                Label(lang["security.title"], systemImage: "lock.shield")
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var notificationsSection: some View {
+        Section(lang["notification.settings"]) {
+            NavigationLink {
+                NotificationSettingsView()
+            } label: {
+                Label(lang["notification.manage"], systemImage: "bell.badge")
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var dataSection: some View {
+        Section(lang["settings.data"]) {
+            NavigationLink {
+                CreditLinesView()
+            } label: {
+                Label("Marges de crédit", systemImage: "creditcard.fill")
+            }
+
+            NavigationLink {
+                SavingsProjectsView()
+            } label: {
+                Label("Projets d'épargne", systemImage: "target")
+            }
+
+            NavigationLink {
+                LoansView()
+            } label: {
+                Label("Prêts", systemImage: "house.fill")
+            }
+
+            NavigationLink {
+                RecurrencesView()
+            } label: {
+                Label("Récurrences", systemImage: "arrow.2.squarepath")
+            }
+
+            NavigationLink {
+                ManageCategoriesView()
+            } label: {
+                Label(lang["category.manage"], systemImage: "tag")
+            }
+
+            Button {
+                prepareExport()
+            } label: {
+                Label(lang["settings.exportCSV"], systemImage: "square.and.arrow.up")
+            }
+            .disabled(allTransactions.isEmpty)
+        }
+    }
+
+    @ViewBuilder
+    private var statsSection: some View {
+        Section(lang["settings.stats"]) {
+            LabeledContent(lang["settings.accountCount"]) {
+                Text("\(allAccounts.count)")
+            }
+            LabeledContent(lang["settings.txCount"]) {
+                Text("\(allTransactions.count)")
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var dangerZoneSection: some View {
+        Section {
+            Button(role: .destructive) {
+                confirmReset = true
+            } label: {
+                Label(lang["settings.resetAll"], systemImage: "trash")
+            }
+        } header: {
+            Text(lang["settings.dangerZone"])
+        } footer: {
+            Text(lang["settings.resetAll.footer"])
+        }
+    }
+
+    @ViewBuilder
+    private var aboutSection: some View {
+        Section(lang["settings.about"]) {
+            LabeledContent(lang["settings.version"]) {
+                Text(appVersion)
+            }
+            LabeledContent(lang["settings.storage"]) {
+                Text(lang["settings.storage.local"])
+            }
+        }
+    }
+
+    // MARK: - Tier badge
+
+    private var tierBadge: some View {
+        let label: String
+        let color: Color
+        switch entitlements.tier {
+        case .free:
+            label = "Free"
+            color = .gray
+        case .pro:
+            label = "Pro"
+            color = .orange
+        case .plaid:
+            label = "Plaid"
+            color = .teal
+        }
+        return Text(label)
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(color, in: Capsule())
     }
 
     private var appVersion: String {

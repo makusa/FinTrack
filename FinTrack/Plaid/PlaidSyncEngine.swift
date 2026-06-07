@@ -190,7 +190,7 @@ final class PlaidSyncEngine {
             (["food", "restaurant", "dining"],          "Restaurant"),
             (["grocery", "supermarket", "alimentation"],"Alimentation"),
             (["transport", "taxi", "uber", "transit"],  "Transport"),
-            (["transfer", "payment"],                    nil == nil ? "" : ""),
+            (["transfer", "payment"],                    ""),
             (["travel", "airline", "hotel"],             "Voyage"),
             (["health", "medical", "pharmacy"],          "Santé"),
             (["entertainment", "recreation"],            "Loisirs"),

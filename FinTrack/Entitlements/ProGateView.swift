@@ -158,7 +158,7 @@ struct ProGateView: View {
 
     // MARK: - Pro feature list
 
-    private var proFeatures: [(String, String)] = [
+    private static let proFeatures: [(String, String)] = [
         ("chart.bar.doc.horizontal", "Budgets par catégorie"),
         ("banknote.fill",            "Gestion des prêts"),
         ("creditcard.fill",          "Marges de crédit"),
@@ -174,7 +174,7 @@ struct ProGateView: View {
 
     private var proFeatureList: some View {
         VStack(spacing: 0) {
-            ForEach(Array(proFeatures.enumerated()), id: \.offset) { idx, feature in
+            ForEach(Array(Self.proFeatures.enumerated()), id: \.offset) { idx, feature in
                 HStack(spacing: 12) {
                     Image(systemName: feature.0)
                         .foregroundStyle(.orange)
@@ -188,7 +188,7 @@ struct ProGateView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                if idx < proFeatures.count - 1 {
+                if idx < Self.proFeatures.count - 1 {
                     Divider().padding(.leading, 52)
                 }
             }
@@ -197,7 +197,7 @@ struct ProGateView: View {
 
     // MARK: - Plaid feature list
 
-    private var plaidFeatures: [(String, String)] = [
+    private static let plaidFeatures: [(String, String)] = [
         ("arrow.clockwise.circle.fill", "Sync automatique des transactions"),
         ("building.columns.badge.plus", "Jusqu'à 10 connexions bancaires"),
         ("checkmark.shield.fill",       "Sécurisé par Plaid"),
@@ -206,7 +206,7 @@ struct ProGateView: View {
 
     private var plaidFeatureList: some View {
         VStack(spacing: 0) {
-            ForEach(Array(plaidFeatures.enumerated()), id: \.offset) { idx, feat in
+            ForEach(Array(Self.plaidFeatures.enumerated()), id: \.offset) { idx, feat in
                 HStack(spacing: 12) {
                     Image(systemName: feat.0)
                         .foregroundStyle(.teal)
@@ -220,7 +220,7 @@ struct ProGateView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                if idx < plaidFeatures.count - 1 {
+                if idx < Self.plaidFeatures.count - 1 {
                     Divider().padding(.leading, 52)
                 }
             }

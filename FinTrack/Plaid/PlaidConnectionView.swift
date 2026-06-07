@@ -148,6 +148,7 @@ struct ConnectedAccountsView: View {
             } message: {
                 Text(lang["plaid.disconnect.message"])
             }
+            }
         }
     }
 
