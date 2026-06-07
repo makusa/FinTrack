@@ -80,6 +80,7 @@
 		E3D472CBE91E66DEEE5E40CD /* EntitlementManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0693E0E8756D791306AA53BF /* EntitlementManager.swift */; };
 		2E2C0669E0DEC2D674586D93 /* ProGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AA33BEA702AC895F7996618 /* ProGateView.swift */; };
 		D80931AF4F47C09297ACCFDF /* SubscriptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A0AD383BE4701E81D73CA2 /* SubscriptionView.swift */; };
+		15539F781B5A2B739C2E8424 /* DeveloperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AE4B0630B5D4E85DC4B0A54 /* DeveloperView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -158,6 +159,7 @@
 		0693E0E8756D791306AA53BF /* EntitlementManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementManager.swift; sourceTree = "<group>"; };
 		2AA33BEA702AC895F7996618 /* ProGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProGateView.swift; sourceTree = "<group>"; };
 		F9A0AD383BE4701E81D73CA2 /* SubscriptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionView.swift; sourceTree = "<group>"; };
+		4AE4B0630B5D4E85DC4B0A54 /* DeveloperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -323,6 +325,7 @@
 		64D56626EE2D424C64CD8DE4 /* Entitlements */ = {
 			isa = PBXGroup;
 			children = (
+				4AE4B0630B5D4E85DC4B0A54 /* DeveloperView.swift */,
 				0693E0E8756D791306AA53BF /* EntitlementManager.swift */,
 				2AA33BEA702AC895F7996618 /* ProGateView.swift */,
 				F9A0AD383BE4701E81D73CA2 /* SubscriptionView.swift */,
@@ -438,6 +441,7 @@
 				167DD8D94BD2C94A5D09FCC6 /* RootView.swift in Sources */,
 				17D35A490B812757B7DA1041 /* SeedData.swift in Sources */,
 				FEBFF9935E3B84CAFF02F78B /* SettingsView.swift in Sources */,
+				15539F781B5A2B739C2E8424 /* DeveloperView.swift in Sources */,
 				E3D472CBE91E66DEEE5E40CD /* EntitlementManager.swift in Sources */,
 				2E2C0669E0DEC2D674586D93 /* ProGateView.swift in Sources */,
 				D80931AF4F47C09297ACCFDF /* SubscriptionView.swift in Sources */,
