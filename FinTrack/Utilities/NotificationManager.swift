@@ -99,12 +99,13 @@ final class NotificationManager: NSObject {
 
         while date <= horizon, count < 6 {
             if let notifDate = cal.date(byAdding: .day, value: -days, to: date), notifDate > now {
+                let accountName = rule.account?.name ?? ""
                 let content = makeContent(
-                    title: "🔔 \(rule.displayTitle)",
-                    body: notifBody(
-                        amount: rule.amount, currency: currency,
-                        dueDate: date, daysBefore: days
-                    )
+                    title: "🔔 " + rule.displayTitle,
+                    subtitle: accountName,
+                    body: notifBody(actionKey: "notif.body.payment",
+                                   amount: rule.amount, currency: currency,
+                                   dueDate: date, daysBefore: days)
                 )
                 let id = "fintrack.rec.\(abs(rule.persistentModelID.hashValue)).\(dateKey(date))"
                 await scheduleAt(notifDate, id: id, content: content)
@@ -130,12 +131,13 @@ final class NotificationManager: NSObject {
               notifDate > now else { return }
 
         let name = loan.label.isEmpty ? loan.type.label : loan.label
+        let subtitle = loan.lenderName.isEmpty ? "" : loan.lenderName
         let content = makeContent(
-            title: "🏦 \(name)",
-            body: notifBody(
-                amount: Decimal(entry.payment), currency: loan.currency,
-                dueDate: entry.date, daysBefore: days
-            )
+            title: "🏦 " + name,
+            subtitle: subtitle,
+            body: notifBody(actionKey: "notif.body.installment",
+                           amount: Decimal(entry.payment), currency: loan.currency,
+                           dueDate: entry.date, daysBefore: days)
         )
         await scheduleAt(notifDate, id: "fintrack.loan.\(abs(loan.persistentModelID.hashValue))", content: content)
     }
@@ -159,12 +161,13 @@ final class NotificationManager: NSObject {
         guard let notifDate = cal.date(byAdding: .day, value: -days, to: dueDate),
               notifDate > now else { return }
 
+        let clSubtitle = cl.lenderName.isEmpty ? "" : cl.lenderName
         let content = makeContent(
-            title: "💳 \(cl.name)",
-            body: notifBody(
-                amount: cl.estimatedMinimumPayment, currency: cl.currency,
-                dueDate: dueDate, daysBefore: days
-            )
+            title: "💳 " + cl.name,
+            subtitle: clSubtitle,
+            body: notifBody(actionKey: "notif.body.minimum",
+                           amount: cl.estimatedMinimumPayment, currency: cl.currency,
+                           dueDate: dueDate, daysBefore: days)
         )
         await scheduleAt(notifDate, id: "fintrack.cl.\(abs(cl.persistentModelID.hashValue))", content: content)
     }
@@ -178,14 +181,18 @@ final class NotificationManager: NSObject {
         guard let notifDate = cal.date(byAdding: .day, value: -days, to: tx.date),
               notifDate > now else { return }
 
-        let name = tx.payee ?? tx.category?.name ?? LanguageManager.shared["tx.type.expense"]
-        let currency = tx.account?.currency ?? "CAD"
+        let txName    = tx.payee ?? tx.category?.localizedName ?? LanguageManager.shared["tx.type.expense"]
+        let currency  = tx.account?.currency ?? "CAD"
+        var txSubtitle = tx.account?.name ?? ""
+        if let catName = tx.category?.localizedName, tx.payee != nil {
+            txSubtitle = txSubtitle.isEmpty ? catName : txSubtitle + " · " + catName
+        }
         let content = makeContent(
-            title: "💸 \(name)",
-            body: notifBody(
-                amount: tx.amount, currency: currency,
-                dueDate: tx.date, daysBefore: days
-            )
+            title: "💸 " + txName,
+            subtitle: txSubtitle,
+            body: notifBody(actionKey: "notif.body.expense",
+                           amount: tx.amount, currency: currency,
+                           dueDate: tx.date, daysBefore: days)
         )
         await scheduleAt(notifDate, id: "fintrack.tx.\(abs(tx.persistentModelID.hashValue))", content: content)
     }
@@ -201,10 +208,15 @@ final class NotificationManager: NSObject {
         let loanName = prep.loan?.label ?? ""
         let lang     = LanguageManager.shared
 
+        let prepTitle    = "⬆️ " + (loanName.isEmpty ? lang["prepayment.title"] : loanName)
+        let prepSubtitle = loanName.isEmpty ? "" : lang["prepayment.title"]
         func content(for date: Date) -> UNMutableNotificationContent {
             makeContent(
-                title: "⬆️ \(lang["prepayment.title"])" + (loanName.isEmpty ? "" : " · \(loanName)"),
-                body: notifBody(amount: prep.amount, currency: currency, dueDate: date, daysBefore: days)
+                title: prepTitle,
+                subtitle: prepSubtitle,
+                body: notifBody(actionKey: "notif.body.extra",
+                               amount: prep.amount, currency: currency,
+                               dueDate: date, daysBefore: days)
             )
         }
 
@@ -243,22 +255,36 @@ final class NotificationManager: NSObject {
         }
     }
 
-    private func makeContent(title: String, body: String) -> UNMutableNotificationContent {
-        let c      = UNMutableNotificationContent()
-        c.title    = title
-        c.body     = body
-        c.sound    = .default
+    private func makeContent(title: String, subtitle: String = "", body: String) -> UNMutableNotificationContent {
+        let c        = UNMutableNotificationContent()
+        c.title      = title
+        if !subtitle.isEmpty { c.subtitle = subtitle }
+        c.body       = body
+        c.sound      = .default
         return c
     }
 
-    private func notifBody(amount: Decimal, currency: String, dueDate: Date, daysBefore: Int) -> String {
+    /// Returns a human-readable "when" string: "aujourd'hui, 9 juin", "demain, 9 juin", "dans 3 jours, 10 juin"
+    private func whenString(dueDate: Date, daysBefore: Int) -> String {
         let lang    = LanguageManager.shared
-        let amtStr  = amount.formatted(asCurrency: currency)
-        let dateStr = dueDate.formatted(date: .abbreviated, time: .omitted)
-        if daysBefore == 1 {
-            return "\(amtStr) · \(lang["notification.tomorrow"]) (\(dateStr))"
+        let cal     = Calendar.current
+        let dateStr = dueDate.formatted(.dateTime.day().month(.wide))
+        let today   = cal.startOfDay(for: Date())
+        let due     = cal.startOfDay(for: dueDate)
+        let diff    = cal.dateComponents([.day], from: today, to: due).day ?? daysBefore
+        switch diff {
+        case 0:  return lang["notif.when.today"]   + ", " + dateStr
+        case 1:  return lang["notif.when.tomorrow"] + ", " + dateStr
+        default: return String(format: lang["notif.when.inDays"], diff) + ", " + dateStr
         }
-        return "\(amtStr) · \(lang.f("notification.inDays", daysBefore)) (\(dateStr))"
+    }
+
+    /// Formats a notification body: "Paiement de 150,00 $ CA · demain, 9 juin"
+    private func notifBody(actionKey: String, amount: Decimal, currency: String,
+                           dueDate: Date, daysBefore: Int) -> String {
+        let amtStr = amount.formatted(asCurrency: currency)
+        let action = String(format: LanguageManager.shared[actionKey], amtStr)
+        return action + " · " + whenString(dueDate: dueDate, daysBefore: daysBefore)
     }
 
     private func dateKey(_ date: Date) -> String {

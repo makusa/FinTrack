@@ -683,6 +683,17 @@ enum LocalizedStrings {
         "icloud.container":    ["fr": "Conteneur CloudKit",                        "en": "CloudKit Container",                      "es": "Contenedor CloudKit",                     "pt": "Container CloudKit"],
 
         // MARK: - Notifications
+        
+        // Notification body action words
+        "notif.body.payment":    ["fr": "Paiement de %@",                "en": "Payment of %@",             "es": "Pago de %@",                "pt": "Pagamento de %@"],
+        "notif.body.installment":["fr": "Versement de %@",               "en": "Installment of %@",         "es": "Cuota de %@",               "pt": "Parcela de %@"],
+        "notif.body.minimum":    ["fr": "Paiement minimum de %@",         "en": "Minimum payment of %@",     "es": "Pago mínimo de %@",         "pt": "Pagamento mínimo de %@"],
+        "notif.body.expense":    ["fr": "Dépense de %@",                  "en": "Expense of %@",             "es": "Gasto de %@",               "pt": "Despesa de %@"],
+        "notif.body.extra":      ["fr": "Paiement supplémentaire de %@",  "en": "Extra payment of %@",       "es": "Pago adicional de %@",      "pt": "Pagamento extra de %@"],
+        "notif.when.tomorrow":   ["fr": "demain",                         "en": "tomorrow",                  "es": "mañana",                    "pt": "amanhã"],
+        "notif.when.today":      ["fr": "aujourd'hui",                    "en": "today",                     "es": "hoy",                       "pt": "hoje"],
+        "notif.when.inDays":     ["fr": "dans %d jours",                  "en": "in %d days",                "es": "en %d días",                "pt": "em %d dias"],
+        "notif.when.on":         ["fr": "le",                             "en": "on",                        "es": "el",                        "pt": "em"],
         "notification.section":      ["fr": "Rappel",                              "en": "Reminder",                       "es": "Recordatorio",                  "pt": "Lembrete"],
         "notification.enable":       ["fr": "Activer le rappel",                   "en": "Enable Reminder",                "es": "Activar recordatorio",          "pt": "Ativar lembrete"],
         "notification.daysBefore":   ["fr": "Rappel",                              "en": "Remind me",                      "es": "Recordarme",                    "pt": "Me lembrar"],
