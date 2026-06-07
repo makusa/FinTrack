@@ -9,12 +9,18 @@ import SwiftData
 struct RecurrencesView: View {
     @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
+    @Environment(EntitlementManager.self) private var entitlements
 
     @Query(sort: \RecurringTransaction.nextDueDate, order: .forward)
     private var allRules: [RecurringTransaction]
 
     @State private var showAdd = false
     @State private var showInactive = false
+
+    /// True when a free-tier user has reached the 5-rule cap.
+    private var isAtFreeLimit: Bool {
+        !entitlements.hasPro && allRules.count >= FinTrackLimit.freeMaxRecurring
+    }
 
     private var activeRules: [RecurringTransaction] {
         allRules.filter { $0.isActive }
@@ -102,10 +108,57 @@ struct RecurrencesView: View {
                 } label: {
                     Image(systemName: "plus.circle.fill").font(.title3)
                 }
+                .disabled(isAtFreeLimit)
+            }
+        }
+        .safeAreaInset(edge: .bottom) {
+            if isAtFreeLimit {
+                freeCapBanner
             }
         }
         .sheet(isPresented: $showAdd) {
-            AddEditRecurringTransactionView(mode: .create)
+            if isAtFreeLimit {
+                NavigationStack {
+                    ProGateView(feature: .recurring)
+                        .environment(entitlements)
+                }
+            } else {
+                AddEditRecurringTransactionView(mode: .create)
+            }
+        }
+    }
+
+    // MARK: - Free tier cap banner
+
+    private var freeCapBanner: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "lock.fill")
+                .foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(lang["recurring.free.cap.title"])
+                    .font(.callout.weight(.semibold))
+                Text(lang["recurring.free.cap.subtitle"])
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            NavigationLink {
+                SubscriptionView()
+                    .environment(entitlements)
+            } label: {
+                Text(lang["entitlement.pro.cta"])
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.orange.opacity(0.15), in: Capsule())
+                    .foregroundStyle(.orange)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(.bar)
+        .overlay(alignment: .top) {
+            Divider()
         }
     }
 

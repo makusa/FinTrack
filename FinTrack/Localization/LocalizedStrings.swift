@@ -133,6 +133,8 @@ enum LocalizedStrings {
         "tx.type.expense":    ["fr": "Dépense",            "en": "Expense",          "es": "Gasto",           "pt": "Despesa"],
 
         // MARK: - Recurring
+        "recurring.free.cap.title":   ["fr": "Limite atteinte (5/5)",                         "en": "Limit reached (5/5)",                          "es": "Límite alcanzado (5/5)",                       "pt": "Limite atingido (5/5)"],
+        "recurring.free.cap.subtitle": ["fr": "Passez à Épargne pour des récurrences illimitées","en": "Upgrade to Épargne for unlimited recurring",    "es": "Actualiza a Épargne para recurrencias ilimitadas","pt": "Atualize para Épargne para recorrências ilimitadas"],
         "recurring.title":        ["fr": "Récurrences",          "en": "Recurring",           "es": "Recurrentes",        "pt": "Recorrências"],
         "recurring.active":       ["fr": "Actives (%d)",         "en": "Active (%d)",         "es": "Activas (%d)",       "pt": "Ativas (%d)"],
         "recurring.paused":       ["fr": "En pause (%d)",        "en": "Paused (%d)",         "es": "Pausadas (%d)",      "pt": "Pausadas (%d)"],
@@ -503,7 +505,7 @@ enum LocalizedStrings {
         "entitlement.table.budgets":    ["fr": "Budgets",                           "en": "Budgets",                        "es": "Presupuestos",                  "pt": "Orçamentos"],
         "entitlement.table.loans":      ["fr": "Prêts & marges",                    "en": "Loans & credit lines",           "es": "Préstamos y créditos",          "pt": "Empréstimos e créditos"],
         "entitlement.table.analytics":  ["fr": "Analytiques",                       "en": "Analytics",                      "es": "Analíticas",                    "pt": "Análises"],
-        "entitlement.table.recurring":  ["fr": "Récurrences",                       "en": "Recurring transactions",         "es": "Recurrencias",                  "pt": "Recorrências"],
+        "entitlement.table.recurring":  ["fr": "Récurrences (max 5 en Courant)",    "en": "Recurring (max 5 in free tier)", "es": "Recurrencias (máx 5 gratis)",   "pt": "Recorrências (máx 5 grátis)"],
         "entitlement.table.transfers":  ["fr": "Virements",                         "en": "Transfers",                      "es": "Transferencias",                "pt": "Transferências"],
         "entitlement.table.fx":         ["fr": "Taux de change",                    "en": "Exchange rates",                 "es": "Tipos de cambio",               "pt": "Câmbio"],
         "entitlement.table.dashboard":  ["fr": "Dashboard custom",                  "en": "Custom dashboard",               "es": "Panel personalizado",           "pt": "Painel personalizado"],
