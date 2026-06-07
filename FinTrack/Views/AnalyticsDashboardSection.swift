@@ -558,6 +558,12 @@ struct IncomeExpenseCard: View {
                 }
             }
             .animation(.easeInOut(duration: 0.15), value: selectedMonth?.id)
+            .onAppear {
+                // Courant: force 3-month window — 6m and 1a are locked
+                if !entitlements.hasPro {
+                    selectedWindow = .threeMonths
+                }
+            }
 
             // ── Range picker ───────────────────────────────────────────────
             HStack(spacing: 6) {
