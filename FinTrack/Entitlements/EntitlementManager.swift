@@ -9,7 +9,7 @@
 //    ca.regis.fintrack.plaid_monthly — Auto-renewable subscription, $3.99 CAD/month
 //
 //  Tier summary:
-//    Free  — 3 accounts max, manual transactions, basic dashboard
+//    Free  — unlimited accounts (manual), unlimited transactions, basic dashboard
 //    Pro   — Everything: analytics, budgets, loans, recurring, transfers, FX, export…
 //    Plaid — Automatic bank sync (requires active subscription)
 //
@@ -55,9 +55,8 @@ enum FinTrackTier: Equatable {
 
 // MARK: - Limits
 
-enum FinTrackLimit {
-    static let freeMaxAccounts = 3
-}
+// FinTrackLimit reserved for future use
+enum FinTrackLimit {}
 
 // MARK: - EntitlementManager
 

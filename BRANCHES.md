@@ -113,8 +113,7 @@ docs:     documentation uniquement
 
 | Fonctionnalité | 🆓 Gratuit | 🔒 Pro ($19,99) | 💳 Plaid ($3,99/mois) |
 |----------------|:----------:|:---------------:|:---------------------:|
-| Comptes (max 3) | ✅ | ✅ | ✅ |
-| Comptes illimités | ❌ | ✅ | ✅ |
+| Comptes illimités (manuel) | ✅ | ✅ | ✅ |
 | Transactions manuelles | ✅ | ✅ | ✅ |
 | Dashboard basique | ✅ | ✅ | ✅ |
 | Dashboard personnalisable | ❌ | ✅ | ✅ |

@@ -188,7 +188,6 @@ struct SubscriptionView: View {
     private var features: [FeatureRow] {
         [
             FeatureRow(name: lang["entitlement.table.accounts3"],    free: true,  pro: true,  plaid: true),
-            FeatureRow(name: lang["entitlement.table.unlimited"],     free: false, pro: true,  plaid: true),
             FeatureRow(name: lang["entitlement.table.transactions"],  free: true,  pro: true,  plaid: true),
             FeatureRow(name: lang["entitlement.table.budgets"],       free: false, pro: true,  plaid: true),
             FeatureRow(name: lang["entitlement.table.loans"],         free: false, pro: true,  plaid: true),
