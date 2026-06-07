@@ -74,11 +74,14 @@ enum KeychainHelper {
     // MARK: - Convenience keys
 
     enum Key {
-        static let pinHash      = "fintrack.pinHash"
-        static let pinSalt      = "fintrack.pinSalt"
-        static let userName     = "fintrack.userName"
-        static let useFaceID    = "fintrack.useFaceID"
-        static let autoLockSecs = "fintrack.autoLockSecs"
-        static let isSetup      = "fintrack.isSetup"
+        static let pinHash       = "fintrack.pinHash"
+        static let pinSalt       = "fintrack.pinSalt"
+        static let userName      = "fintrack.userName"
+        static let useFaceID     = "fintrack.useFaceID"
+        static let autoLockSecs  = "fintrack.autoLockSecs"
+        static let isSetup       = "fintrack.isSetup"
+        // Anti-brute-force: persisted so kill+relaunch cannot reset the counter
+        static let failedAttempts = "fintrack.failedAttempts"
+        static let blockUntil     = "fintrack.blockUntil"
     }
 }

@@ -8,7 +8,7 @@ import LocalAuthentication
 
 struct LockScreenView: View {
     @Environment(LanguageManager.self) private var lang
-    @State private var lockManager = AppLockManager.shared
+    @Environment(AppLockManager.self) private var lockManager
 
     @State private var pin: String = ""
     @State private var isError: Bool = false

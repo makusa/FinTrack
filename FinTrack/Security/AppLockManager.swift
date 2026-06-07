@@ -128,6 +128,8 @@ final class AppLockManager {
         failedAttempts = 0
         isBlocked = false
         blockUntil = nil
+        // Reset persisted counters — a normal lock is not a suspicious event
+        clearBlockedKeychainEntries()
     }
 
     /// Attempt to unlock with FaceID/TouchID.
@@ -163,15 +165,19 @@ final class AppLockManager {
             return true
         } else {
             failedAttempts += 1
+            // Persist the counter immediately — survives app kill
+            KeychainHelper.set("\(failedAttempts)", forKey: KeychainHelper.Key.failedAttempts)
+
             if failedAttempts >= maxAttempts {
-                isBlocked = true
-                blockUntil = Date().addingTimeInterval(30)
-                // Unblock after 30 s
+                let until = Date().addingTimeInterval(30)
+                isBlocked  = true
+                blockUntil = until
+                // Persist the block expiry — survives app kill
+                KeychainHelper.set("\(until.timeIntervalSince1970)",
+                                   forKey: KeychainHelper.Key.blockUntil)
                 Task { @MainActor in
                     try? await Task.sleep(for: .seconds(30))
-                    self.isBlocked = false
-                    self.failedAttempts = 0
-                    self.blockUntil = nil
+                    self.clearBlock()
                 }
             }
             return false
@@ -209,11 +215,15 @@ final class AppLockManager {
         KeychainHelper.delete(forKey: KeychainHelper.Key.useFaceID)
         KeychainHelper.delete(forKey: KeychainHelper.Key.autoLockSecs)
         KeychainHelper.delete(forKey: KeychainHelper.Key.isSetup)
-        userName      = ""
-        useBiometrics = false
-        isSetup       = false
-        isLocked      = false
+        KeychainHelper.delete(forKey: KeychainHelper.Key.failedAttempts)
+        KeychainHelper.delete(forKey: KeychainHelper.Key.blockUntil)
+        userName       = ""
+        useBiometrics  = false
+        isSetup        = false
+        isLocked       = false
         failedAttempts = 0
+        isBlocked      = false
+        blockUntil     = nil
     }
 
     // MARK: - Private helpers
@@ -223,6 +233,7 @@ final class AppLockManager {
         failedAttempts = 0
         isBlocked      = false
         blockUntil     = nil
+        clearBlockedKeychainEntries()
     }
 
     private func loadFromKeychain() {
@@ -231,6 +242,41 @@ final class AppLockManager {
         useBiometrics = KeychainHelper.string(forKey: KeychainHelper.Key.useFaceID) == "1"
         let rawDelay  = Int(KeychainHelper.string(forKey: KeychainHelper.Key.autoLockSecs) ?? "0") ?? 0
         autoLockDelay = AutoLockDelay(rawValue: rawDelay) ?? .immediately
+
+        // Restore brute-force counters — survives app kill + relaunch
+        let storedAttempts = Int(KeychainHelper.string(forKey: KeychainHelper.Key.failedAttempts) ?? "0") ?? 0
+        failedAttempts = storedAttempts
+
+        if let rawBlockUntil = KeychainHelper.string(forKey: KeychainHelper.Key.blockUntil),
+           let interval = TimeInterval(rawBlockUntil) {
+            let until = Date(timeIntervalSince1970: interval)
+            if until > Date() {
+                // Block is still active — reapply it
+                isBlocked  = true
+                blockUntil = until
+                let remaining = until.timeIntervalSince(Date())
+                Task { @MainActor in
+                    try? await Task.sleep(for: .seconds(remaining))
+                    self.clearBlock()
+                }
+            } else {
+                // Block expired while app was closed — clear it
+                clearBlockedKeychainEntries()
+            }
+        }
+    }
+
+    /// Clears the in-memory block state AND removes Keychain entries.
+    private func clearBlock() {
+        isBlocked      = false
+        failedAttempts = 0
+        blockUntil     = nil
+        clearBlockedKeychainEntries()
+    }
+
+    private func clearBlockedKeychainEntries() {
+        KeychainHelper.set("0", forKey: KeychainHelper.Key.failedAttempts)
+        KeychainHelper.delete(forKey: KeychainHelper.Key.blockUntil)
     }
 
     private func checkBiometricCapability() {
