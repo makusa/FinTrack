@@ -7,7 +7,6 @@ import SwiftUI
 
 struct CashFlowView: View {
     @Environment(LanguageManager.self) private var lang
-    @State private var entitlements = EntitlementManager.shared
 
     let summary: CashFlowSummary
 

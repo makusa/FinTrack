@@ -13,7 +13,7 @@ import SwiftUI
 
 struct DeveloperView: View {
     @Environment(LanguageManager.self) private var lang
-    @State private var entitlements = EntitlementManager.shared
+    @Environment(EntitlementManager.self) private var entitlements
     @State private var showConfirm   = false
     @State private var pendingTier:  FinTrackTier? = nil
 
@@ -213,10 +213,12 @@ struct DeveloperView: View {
     }
 
     private func apply(_ tier: FinTrackTier) {
-        switch tier {
-        case .free:  entitlements.simulateFree()
-        case .pro:   entitlements.simulatePro()
-        case .plaid: entitlements.simulatePlaid()
+        Task { @MainActor in
+            switch tier {
+            case .free:  entitlements.simulateFree()
+            case .pro:   entitlements.simulatePro()
+            case .plaid: entitlements.simulatePlaid()
+            }
         }
         pendingTier = nil
     }

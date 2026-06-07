@@ -12,7 +12,7 @@ import StoreKit
 
 struct SubscriptionView: View {
     @Environment(LanguageManager.self) private var lang
-    @State private var entitlements = EntitlementManager.shared
+    @Environment(EntitlementManager.self) private var entitlements
     @State private var showError = false
 
     var body: some View {

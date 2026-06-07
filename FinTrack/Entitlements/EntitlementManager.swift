@@ -85,7 +85,9 @@ final class EntitlementManager {
     func start() async {
         await loadProducts()
         await refreshEntitlements()
-        await listenForTransactions()
+        // Transaction listener runs indefinitely — launch as independent Task
+        // so it doesn't block start() from returning
+        Task { await self.listenForTransactions() }
     }
 
     // MARK: - Products
@@ -223,8 +225,8 @@ final class EntitlementManager {
     // MARK: - Override (debug / promo)
 
     #if DEBUG
-    func simulatePro()   { hasPro = true }
-    func simulatePlaid() { hasPro = true; hasPlaid = true }
-    func simulateFree()  { hasPro = false; hasPlaid = false }
+    @MainActor func simulatePro()   { hasPro = true }
+    @MainActor func simulatePlaid() { hasPro = true; hasPlaid = true }
+    @MainActor func simulateFree()  { hasPro = false; hasPlaid = false }
     #endif
 }

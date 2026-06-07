@@ -12,7 +12,7 @@ struct SettingsView: View {
 
     @Environment(LanguageManager.self) private var lang
     @Environment(ExchangeRateManager.self) private var rateManager
-    @State private var entitlements = EntitlementManager.shared
+    @Environment(EntitlementManager.self) private var entitlements
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query(sort: \Account.createdAt) private var allAccounts: [Account]
 

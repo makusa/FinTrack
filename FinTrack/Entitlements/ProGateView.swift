@@ -78,7 +78,7 @@ enum GatedFeature {
 
 struct ProGateView: View {
     @Environment(LanguageManager.self) private var lang
-    @State private var entitlements = EntitlementManager.shared
+    @Environment(EntitlementManager.self) private var entitlements
 
     let feature: GatedFeature
     @State private var isPurchasing = false
@@ -276,7 +276,7 @@ struct ProGateView: View {
 
 /// Wraps a view with a Pro gate — shown if user doesn't have the required entitlement.
 struct ProGated<Content: View>: View {
-    @State private var entitlements = EntitlementManager.shared
+    @Environment(EntitlementManager.self) private var entitlements
     let feature: GatedFeature
     let content: Content
 

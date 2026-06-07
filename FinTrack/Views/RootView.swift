@@ -8,7 +8,7 @@ import SwiftUI
 struct RootView: View {
     @Environment(LanguageManager.self) private var lang
     @State private var lockManager = AppLockManager.shared
-    @State private var entitlements = EntitlementManager.shared
+    @Environment(EntitlementManager.self) private var entitlements
 
     var body: some View {
         Group {

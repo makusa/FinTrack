@@ -8,7 +8,6 @@ import SwiftUI
 struct ExchangeRateSettingsView: View {
     @Environment(LanguageManager.self) private var lang
     @Environment(ExchangeRateManager.self) private var rates
-    @State private var entitlements = EntitlementManager.shared
 
     var body: some View {
         List {

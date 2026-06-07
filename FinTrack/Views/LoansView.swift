@@ -9,7 +9,6 @@ import SwiftData
 struct LoansView: View {
     @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
-    @State private var entitlements = EntitlementManager.shared
 
     @Query(filter: #Predicate<Loan> { $0.isActive },
            sort: \Loan.createdAt, order: .forward)

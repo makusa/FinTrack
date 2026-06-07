@@ -18,7 +18,7 @@ struct ConnectedAccountsView: View {
     @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
     @State private var plaid = PlaidManager.shared
-    @State private var entitlements = EntitlementManager.shared
+    @Environment(EntitlementManager.self) private var entitlements
 
     @Query(filter: #Predicate<Account> { !$0.isArchived }, sort: \Account.createdAt)
     private var fintrackAccounts: [Account]
@@ -456,7 +456,7 @@ struct AccountMappingView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(LanguageManager.self) private var lang
     @State private var plaid = PlaidManager.shared
-    @State private var entitlements = EntitlementManager.shared
+    @Environment(EntitlementManager.self) private var entitlements
 
     var item: PlaidConnectedItem
     let fintrackAccounts: [Account]
