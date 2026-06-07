@@ -45,10 +45,43 @@ enum LoanType: String, CaseIterable, Identifiable {
         }
     }
 
-    /// Default compounding convention for this loan type in Canada.
-    var defaultCompounding: LoanCompounding {
-        self == .mortgage ? .semiAnnual : .monthly
+    // MARK: - Smart defaults per loan type
+
+    struct Defaults {
+        let termYears:       Int
+        let termExtraMonths: Int
+        let frequency:       LoanPaymentFrequency
+        let compounding:     LoanCompounding
     }
+
+    /// Returns market-appropriate default parameters for this loan type in Canada.
+    var defaults: Defaults {
+        switch self {
+        case .mortgage:
+            // 25-year amortization; semi-annual compounding required by Canadian law;
+            // biweekly accelerated saves ~3 years vs monthly.
+            return Defaults(termYears: 25, termExtraMonths: 0,
+                            frequency: .biweeklyAccelerated, compounding: .semiAnnual)
+        case .auto:
+            // 60-month (5-year) term is the Canadian market standard for auto loans.
+            return Defaults(termYears: 5, termExtraMonths: 0,
+                            frequency: .monthly, compounding: .monthly)
+        case .personal:
+            // Personal loans: 1–5 years; 3 years is the median.
+            return Defaults(termYears: 3, termExtraMonths: 0,
+                            frequency: .monthly, compounding: .monthly)
+        case .student:
+            // NSLSC repayment assistance: up to 10 years for federal student loans.
+            return Defaults(termYears: 10, termExtraMonths: 0,
+                            frequency: .monthly, compounding: .monthly)
+        case .other:
+            return Defaults(termYears: 5, termExtraMonths: 0,
+                            frequency: .monthly, compounding: .monthly)
+        }
+    }
+
+    /// Convenience — kept for backward compatibility.
+    var defaultCompounding: LoanCompounding { defaults.compounding }
 }
 
 enum LoanPaymentFrequency: String, CaseIterable, Identifiable {

@@ -30,10 +30,10 @@ struct AddEditLoanView: View {
     @State private var currency: String = Currencies.default
     @State private var principalText: String = ""
     @State private var rateText: String = ""
-    @State private var termYears: Int = 25
-    @State private var termExtraMonths: Int = 0
-    @State private var frequency: LoanPaymentFrequency = .monthly
-    @State private var compounding: LoanCompounding = .semiAnnual
+    @State private var termYears: Int = LoanType.mortgage.defaults.termYears
+    @State private var termExtraMonths: Int = LoanType.mortgage.defaults.termExtraMonths
+    @State private var frequency: LoanPaymentFrequency = LoanType.mortgage.defaults.frequency
+    @State private var compounding: LoanCompounding = LoanType.mortgage.defaults.compounding
     @State private var firstPaymentDate: Date = Calendar.current.date(byAdding: .month, value: 1, to: .now) ?? .now
     @State private var selectedAccount: Account?
     @State private var notes: String = ""
@@ -110,8 +110,13 @@ struct AddEditLoanView: View {
             }
             .onAppear(perform: loadIfEditing)
             .onChange(of: type) { _, newType in
-                // Auto-switch compounding convention when type changes
-                if !isEditing { compounding = newType.defaultCompounding }
+                guard !isEditing else { return }
+                // Apply all market-appropriate defaults for the selected loan type
+                let d = newType.defaults
+                termYears       = d.termYears
+                termExtraMonths = d.termExtraMonths
+                frequency       = d.frequency
+                compounding     = d.compounding
             }
         }
     }
