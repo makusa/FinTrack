@@ -50,8 +50,6 @@ enum SeedData {
             existing.map { ($0.name, $0) },
             uniquingKeysWith: { first, _ in first }
         )
-        let existingNames = Set(existingByName.keys)
-
         var didChange = false
 
         // Insert missing + patch localizationKey for all system categories
