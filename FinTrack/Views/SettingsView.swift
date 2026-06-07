@@ -33,6 +33,9 @@ struct SettingsView: View {
                 statsSection
                 dangerZoneSection
                 aboutSection
+                #if DEBUG
+                developerSection
+                #endif
             }
             .navigationTitle(lang["settings.title"])
             .fileExporter(
@@ -246,6 +249,34 @@ struct SettingsView: View {
             }
         }
     }
+
+    #if DEBUG
+    @ViewBuilder
+    private var developerSection: some View {
+        let e = EntitlementManager.shared
+        let tierName = e.hasPlaid ? "Placement" : e.hasPro ? "Épargne" : "Courant"
+        let tierColor: Color = e.hasPlaid ? .teal : e.hasPro ? .orange : .gray
+
+        Section {
+            NavigationLink {
+                DeveloperView()
+            } label: {
+                HStack {
+                    Label("Développeur", systemImage: "hammer.fill")
+                        .foregroundStyle(.orange)
+                    Spacer()
+                    Text(tierName)
+                        .font(.caption.weight(.semibold))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(tierColor.opacity(0.15), in: Capsule())
+                        .foregroundStyle(tierColor)
+                }
+            }
+        }
+        .listRowBackground(Color.orange.opacity(0.06))
+    }
+    #endif
 
     // MARK: - Tier badge
 
