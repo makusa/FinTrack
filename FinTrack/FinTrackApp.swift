@@ -51,6 +51,7 @@ struct FinTrackApp: App {
 
         // Generate any pending recurring transactions (salary, rent, subscriptions…).
         RecurringTransactionManager.applyPending(context: modelContainer.mainContext)
+        LoanPrepaymentManager.applyPending(context: modelContainer.mainContext)
         CreditLineInterestManager.applyPending(context: modelContainer.mainContext)
     }
 

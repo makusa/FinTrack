@@ -18,6 +18,10 @@ struct AddEditPrepaymentView: View {
 
     let mode: PrepaymentEditorMode
 
+    @Query(filter: #Predicate<Account> { !$0.isArchived },
+           sort: \Account.createdAt, order: .forward)
+    private var accounts: [Account]
+
     // MARK: Form state
 
     @State private var amountText: String = ""
@@ -27,6 +31,7 @@ struct AddEditPrepaymentView: View {
     @State private var hasEndDate: Bool = false
     @State private var endDate: Date = Calendar.current.date(byAdding: .year, value: 1, to: .now) ?? .now
     @State private var note: String = ""
+    @State private var selectedAccount: Account? = nil
     @State private var showDeleteConfirm: Bool = false
 
     @State private var notifEnabled: Bool = false
@@ -122,6 +127,32 @@ struct AddEditPrepaymentView: View {
                     }
                 }
 
+                // MARK: Source account
+                Section(lang["prepayment.account.section"]) {
+                    if accounts.isEmpty {
+                        Text(lang["loan.noAccount"])
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Picker(lang["label.account"], selection: $selectedAccount) {
+                            Text(lang["prepayment.account.none"]).tag(Account?.none)
+                            ForEach(accounts) { acc in
+                                HStack {
+                                    Image(systemName: acc.iconSystemName.isEmpty
+                                          ? acc.type.defaultIconSystemName
+                                          : acc.iconSystemName)
+                                        .foregroundStyle(Color(hex: acc.colorHex))
+                                    Text(acc.name)
+                                    Text("(\(acc.currency))")
+                                        .foregroundStyle(.secondary)
+                                }
+                                .tag(Optional(acc))
+                            }
+                        }
+                    }
+                } footer: {
+                    Text(lang["prepayment.account.footer"])
+                }
+
                 // MARK: Note
                 Section(lang["label.notes"] + " " + lang["label.optional"]) {
                     TextField(lang["label.note"], text: $note, axis: .vertical)
@@ -201,6 +232,7 @@ struct AddEditPrepaymentView: View {
         if let freq = prep.frequency { frequency = freq }
         if let ed = prep.endDate { endDate = ed; hasEndDate = true }
         note = prep.note ?? ""
+        selectedAccount = prep.account
     }
 
     private func save() {
@@ -218,6 +250,8 @@ struct AddEditPrepaymentView: View {
                 note: trimmedNote.isEmpty ? nil : trimmedNote
             )
             prep.loan = l
+            prep.account = selectedAccount
+            prep.nextPostDate = selectedAccount != nil ? prep.startDate : nil
             prep.notificationEnabled = notifEnabled
             prep.notificationDaysBefore = notifDaysBefore
             context.insert(prep)
@@ -229,13 +263,22 @@ struct AddEditPrepaymentView: View {
             prep.frequency = isRecurring ? frequency : nil
             prep.endDate = isRecurring && hasEndDate ? endDate : nil
             prep.note = trimmedNote.isEmpty ? nil : trimmedNote
+            // If account changed, reset nextPostDate so the manager re-evaluates
+            if prep.account?.persistentModelID != selectedAccount?.persistentModelID {
+                prep.account = selectedAccount
+                prep.nextPostDate = selectedAccount != nil ? prep.startDate : nil
+            }
             prep.notificationEnabled = notifEnabled
             prep.notificationDaysBefore = notifDaysBefore
         }
 
         try? context.save()
+        // Generate any transactions due immediately
         let ctx = context
-        Task { await NotificationManager.shared.scheduleAll(context: ctx) }
+        Task { @MainActor in
+            LoanPrepaymentManager.applyPending(context: ctx)
+            await NotificationManager.shared.scheduleAll(context: ctx)
+        }
         dismiss()
     }
 

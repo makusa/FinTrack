@@ -632,6 +632,9 @@ enum LocalizedStrings {
         "bank.useCustom": ["fr": "Utiliser ce nom personnalisé", "en": "Use this custom name", "es": "Usar este nombre personalizado", "pt": "Usar este nome personalizado"],
 
         // MARK: - Prepayments
+        "prepayment.account.section":  ["fr": "Compte source",                                           "en": "Source account",                                        "es": "Cuenta origen",                                         "pt": "Conta de origem"],
+        "prepayment.account.none":     ["fr": "Aucun compte lié",                                        "en": "No linked account",                                     "es": "Sin cuenta vinculada",                                  "pt": "Sem conta vinculada"],
+        "prepayment.account.footer":   ["fr": "Le montant du prépaiement sera déduit du solde de ce compte à chaque occurrence.", "en": "The prepayment amount will be deducted from this account balance on each occurrence.", "es": "El monto del prepago se deducirá del saldo de esta cuenta en cada ocurrencia.", "pt": "O valor do pré-pagamento será deduzido do saldo desta conta a cada ocorrência."],
         "prepayment.title":          ["fr": "Versements anticipés",            "en": "Prepayments",                "es": "Pagos anticipados",             "pt": "Pagamentos antecipados"],
         "prepayment.oneTime":        ["fr": "Ponctuel",                         "en": "One-Time",                   "es": "Puntual",                       "pt": "Pontual"],
         "prepayment.recurring":      ["fr": "Récurrent",                        "en": "Recurring",                  "es": "Recurrente",                    "pt": "Recorrente"],

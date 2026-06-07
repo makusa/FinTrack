@@ -30,7 +30,14 @@ final class LoanPrepayment {
     var notificationEnabled: Bool = false
     var notificationDaysBefore: Int = 3
 
+    /// Source account debited for each prepayment occurrence.
+    /// When set, a Transaction is automatically generated to reflect the cash outflow.
+    var account: Account? = nil
 
+    /// Tracks which occurrences have already been posted as Transactions.
+    /// For one-time: nil = not yet posted, .distantFuture = posted.
+    /// For recurring: the next date to post (advances after each run).
+    var nextPostDate: Date? = nil
 
     var loan: Loan?
 
