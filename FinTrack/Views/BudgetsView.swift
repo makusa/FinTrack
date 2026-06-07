@@ -242,7 +242,7 @@ struct BudgetRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(budget.name)
                         .font(.body.weight(.medium))
-                    Text(budget.category?.name ?? lang["budget.category.all"])
+                    Text(budget.category?.localizedName ?? lang["budget.category.all"])
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

@@ -40,7 +40,7 @@ struct TransactionRow: View {
             return payee
         }
         if let cat = transaction.category {
-            return cat.name
+            return cat.localizedName
         }
         return transaction.type == .income ? LanguageManager.shared["tx.type.income"] : LanguageManager.shared["tx.type.expense"]
     }
@@ -51,7 +51,7 @@ struct TransactionRow: View {
             parts.append(acc.name)
         }
         if let cat = transaction.category, transaction.payee != nil {
-            parts.append(cat.name)
+            parts.append(cat.localizedName)
         }
         return parts.joined(separator: " · ")
     }

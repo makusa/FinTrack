@@ -102,7 +102,7 @@ struct AddEditBudgetView: View {
                             HStack {
                                 Image(systemName: cat.iconSystemName)
                                     .foregroundStyle(Color(hex: cat.colorHex))
-                                Text(cat.name)
+                                Text(cat.localizedName)
                             }
                             .tag(Optional(cat))
                         }

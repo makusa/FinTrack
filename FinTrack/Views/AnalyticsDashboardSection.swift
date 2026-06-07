@@ -644,15 +644,15 @@ struct CategoryBreakdownCard: View {
         let total = monthExpenses.reduce(Decimal(0)) { $0 + $1.amount }
         guard total > 0 else { return [] }
 
-        var dict: [String: (colorHex: String, amount: Decimal)] = [:]
+        var dict: [String: (colorHex: String, localizedName: String, amount: Decimal)] = [:]
         var uncategorized: Decimal = 0
         for tx in monthExpenses {
             if let cat = tx.category {
-                if dict[cat.name] == nil { dict[cat.name] = (cat.colorHex, 0) }
+                if dict[cat.name] == nil { dict[cat.name] = (cat.colorHex, cat.localizedName, 0) }
                 dict[cat.name]!.amount += tx.amount
             } else { uncategorized += tx.amount }
         }
-        let grouped = dict.map { ($0.key, $0.value.colorHex, $0.value.amount) }
+        let grouped = dict.map { ($0.value.localizedName, $0.value.colorHex, $0.value.amount) }
             .sorted { $0.2 > $1.2 }
 
         var result: [Slice] = []
@@ -664,7 +664,7 @@ struct CategoryBreakdownCard: View {
         }
         if others > 0 {
             let pct = ((others / total * 100) as NSDecimalNumber).doubleValue
-            result.append(Slice(name: "Autres", colorHex: "#8E8E93", amount: others, percent: pct))
+            result.append(Slice(name: LanguageManager.shared["label.other"], colorHex: "#8E8E93", amount: others, percent: pct))
         }
         return result
     }

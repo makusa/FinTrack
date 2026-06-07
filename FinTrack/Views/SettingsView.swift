@@ -355,7 +355,7 @@ enum CSVExporter {
                 tx.account?.currency ?? "",
                 escape(tx.account?.name ?? ""),
                 escape(tx.account?.institution ?? ""),
-                escape(tx.category?.name ?? ""),
+                escape(tx.category?.localizedName ?? ""),
                 escape(tx.payee ?? ""),
                 escape(tx.note)
             ].joined(separator: ",")
@@ -450,7 +450,7 @@ struct ManageCategoriesView: View {
                     .foregroundStyle(Color(hex: cat.colorHex))
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text(cat.name)
+                Text(cat.localizedName)
                 if cat.isSystem {
                     Text(lang["category.default"])
                         .font(.caption2)

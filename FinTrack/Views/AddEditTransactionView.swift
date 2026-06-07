@@ -195,7 +195,7 @@ struct AddEditTransactionView: View {
                                 .font(.caption)
                                 .foregroundStyle(Color(hex: cat.colorHex))
                         }
-                        Text(cat.name)
+                        Text(cat.localizedName)
                             .foregroundStyle(.primary)
                     } else {
                         Image(systemName: "tag")
@@ -366,7 +366,7 @@ private struct CategoryPickerSheet: View {
 
                     ForEach(categories) { cat in
                         categoryTile(
-                            name: cat.name,
+                            name: cat.localizedName,
                             icon: cat.iconSystemName,
                             color: Color(hex: cat.colorHex),
                             isSelected: selected?.id == cat.id

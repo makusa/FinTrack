@@ -297,7 +297,7 @@ struct AddEditRecurringTransactionView: View {
                                 .font(.caption)
                                 .foregroundStyle(Color(hex: cat.colorHex))
                         }
-                        Text(cat.name).foregroundStyle(.primary)
+                        Text(cat.localizedName).foregroundStyle(.primary)
                     } else {
                         Image(systemName: "tag").foregroundStyle(.secondary)
                         Text(lang["tx.noCategory"]).foregroundStyle(.secondary)
@@ -526,7 +526,7 @@ private struct CategoryPickerSheet: View {
                     
                     ForEach(categories) { cat in
                         CategoryTile(
-                            name: cat.name,
+                            name: cat.localizedName,
                             icon: cat.iconSystemName,
                             color: Color(hex: cat.colorHex),
                             isSelected: selected?.id == cat.id
