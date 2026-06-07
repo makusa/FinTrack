@@ -27,13 +27,16 @@ struct AccountDetailView: View {
             Section {
                 VStack(spacing: 8) {
                     Group {
-                        if let domain = account.bankDomain {
+                        if account.iconSystemName.isEmpty, let domain = account.bankDomain {
                             BankLogoView(domain: domain, size: 52, cornerRadius: 12)
                                 .frame(width: 72, height: 72)
                         } else {
-                            Image(systemName: account.iconSystemName)
+                            let sfName = account.iconSystemName.isEmpty
+                                ? account.type.defaultIconSystemName
+                                : account.iconSystemName
+                            Image(systemName: sfName)
                                 .font(.system(size: 36))
-                                .foregroundStyle(.white)
+                                .foregroundStyle(ColorPalette.foregroundColor(on: account.colorHex))
                                 .frame(width: 72, height: 72)
                                 .background(Color(hex: account.colorHex), in: Circle())
                         }

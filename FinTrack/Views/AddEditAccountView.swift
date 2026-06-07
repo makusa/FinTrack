@@ -44,6 +44,14 @@ struct AddEditAccountView: View {
         isEditing ? lang["account.edit"] : lang["account.create"]
     }
 
+    /// Foreground color for icons displayed on the selected colorHex background.
+    private var iconForeground: Color {
+        ColorPalette.foregroundColor(on: colorHex)
+    }
+
+    /// Sentinel: empty string means "use institution logo, no SF Symbol".
+    private static let noIconSentinel = ""
+
     private var canSave: Bool {
         !name.trimmingCharacters(in: .whitespaces).isEmpty
             && !institution.trimmingCharacters(in: .whitespaces).isEmpty
@@ -59,7 +67,9 @@ struct AddEditAccountView: View {
                         placeholder: lang["label.institution"],
                         onBankSelected: { bank in
                             bankDomain = bank.domain
-                            // Auto-set icon color matching institution type
+                            // Auto-select "no icon" so the logo is shown by default
+                            iconSystemName = Self.noIconSentinel
+                            // Auto-set a colour matching the institution's region
                             if let hex = institutionColor(for: bank) {
                                 colorHex = hex
                             }
@@ -159,9 +169,12 @@ struct AddEditAccountView: View {
                             .fill(Color(hex: hex))
                             .frame(width: 32, height: 32)
                             .overlay {
+                                // Stroke for light colours so they're visible on any background
+                                Circle()
+                                    .strokeBorder(Color(.separator), lineWidth: hex == "#F2F2F7" ? 1 : 0)
                                 if hex == colorHex {
                                     Image(systemName: "checkmark")
-                                        .foregroundStyle(.white)
+                                        .foregroundStyle(ColorPalette.foregroundColor(on: hex))
                                         .font(.system(size: 14, weight: .bold))
                                 }
                             }
@@ -174,26 +187,61 @@ struct AddEditAccountView: View {
     }
 
     private var iconPicker: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let icons: [String] = Array(Set(AccountType.allCases.map(\.defaultIconSystemName) + [
+            "creditcard.fill", "banknote.fill", "dollarsign.circle.fill",
+            "building.columns.fill", "chart.line.uptrend.xyaxis", "wallet.pass.fill",
+            "bitcoinsign.circle.fill", "house.fill", "globe", "briefcase.fill"
+        ])).sorted()
+        let isLogoSelected = iconSystemName == Self.noIconSentinel
+
+        return VStack(alignment: .leading, spacing: 8) {
             Text(lang["label.icon"]).font(.subheadline)
-            let icons = Array(Set(AccountType.allCases.map(\.defaultIconSystemName) + [
-                "creditcard.fill", "banknote.fill", "dollarsign.circle.fill",
-                "building.columns.fill", "chart.line.uptrend.xyaxis", "wallet.pass.fill",
-                "bitcoinsign.circle.fill", "house.fill", "globe", "briefcase.fill"
-            ])).sorted()
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
+                    // ── "Logo" tile (sentinel — displays institution logo) ──
+                    ZStack {
+                        Circle()
+                            .fill(isLogoSelected
+                                  ? Color(hex: colorHex)
+                                  : Color(.tertiarySystemBackground))
+                            .frame(width: 40, height: 40)
+                        if let domain = bankDomain {
+                            BankLogoView(domain: domain, size: 26, cornerRadius: 6)
+                        } else {
+                            // No institution matched yet — show a bank placeholder
+                            Image(systemName: "building.columns")
+                                .font(.system(size: 16))
+                                .foregroundStyle(isLogoSelected ? iconForeground : .secondary)
+                        }
+                        if isLogoSelected {
+                            // Small checkmark badge
+                            Circle()
+                                .fill(Color.green)
+                                .frame(width: 14, height: 14)
+                                .overlay(
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 7, weight: .bold))
+                                        .foregroundStyle(.white)
+                                )
+                                .offset(x: 12, y: 12)
+                        }
+                    }
+                    .frame(width: 40, height: 40)
+                    .onTapGesture { iconSystemName = Self.noIconSentinel }
+
+                    // ── SF Symbol tiles ───────────────────────────────────
                     ForEach(icons, id: \.self) { name in
+                        let isSelected = name == iconSystemName
                         Image(systemName: name)
                             .font(.system(size: 18))
                             .frame(width: 40, height: 40)
                             .background(
-                                name == iconSystemName
+                                isSelected
                                     ? Color(hex: colorHex)
                                     : Color(.tertiarySystemBackground),
                                 in: Circle()
                             )
-                            .foregroundStyle(name == iconSystemName ? .white : .primary)
+                            .foregroundStyle(isSelected ? iconForeground : .primary)
                             .onTapGesture { iconSystemName = name }
                     }
                 }

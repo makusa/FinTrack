@@ -33,7 +33,18 @@ enum ColorPalette {
         "#8E8E93", // gray
         "#A2845E", // brown
         "#FF2D92", // pink
+        "#1C1C1E", // black (iOS system)
+        "#F2F2F7", // white (iOS system)
     ]
+
+    /// Returns the appropriate foreground color (for icons/checkmarks) on a given background hex.
+    static func foregroundColor(on backgroundHex: String) -> Color {
+        // Light backgrounds need a dark foreground; dark backgrounds need white
+        switch backgroundHex.uppercased() {
+        case "#F2F2F7", "#FFFFFF", "#FFCC00": return .black
+        default: return .white
+        }
+    }
 
     /// Palette for categories. Similar set; categories can also reuse account colors.
     static let categoryColors: [String] = accountColors

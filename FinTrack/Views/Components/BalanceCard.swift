@@ -12,12 +12,16 @@ struct BalanceCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                if let domain = account.bankDomain {
+                if account.iconSystemName.isEmpty, let domain = account.bankDomain {
                     BankLogoView(domain: domain, size: 32, cornerRadius: 8)
+                } else if account.iconSystemName.isEmpty {
+                    Image(systemName: account.type.defaultIconSystemName)
+                        .font(.title2)
+                        .foregroundStyle(ColorPalette.foregroundColor(on: account.colorHex))
                 } else {
                     Image(systemName: account.iconSystemName)
                         .font(.title2)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(ColorPalette.foregroundColor(on: account.colorHex))
                 }
                 Spacer()
                 Text(account.currency)

@@ -86,11 +86,15 @@ struct AccountsView: View {
                 Circle()
                     .fill(Color(hex: account.colorHex))
                     .frame(width: 40, height: 40)
-                if let domain = account.bankDomain {
+                if account.iconSystemName.isEmpty, let domain = account.bankDomain {
                     BankLogoView(domain: domain, size: 26, cornerRadius: 6)
+                } else if account.iconSystemName.isEmpty {
+                    Image(systemName: account.type.defaultIconSystemName)
+                        .foregroundStyle(ColorPalette.foregroundColor(on: account.colorHex))
+                        .font(.system(size: 17, weight: .semibold))
                 } else {
                     Image(systemName: account.iconSystemName)
-                        .foregroundStyle(.white)
+                        .foregroundStyle(ColorPalette.foregroundColor(on: account.colorHex))
                         .font(.system(size: 17, weight: .semibold))
                 }
             }
