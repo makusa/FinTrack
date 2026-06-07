@@ -12,6 +12,7 @@ import Charts
 struct SavingsProjectsView: View {
     @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
+    @Environment(EntitlementManager.self) private var entitlements
 
     @Query(filter: #Predicate<SavingsProject> { $0.isActive },
            sort: \SavingsProject.createdAt, order: .forward)
@@ -23,6 +24,10 @@ struct SavingsProjectsView: View {
 
     @State private var showAdd = false
     @State private var showArchived = false
+
+    private var isAtFreeLimit: Bool {
+        !entitlements.hasPro && activeProjects.count >= FinTrackLimit.freeMaxSavingsProjects
+    }
 
     // Total by currency
     private var totalsByCurrency: [(currency: String, total: Decimal)] {
@@ -104,11 +109,47 @@ struct SavingsProjectsView: View {
                 Button { showAdd = true } label: {
                     Image(systemName: "plus.circle.fill").font(.title3)
                 }
+                .disabled(isAtFreeLimit)
             }
         }
-        .sheet(isPresented: $showAdd) {
-            AddEditSavingsProjectView(mode: .create)
+        .safeAreaInset(edge: .bottom) {
+            if isAtFreeLimit { freeCapBanner }
         }
+        .sheet(isPresented: $showAdd) {
+            if isAtFreeLimit {
+                NavigationStack {
+                    ProGateView(feature: .savings)
+                        .environment(entitlements)
+                }
+            } else {
+                AddEditSavingsProjectView(mode: .create)
+            }
+        }
+    }
+
+    private var freeCapBanner: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "lock.fill").foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(lang["savings.free.cap.title"])
+                    .font(.callout.weight(.semibold))
+                Text(lang["savings.free.cap.subtitle"])
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            NavigationLink {
+                SubscriptionView().environment(entitlements)
+            } label: {
+                Text(lang["entitlement.pro.cta"])
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 12).padding(.vertical, 6)
+                    .background(Color.orange.opacity(0.15), in: Capsule())
+                    .foregroundStyle(.orange)
+            }
+        }
+        .padding(.horizontal, 16).padding(.vertical, 12)
+        .background(.bar)
+        .overlay(alignment: .top) { Divider() }
     }
 
     private var emptyState: some View {
@@ -123,6 +164,7 @@ struct SavingsProjectsView: View {
             Button { showAdd = true } label: {
                 Label(lang["savings.create"], systemImage: "plus")
                     .font(.body.weight(.semibold))
+                    .foregroundStyle(.white)
                     .padding(.horizontal, 20).padding(.vertical, 12)
             }
             .buttonStyle(.borderedProminent).padding(.top, 4)
@@ -172,6 +214,7 @@ struct SavingsProjectRow: View {
 struct SavingsProjectDetailView: View {
     @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
+    @Environment(EntitlementManager.self) private var entitlements
     @Bindable var project: SavingsProject
     @State private var showEdit       = false
     @State private var scrubDate:    Date?   = nil

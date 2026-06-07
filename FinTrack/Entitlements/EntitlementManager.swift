@@ -9,7 +9,7 @@
 //    ca.regis.fintrack.plaid_monthly — Auto-renewable subscription, $3.99 CAD/month
 //
 //  Tier summary:
-//    Free  — unlimited accounts (manual), unlimited transactions, max 5 recurring, max 2 loans, max 1 credit line, basic dashboard
+//    Free  — unlimited accounts (manual), unlimited transactions, max 5 recurring, max 2 loans, max 1 credit line, max 2 savings projects, basic dashboard
 //    Pro   — Everything: analytics, budgets, loans, recurring, transfers, FX, export…
 //    Plaid — Automatic bank sync (requires active subscription)
 //
@@ -62,6 +62,8 @@ enum FinTrackLimit {
     static let freeMaxLoans = 2
     /// Maximum active credit lines in the free tier. Archived lines don't count.
     static let freeMaxCreditLines = 1
+    /// Maximum active savings projects in the free tier. Archived projects don't count.
+    static let freeMaxSavingsProjects = 2
 }
 
 // MARK: - EntitlementManager
