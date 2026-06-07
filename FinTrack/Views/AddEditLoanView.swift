@@ -450,14 +450,16 @@ struct AddEditLoanView: View {
 
         do {
             try context.save()
-            // Generate past occurrences immediately — applyPending only runs at launch,
-            // so without this call the user would see no transactions until next restart.
+            // Generate all past occurrences synchronously BEFORE dismissing.
+            // Using a Task (async) caused a race condition: the task ran after
+            // the view was torn down, leading to silent failures.
+            // applyPending is fast (arithmetic + DB inserts) — calling it
+            // synchronously here matches the pattern in AddEditRecurringTransactionView.
+            RecurringTransactionManager.applyPending(context: context)
+            LoanPrepaymentManager.applyPending(context: context)
+            // Notifications are non-critical — schedule them async
             let ctx = context
-            Task { @MainActor in
-                RecurringTransactionManager.applyPending(context: ctx)
-                LoanPrepaymentManager.applyPending(context: ctx)
-                await NotificationManager.shared.scheduleAll(context: ctx)
-            }
+            Task { await NotificationManager.shared.scheduleAll(context: ctx) }
             dismiss()
         } catch {
             print("AddEditLoanView: save failed — \(error)")
