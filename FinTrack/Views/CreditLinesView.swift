@@ -9,6 +9,7 @@ import SwiftData
 struct CreditLinesView: View {
     @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
+    @Environment(EntitlementManager.self) private var entitlements
 
     @Query(filter: #Predicate<CreditLine> { $0.isActive },
            sort: \CreditLine.createdAt, order: .forward)
@@ -20,6 +21,10 @@ struct CreditLinesView: View {
 
     @State private var showAdd      = false
     @State private var showArchived = false
+
+    private var isAtFreeLimit: Bool {
+        !entitlements.hasPro && activeLines.count >= FinTrackLimit.freeMaxCreditLines
+    }
 
     private var debtByCurrency: [(currency: String, total: Decimal)] {
         let grouped = Dictionary(grouping: activeLines, by: \.currency)
@@ -104,11 +109,49 @@ struct CreditLinesView: View {
                 Button { showAdd = true } label: {
                     Image(systemName: "plus.circle.fill").font(.title3)
                 }
+                .disabled(isAtFreeLimit)
             }
         }
-        .sheet(isPresented: $showAdd) {
-            AddEditCreditLineView(mode: .create)
+        .safeAreaInset(edge: .bottom) {
+            if isAtFreeLimit { freeCapBanner }
         }
+        .sheet(isPresented: $showAdd) {
+            if isAtFreeLimit {
+                NavigationStack {
+                    ProGateView(feature: .creditLines)
+                        .environment(entitlements)
+                }
+            } else {
+                AddEditCreditLineView(mode: .create)
+            }
+        }
+    }
+
+    // MARK: - Free tier cap banner
+
+    private var freeCapBanner: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "lock.fill").foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(lang["cl.free.cap.title"])
+                    .font(.callout.weight(.semibold))
+                Text(lang["cl.free.cap.subtitle"])
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            NavigationLink {
+                SubscriptionView().environment(entitlements)
+            } label: {
+                Text(lang["entitlement.pro.cta"])
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 12).padding(.vertical, 6)
+                    .background(Color.orange.opacity(0.15), in: Capsule())
+                    .foregroundStyle(.orange)
+            }
+        }
+        .padding(.horizontal, 16).padding(.vertical, 12)
+        .background(.bar)
+        .overlay(alignment: .top) { Divider() }
     }
 
     // MARK: - Empty state
@@ -125,6 +168,7 @@ struct CreditLinesView: View {
             Button { showAdd = true } label: {
                 Label(lang["cl.add"], systemImage: "plus")
                     .font(.body.weight(.semibold))
+                    .foregroundStyle(.white)
                     .padding(.horizontal, 20).padding(.vertical, 12)
             }
             .buttonStyle(.borderedProminent).padding(.top, 4)
