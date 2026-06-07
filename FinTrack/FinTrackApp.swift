@@ -14,16 +14,20 @@ struct FinTrackApp: App {
     let container: ModelContainer
 
     init() {
+        // SwiftData performs lightweight migration automatically when
+        // optional properties with default values are added to models.
+        // No VersionedSchema needed for these changes.
+        let schema = Schema([
+            Account.self, Transaction.self, Category.self,
+            RecurringTransaction.self, Loan.self, SavingsProject.self,
+            CreditLine.self, CreditLineEntry.self,
+            LoanPrepayment.self, Budget.self
+        ])
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         let modelContainer: ModelContainer
 
         do {
-            // Versioned schema + migration plan — SwiftData auto-upgrades
-            // the store when new properties are added to models.
-            modelContainer = try ModelContainer(
-                for: FinTrackSchemaV2.self,
-                migrationPlan: FinTrackMigrationPlan.self,
-                configurations: [ModelConfiguration(isStoredInMemoryOnly: false)]
-            )
+            modelContainer = try ModelContainer(for: schema, configurations: [config])
         } catch {
             fatalError("FinTrack: ModelContainer init failed — \(error)")
         }

@@ -81,7 +81,6 @@
 		2E2C0669E0DEC2D674586D93 /* ProGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AA33BEA702AC895F7996618 /* ProGateView.swift */; };
 		D80931AF4F47C09297ACCFDF /* SubscriptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A0AD383BE4701E81D73CA2 /* SubscriptionView.swift */; };
 		15539F781B5A2B739C2E8424 /* DeveloperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AE4B0630B5D4E85DC4B0A54 /* DeveloperView.swift */; };
-		70BD9D4672B4A4BC5C490B6F /* FinTrackMigrationPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B22D5691FFD4A3D985EAAE9; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -161,7 +160,6 @@
 		2AA33BEA702AC895F7996618 /* ProGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProGateView.swift; sourceTree = "<group>"; };
 		F9A0AD383BE4701E81D73CA2 /* SubscriptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionView.swift; sourceTree = "<group>"; };
 		4AE4B0630B5D4E85DC4B0A54 /* DeveloperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperView.swift; sourceTree = "<group>"; };
-		9B22D5691FFD4A3D985EAAE9 /* FinTrackMigrationPlan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinTrackMigrationPlan.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -247,7 +245,6 @@
 			isa = PBXGroup;
 			children = (
 				7F69296D8AA5AFFC56CE2664 /* Account.swift */,
-				9B22D5691FFD4A3D985EAAE9 /* FinTrackMigrationPlan.swift */,
 				C6DAFB438F747F3A4E7B1F0A /* Budget.swift */,
 				D95AE7FDBD46765CF2C459EA /* LoanPrepayment.swift */,
 				F053C63C61980B18AA6263E4 /* Category.swift */,
@@ -444,7 +441,6 @@
 				167DD8D94BD2C94A5D09FCC6 /* RootView.swift in Sources */,
 				17D35A490B812757B7DA1041 /* SeedData.swift in Sources */,
 				FEBFF9935E3B84CAFF02F78B /* SettingsView.swift in Sources */,
-				70BD9D4672B4A4BC5C490B6F /* FinTrackMigrationPlan.swift in Sources */,
 				15539F781B5A2B739C2E8424 /* DeveloperView.swift in Sources */,
 				E3D472CBE91E66DEEE5E40CD /* EntitlementManager.swift in Sources */,
 				2E2C0669E0DEC2D674586D93 /* ProGateView.swift in Sources */,
