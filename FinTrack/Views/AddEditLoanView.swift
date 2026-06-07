@@ -450,6 +450,14 @@ struct AddEditLoanView: View {
 
         do {
             try context.save()
+            // Generate past occurrences immediately — applyPending only runs at launch,
+            // so without this call the user would see no transactions until next restart.
+            let ctx = context
+            Task { @MainActor in
+                RecurringTransactionManager.applyPending(context: ctx)
+                LoanPrepaymentManager.applyPending(context: ctx)
+                await NotificationManager.shared.scheduleAll(context: ctx)
+            }
             dismiss()
         } catch {
             print("AddEditLoanView: save failed — \(error)")
