@@ -49,7 +49,7 @@ struct RootView: View {
             TransactionsView()
                 .tabItem { Label(lang["tab.transactions"], systemImage: "list.bullet.rectangle") }
 
-            ProGated(feature: .budgets) { BudgetsView() }
+            BudgetsView()
                 .tabItem { Label(lang["tab.budgets"], systemImage: "chart.bar.xaxis") }
 
             SettingsView()

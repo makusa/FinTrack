@@ -10,6 +10,7 @@ import Charts
 struct BudgetsView: View {
     @Environment(LanguageManager.self) private var lang
     @Environment(\.modelContext) private var context
+    @Environment(EntitlementManager.self) private var entitlements
 
     @Query(filter: #Predicate<Budget> { $0.isActive }, sort: \Budget.createdAt)
     private var activeBudgets: [Budget]
@@ -23,6 +24,10 @@ struct BudgetsView: View {
     @State private var showAdd          = false
     @State private var budgetToEdit: Budget? = nil
     @State private var showArchived     = false
+
+    private var isAtFreeLimit: Bool {
+        !entitlements.hasPro && activeBudgets.count >= FinTrackLimit.freeMaxBudgets
+    }
 
     private var statuses: [BudgetStatus] {
         activeBudgets.map { BudgetStatus(budget: $0, spent: BudgetCalculator.spent(for: $0, in: allTransactions)) }
@@ -45,15 +50,53 @@ struct BudgetsView: View {
                     } label: {
                         Image(systemName: "plus.circle.fill").font(.title3)
                     }
+                    .disabled(isAtFreeLimit)
                 }
             }
+            .safeAreaInset(edge: .bottom) {
+                if isAtFreeLimit { freeCapBanner }
+            }
             .sheet(isPresented: $showAdd) {
-                AddEditBudgetView(mode: .create)
+                if isAtFreeLimit {
+                    NavigationStack {
+                        ProGateView(feature: .budgets)
+                            .environment(entitlements)
+                    }
+                } else {
+                    AddEditBudgetView(mode: .create)
+                }
             }
             .sheet(item: $budgetToEdit) { b in
                 AddEditBudgetView(mode: .edit(b))
             }
         }
+    }
+
+    // MARK: - Free tier cap banner
+
+    private var freeCapBanner: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "lock.fill").foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(lang["budget.free.cap.title"])
+                    .font(.callout.weight(.semibold))
+                Text(lang["budget.free.cap.subtitle"])
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            NavigationLink {
+                SubscriptionView().environment(entitlements)
+            } label: {
+                Text(lang["entitlement.pro.cta"])
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 12).padding(.vertical, 6)
+                    .background(Color.orange.opacity(0.15), in: Capsule())
+                    .foregroundStyle(.orange)
+            }
+        }
+        .padding(.horizontal, 16).padding(.vertical, 12)
+        .background(.bar)
+        .overlay(alignment: .top) { Divider() }
     }
 
     // MARK: - Empty state
@@ -75,6 +118,7 @@ struct BudgetsView: View {
             } label: {
                 Label(lang["budget.create"], systemImage: "plus")
                     .font(.body.weight(.semibold))
+                    .foregroundStyle(.white)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 12)
             }
@@ -126,10 +170,12 @@ struct BudgetsView: View {
                             .tint(.orange)
                         }
                 }
-                Button {
-                    showAdd = true
-                } label: {
-                    Label(lang["budget.add"], systemImage: "plus")
+                if !isAtFreeLimit {
+                    Button {
+                        showAdd = true
+                    } label: {
+                        Label(lang["budget.add"], systemImage: "plus")
+                    }
                 }
             }
 

@@ -491,6 +491,8 @@ enum LocalizedStrings {
 
         // MARK: - Budgets
         "tab.budgets":                   ["fr": "Budgets",                              "en": "Budgets",                        "es": "Presupuestos",                  "pt": "Orçamentos"],
+        "budget.free.cap.title":   ["fr": "Limite atteinte (3/3)",                         "en": "Limit reached (3/3)",                          "es": "Límite alcanzado (3/3)",                       "pt": "Limite atingido (3/3)"],
+        "budget.free.cap.subtitle": ["fr": "Passez à Épargne pour des budgets illimités",   "en": "Upgrade to Épargne for unlimited budgets",     "es": "Actualiza a Épargne para presupuestos ilimitados","pt": "Atualize para Épargne para orçamentos ilimitados"],
         "budget.title":                  ["fr": "Budgets",                              "en": "Budgets",                        "es": "Presupuestos",                  "pt": "Orçamentos"],
         "budget.create":                 ["fr": "Nouveau budget",                       "en": "New Budget",                     "es": "Nuevo presupuesto",             "pt": "Novo orçamento"],
         "budget.edit":                   ["fr": "Modifier le budget",                   "en": "Edit Budget",                    "es": "Editar presupuesto",            "pt": "Editar orçamento"],
