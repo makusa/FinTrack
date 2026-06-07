@@ -14,16 +14,16 @@ struct FinTrackApp: App {
     let container: ModelContainer
 
     init() {
-        let schema = Schema([Account.self, Transaction.self, Category.self,
-                             RecurringTransaction.self, Loan.self, SavingsProject.self,
-                             CreditLine.self, CreditLineEntry.self,
-                             LoanPrepayment.self,
-                             Budget.self])
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         let modelContainer: ModelContainer
 
         do {
-            modelContainer = try ModelContainer(for: schema, configurations: [config])
+            // Versioned schema + migration plan — SwiftData auto-upgrades
+            // the store when new properties are added to models.
+            modelContainer = try ModelContainer(
+                for: FinTrackSchemaV2.self,
+                migrationPlan: FinTrackMigrationPlan.self,
+                configurations: [ModelConfiguration(isStoredInMemoryOnly: false)]
+            )
         } catch {
             fatalError("FinTrack: ModelContainer init failed — \(error)")
         }
