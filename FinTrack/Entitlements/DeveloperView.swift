@@ -216,7 +216,9 @@ struct DeveloperView: View {
                         ProgressView().scaleEffect(0.8).padding(.trailing, 4)
                     } else {
                         Image(systemName: "bell.badge.fill")
-                            .foregroundStyle(pendingNotifs.isEmpty ? .secondary : .red)
+                            .foregroundStyle(pendingNotifs.isEmpty
+                                             ? AnyShapeStyle(.secondary)
+                                             : AnyShapeStyle(Color.red))
                             .frame(width: 24)
                     }
                     Text(pendingNotifs.isEmpty
