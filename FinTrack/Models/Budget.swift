@@ -67,7 +67,6 @@ enum BudgetPeriod: String, CaseIterable, Identifiable {
         let end   = Calendar.current.date(byAdding: .day, value: -1, to: periodEnd()) ?? periodEnd()
         let locale = LanguageManager.shared.locale
         let fmt   = DateFormatter()
-        fmt.locale = LanguageManager.shared.locale
         switch self {
         case .weekly:
             fmt.locale = locale

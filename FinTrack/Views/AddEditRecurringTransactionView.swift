@@ -85,18 +85,6 @@ struct AddEditRecurringTransactionView: View {
         guard !normalized.isEmpty else { return nil }
         return Decimal(string: normalized)
     }
-    
-    // Reusable number formatter (created once)
-    // Note: decimalFormatter is no longer static — locale may change at runtime.
-    private var decimalFormatter: NumberFormatter {
-        FormatterCache.decimal(locale: LanguageManager.shared.locale)
-    }
-    private static let _unused: Int = {
-        formatter.maximumFractionDigits = 2
-        formatter.minimumFractionDigits = 0
-        formatter.usesGroupingSeparator = false
-        return formatter
-    }()
 
     var body: some View {
         NavigationStack {
