@@ -76,17 +76,40 @@ final class LanguageManager {
         }
     }
 
-    /// Infers the best matching AppLanguage from the device preferred languages.
-    /// Falls back to French (Régis's default) if nothing matches.
+    /// Infers the best matching AppLanguage from the device's preferred languages.
+    ///
+    /// Province-aware for Canadian users:
+    ///   • fr-CA  (Quebec / Canadian French)  → French
+    ///   • en-CA  (all other provinces)       → English
+    ///   • es-*   (any Spanish)               → Spanish
+    ///   • pt-*   (any Portuguese)            → Portuguese
+    ///
+    /// Defaults to **English** — ~75 % of Canadian App Store searches are in English.
+    /// French is never the silent default; it is only selected when the device
+    /// explicitly signals a French preference.
     private static func detectDeviceLanguage() -> AppLanguage {
-        for langCode in Locale.preferredLanguages {
-            // Locale.preferredLanguages returns tags like "fr-CA", "en-GB", "es-ES", "pt-BR"
-            let prefix = String(langCode.prefix(2)).lowercased()
-            if let match = AppLanguage.allCases.first(where: { $0.rawValue == prefix }) {
-                return match
+        for langTag in Locale.preferredLanguages {
+            // Normalize separators: "fr_CA" → "fr-CA"
+            let tag = langTag.lowercased().replacingOccurrences(of: "_", with: "-")
+
+            // Explicit Canadian French (Quebec) — must check before generic "fr"
+            if tag.hasPrefix("fr-ca") { return .french }
+
+            // Explicit Canadian English — any other province
+            if tag.hasPrefix("en-ca") { return .english }
+
+            // Other language families
+            switch String(tag.prefix(2)) {
+            case "fr": return .french
+            case "en": return .english
+            case "es": return .spanish
+            case "pt": return .portuguese
+            default:   break
             }
         }
-        return .french  // safe default for Régis
+
+        // Default: English — majority language of the Canadian market.
+        return .english
     }
 
     func setLanguage(_ language: AppLanguage) {

@@ -34,6 +34,6 @@ targets:
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         ENABLE_PREVIEWS: YES
         SWIFT_EMIT_LOC_STRINGS: YES
-        DEVELOPMENT_LANGUAGE: fr
+        DEVELOPMENT_LANGUAGE: en
         # Signing left blank intentionally — set your team in Xcode after generation.
         CODE_SIGN_STYLE: Automatic
