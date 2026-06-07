@@ -109,7 +109,7 @@ final class EntitlementManager {
                 self.products = loaded.sorted { $0.price < $1.price }
             }
         } catch {
-            print("EntitlementManager: product load failed — \(error)")
+            AppLogger.entitlements.error("EntitlementManager product load failed: \(error, privacy: .private)")
         }
     }
 

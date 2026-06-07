@@ -314,7 +314,7 @@ struct AddEditAccountView: View {
             try context.save()
             dismiss()
         } catch {
-            print("AddEditAccountView: save failed — \(error)")
+            AppLogger.persistence.error("AddEditAccountView save failed: \(error, privacy: .private)")
         }
     }
 

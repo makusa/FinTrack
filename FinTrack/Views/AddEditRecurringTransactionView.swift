@@ -422,7 +422,7 @@ struct AddEditRecurringTransactionView: View {
                     await NotificationManager.shared.scheduleAll(context: context)
                 }
             } catch {
-                print("AddEditRecurringTransactionView: save failed — \(error)")
+                AppLogger.persistence.error("AddEditRecurringTransactionView save failed: \(error, privacy: .private)")
             }
 
         case .edit(let rule):
@@ -451,7 +451,7 @@ struct AddEditRecurringTransactionView: View {
                     await NotificationManager.shared.scheduleAll(context: context)
                 }
             } catch {
-                print("AddEditRecurringTransactionView: save failed — \(error)")
+                AppLogger.persistence.error("AddEditRecurringTransactionView save failed: \(error, privacy: .private)")
             }
         }
     }
@@ -469,7 +469,7 @@ struct AddEditRecurringTransactionView: View {
                 await NotificationManager.shared.scheduleAll(context: context)
             }
         } catch {
-            print("AddEditRecurringTransactionView: delete failed — \(error)")
+            AppLogger.persistence.error("AddEditRecurringTransactionView delete failed: \(error, privacy: .private)")
         }
     }
 

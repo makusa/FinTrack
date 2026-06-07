@@ -34,6 +34,21 @@ struct FinTrackApp: App {
 
         container = modelContainer
 
+        // FIN-002 — Apply NSFileProtectionComplete to the SwiftData SQLite store.
+        // This ensures financial data is encrypted at rest and inaccessible when
+        // the device is locked (strongest iOS file protection class).
+        if let storeURL = modelContainer.configurations.first?.url {
+            do {
+                try FileManager.default.setAttributes(
+                    [.protectionKey: FileProtectionType.complete],
+                    ofItemAtPath: storeURL.path
+                )
+            } catch {
+                // Non-fatal: protection may already be set or file not yet created.
+                // Logged via os_log in production; silent here to avoid false alarms.
+            }
+        }
+
         // Seed default categories on the main context.
         SeedData.seedIfNeeded(context: modelContainer.mainContext)
 

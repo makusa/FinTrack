@@ -94,7 +94,7 @@ enum SeedData {
 
         if didChange {
             do { try context.save() } catch {
-                print("SeedData: save failed — \(error)")
+                AppLogger.seed.error("SeedData save failed: \(error, privacy: .private)")
             }
         }
     }

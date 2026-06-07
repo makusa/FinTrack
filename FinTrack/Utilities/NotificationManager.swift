@@ -34,7 +34,7 @@ final class NotificationManager: NSObject {
             try await center.requestAuthorization(options: [.alert, .sound, .badge])
             center.delegate = self
         } catch {
-            print("NotificationManager: permission request failed — \(error)")
+            AppLogger.notifications.error("Permission request failed: \(error, privacy: .private)")
         }
     }
 
@@ -251,7 +251,7 @@ final class NotificationManager: NSObject {
         do {
             try await center.add(request)
         } catch {
-            print("NotificationManager: failed to add \(id) — \(error)")
+            AppLogger.notifications.error("Failed to schedule notification \(id, privacy: .private): \(error, privacy: .private)")
         }
     }
 

@@ -462,7 +462,7 @@ struct AddEditLoanView: View {
             Task { await NotificationManager.shared.scheduleAll(context: ctx) }
             dismiss()
         } catch {
-            print("AddEditLoanView: save failed — \(error)")
+            AppLogger.persistence.error("AddEditLoanView save failed: \(error, privacy: .private)")
         }
     }
 

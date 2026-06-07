@@ -64,9 +64,9 @@ struct SettingsView: View {
             ) { result in
                 switch result {
                 case .success(let url):
-                    print("Exported to \(url)")
+                    AppLogger.export.info("CSV exported successfully")
                 case .failure(let error):
-                    print("Export failed: \(error)")
+                    AppLogger.export.error("CSV export failed: \(error, privacy: .private)")
                 }
             }
             .confirmationDialog(
@@ -390,12 +390,22 @@ enum CSVExporter {
         return header + rows.joined(separator: "\n")
     }
 
+    /// CSV escape + formula injection protection (OWASP CSV Injection).
+    /// Characters =, +, -, @, \t, \r at the start of a field can trigger
+    /// macro execution in Excel/LibreOffice. We prefix them with an apostrophe.
     private static func escape(_ s: String) -> String {
-        if s.contains(",") || s.contains("\"") || s.contains("\n") {
-            let escaped = s.replacingOccurrences(of: "\"", with: "\"\"")
+        var result = s
+        // Neutralise formula injection
+        let formulaStarters: Set<Character> = ["=", "+", "-", "@", "\t", "\r"]
+        if let first = result.first, formulaStarters.contains(first) {
+            result = "'" + result
+        }
+        // Standard RFC 4180 quoting
+        if result.contains(",") || result.contains("\"") || result.contains("\n") {
+            let escaped = result.replacingOccurrences(of: "\"", with: "\"\"")
             return "\"\(escaped)\""
         }
-        return s
+        return result
     }
 }
 
