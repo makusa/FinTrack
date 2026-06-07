@@ -63,7 +63,7 @@ struct SettingsView: View {
                 defaultFilename: defaultExportFilename
             ) { result in
                 switch result {
-                case .success(let url):
+                case .success(_):
                     AppLogger.export.info("CSV exported successfully")
                 case .failure(let error):
                     AppLogger.export.error("CSV export failed: \(error, privacy: .private)")
