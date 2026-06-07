@@ -197,7 +197,9 @@ struct DeveloperView: View {
                 Spacer()
                 Text("\(pendingNotifs.count)")
                     .monospacedDigit()
-                    .foregroundStyle(pendingNotifs.isEmpty ? .secondary : .orange)
+                    .foregroundStyle(pendingNotifs.isEmpty
+                                     ? AnyShapeStyle(.secondary)
+                                     : AnyShapeStyle(Color.orange))
                     .fontWeight(pendingNotifs.isEmpty ? .regular : .semibold)
             }
 
