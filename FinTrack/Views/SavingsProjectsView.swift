@@ -220,7 +220,9 @@ struct SavingsProjectDetailView: View {
     @State private var scrubDate:    Date?   = nil
     @State private var scrubAmount:  Double? = nil
 
-    private var calc: ProjectionData { ProjectionData(project: project) }
+    private var calc: ProjectionData {
+        ProjectionData(project: project, maxMonths: entitlements.hasPro ? 120 : 3)
+    }
 
     var body: some View {
         List {
@@ -482,19 +484,19 @@ private struct ProjectionData {
     let points: [ProjectionPoint]
     let xStrideMonths: Int
 
-    init(project: SavingsProject) {
+    init(project: SavingsProject, maxMonths: Int = 120) {
         let monthly = (project.monthlyContribution as NSDecimalNumber).doubleValue
         guard monthly > 0 else { points = []; xStrideMonths = 3; return }
 
         let current = (project.currentAmount as NSDecimalNumber).doubleValue
         let cal = Calendar.current
 
-        // How many months to show?
+        // How many months to show? (capped by tier: 3m for Courant, 120m for Épargne)
         let totalMonths: Int
         if let months = project.monthsToTarget {
-            totalMonths = min(months + 3, 120)  // cap at 10 years
+            totalMonths = min(months + 3, maxMonths)
         } else {
-            totalMonths = 24
+            totalMonths = min(24, maxMonths)
         }
 
         var pts: [ProjectionPoint] = []
