@@ -101,7 +101,7 @@ struct AddEditCreditLineView: View {
     private var identitySection: some View {
         Section(lang["label.information"]) {
             TextField(lang["cl.namePlaceholder"], text: $name)
-            TextField(lang["loan.lenderPlaceholder"], text: $lenderName)
+            InstitutionPickerField(text: $lenderName, placeholder: lang["loan.lenderPlaceholder"])
             Picker(lang["label.currency"], selection: $currency) {
                 ForEach(Currencies.all) { c in Text("\(c.code) — \(c.nameFR)").tag(c.code) }
             }
