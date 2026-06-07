@@ -254,7 +254,7 @@ struct BankPickerSheet: View {
     @ViewBuilder
     private func bankRow(_ bank: BankInfo) -> some View {
         Button {
-            selectedName = bank.name
+            selectedName = bank.localizedName
             onBankSelected?(bank)
             dismiss()
         } label: {
@@ -262,7 +262,7 @@ struct BankPickerSheet: View {
                 BankLogoView(domain: bank.domain, size: 36, cornerRadius: 8)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(bank.name)
+                    Text(bank.localizedName)
                         .foregroundStyle(.primary)
                         .lineLimit(1)
                     if let alias = bank.aliases.first {
@@ -274,7 +274,7 @@ struct BankPickerSheet: View {
 
                 Spacer()
 
-                if bank.name == selectedName {
+                if bank.localizedName == selectedName || bank.name == selectedName {
                     Image(systemName: "checkmark")
                         .foregroundStyle(.tint)
                         .fontWeight(.semibold)

@@ -11,11 +11,32 @@ import Foundation
 // MARK: - Data types
 
 struct BankInfo: Identifiable, Hashable {
-    let id: String          // stable: domain or slug
-    let name: String        // primary display name
-    let aliases: [String]   // abbreviations + alternate names searched but not displayed
-    let domain: String?     // used for logo URL; nil = no logo
-    let countryCode: String // ISO 3166-1 alpha-2
+    let id: String           // stable: domain or slug
+    let name: String         // primary name (French or universal)
+    let nameEN: String?      // English name when different from `name`; nil = same
+    let aliases: [String]    // abbreviations + alternates for search
+    let domain: String?      // logo URL via logo.clearbit.com; nil = no logo
+    let countryCode: String  // ISO 3166-1 alpha-2
+
+    /// Returns the name in the app's current language (falls back to `name`).
+    var localizedName: String {
+        switch LanguageManager.shared.current {
+        case .french:     return name
+        case .english, .spanish, .portuguese:
+            return nameEN ?? name
+        }
+    }
+
+    // Convenience init — nameEN defaults to nil (name is language-neutral)
+    init(id: String, name: String, nameEN: String? = nil,
+         aliases: [String], domain: String?, countryCode: String) {
+        self.id          = id
+        self.name        = name
+        self.nameEN      = nameEN
+        self.aliases     = aliases
+        self.domain      = domain
+        self.countryCode = countryCode
+    }
 }
 
 // MARK: - Directory
@@ -55,14 +76,11 @@ enum BankDirectory {
         var contains: [BankInfo] = []
 
         for bank in all {
-            let fields = ([bank.name] + bank.aliases).map { $0.lowercased() }
-            if fields.contains(q) {
-                exact.append(bank)
-            } else if fields.contains(where: { $0.hasPrefix(q) }) {
-                starts.append(bank)
-            } else if fields.contains(where: { $0.contains(q) }) {
-                contains.append(bank)
-            }
+            var fields = ([bank.name] + bank.aliases).map { $0.lowercased() }
+            if let en = bank.nameEN { fields.append(en.lowercased()) }
+            if fields.contains(q)                               { exact.append(bank) }
+            else if fields.contains(where: { $0.hasPrefix(q) }){ starts.append(bank) }
+            else if fields.contains(where: { $0.contains(q) }) { contains.append(bank) }
         }
 
         let ranked = (exact + starts + contains)
@@ -86,7 +104,8 @@ enum BankDirectory {
         var contains: [BankInfo] = []
 
         for bank in filtered {
-            let fields = ([bank.name] + bank.aliases).map { $0.lowercased() }
+            var fields = ([bank.name] + bank.aliases).map { $0.lowercased() }
+            if let en = bank.nameEN { fields.append(en.lowercased()) }
             if fields.contains(q)                               { exact.append(bank) }
             else if fields.contains(where: { $0.hasPrefix(q) }){ starts.append(bank) }
             else if fields.contains(where: { $0.contains(q) }) { contains.append(bank) }
@@ -131,21 +150,41 @@ enum BankDirectory {
     }
 
     static func countryName(for code: String) -> String {
-        countryNames[code] ?? code
+        switch LanguageManager.shared.current {
+        case .french:
+            return countryNamesFR[code] ?? countryNamesEN[code] ?? code
+        default:
+            return countryNamesEN[code] ?? code
+        }
     }
 
-    private static let countryNames: [String: String] = [
-        "CA": "Canada",
-        "US": "États-Unis / USA",
-        "GB": "Royaume-Uni / UK",
-        "FR": "France",
-        "DE": "Allemagne",
-        "ES": "Espagne",
-        "PT": "Portugal",
-        "NL": "Pays-Bas",
-        "BE": "Belgique",
-        "CH": "Suisse",
-        "AF": "Afrique",
+    private static let countryNamesEN: [String: String] = [
+        "CA":  "Canada",
+        "US":  "United States",
+        "GB":  "United Kingdom",
+        "FR":  "France",
+        "DE":  "Germany",
+        "ES":  "Spain",
+        "PT":  "Portugal",
+        "NL":  "Netherlands",
+        "BE":  "Belgium",
+        "CH":  "Switzerland",
+        "AF":  "Africa",
+        "INT": "International / Digital",
+    ]
+
+    private static let countryNamesFR: [String: String] = [
+        "CA":  "Canada",
+        "US":  "États-Unis",
+        "GB":  "Royaume-Uni",
+        "FR":  "France",
+        "DE":  "Allemagne",
+        "ES":  "Espagne",
+        "PT":  "Portugal",
+        "NL":  "Pays-Bas",
+        "BE":  "Belgique",
+        "CH":  "Suisse",
+        "AF":  "Afrique",
         "INT": "International / Digital",
     ]
 
@@ -156,20 +195,20 @@ enum BankDirectory {
 
     // ─── Canada ──────────────────────────────────────────────────────────────
     static let canada: [BankInfo] = [
-        BankInfo(id: "rbc.com",             name: "Banque Royale du Canada (RBC)",   aliases: ["rbc", "royal bank", "bnc rbc"],                    domain: "rbc.com",             countryCode: "CA"),
-        BankInfo(id: "td.com",              name: "Banque TD",                        aliases: ["td", "td bank", "toronto dominion"],               domain: "td.com",              countryCode: "CA"),
-        BankInfo(id: "scotiabank.com",      name: "Banque Scotia",                    aliases: ["scotia", "scotiabank", "nova scotia"],             domain: "scotiabank.com",      countryCode: "CA"),
-        BankInfo(id: "bmo.com",             name: "Banque de Montréal (BMO)",         aliases: ["bmo", "bank of montreal"],                        domain: "bmo.com",             countryCode: "CA"),
+        BankInfo(id: "rbc.com",             name: "Banque Royale du Canada (RBC)", nameEN: "Royal Bank of Canada (RBC)",   aliases: ["rbc", "royal bank", "bnc rbc"],                    domain: "rbc.com",             countryCode: "CA"),
+        BankInfo(id: "td.com",              name: "Banque TD",              nameEN: "TD Bank",                        aliases: ["td", "td bank", "toronto dominion"],               domain: "td.com",              countryCode: "CA"),
+        BankInfo(id: "scotiabank.com",      name: "Banque Scotia",          nameEN: "Scotiabank",                    aliases: ["scotia", "scotiabank", "nova scotia"],             domain: "scotiabank.com",      countryCode: "CA"),
+        BankInfo(id: "bmo.com",             name: "Banque de Montréal (BMO)", nameEN: "Bank of Montreal (BMO)",         aliases: ["bmo", "bank of montreal"],                        domain: "bmo.com",             countryCode: "CA"),
         BankInfo(id: "cibc.com",            name: "CIBC",                             aliases: ["cibc", "banque imperiale"],                       domain: "cibc.com",            countryCode: "CA"),
-        BankInfo(id: "nbc.ca",              name: "Banque Nationale du Canada",       aliases: ["bnc", "nbc", "banque nationale", "national bank"], domain: "nbc.ca",              countryCode: "CA"),
+        BankInfo(id: "nbc.ca",              name: "Banque Nationale du Canada", nameEN: "National Bank of Canada",       aliases: ["bnc", "nbc", "banque nationale", "national bank"], domain: "nbc.ca",              countryCode: "CA"),
         BankInfo(id: "desjardins.com",      name: "Desjardins",                       aliases: ["desjardins", "caisse populaire", "caisse"],        domain: "desjardins.com",      countryCode: "CA"),
         BankInfo(id: "hsbc.ca",             name: "HSBC Canada",                      aliases: ["hsbc canada"],                                    domain: "hsbc.ca",             countryCode: "CA"),
         BankInfo(id: "tangerine.ca",        name: "Tangerine",                        aliases: ["tangerine", "ing direct canada"],                  domain: "tangerine.ca",        countryCode: "CA"),
         BankInfo(id: "eqbank.ca",           name: "EQ Bank",                          aliases: ["eq bank", "equitable bank"],                      domain: "eqbank.ca",           countryCode: "CA"),
-        BankInfo(id: "laurentianbank.ca",   name: "Banque Laurentienne",              aliases: ["laurentienne", "blc", "laurentian bank"],          domain: "laurentianbank.ca",   countryCode: "CA"),
+        BankInfo(id: "laurentianbank.ca",   name: "Banque Laurentienne",    nameEN: "Laurentian Bank",              aliases: ["laurentienne", "blc", "laurentian bank"],          domain: "laurentianbank.ca",   countryCode: "CA"),
         BankInfo(id: "atb.com",             name: "ATB Financial",                    aliases: ["atb"],                                            domain: "atb.com",             countryCode: "CA"),
         BankInfo(id: "simplii.com",         name: "Simplii Financial",                aliases: ["simplii"],                                        domain: "simplii.com",         countryCode: "CA"),
-        BankInfo(id: "manulifebank.ca",     name: "Banque Manuvie",                   aliases: ["manuvie", "manulife bank"],                        domain: "manulifebank.ca",     countryCode: "CA"),
+        BankInfo(id: "manulifebank.ca",     name: "Banque Manuvie",         nameEN: "Manulife Bank",                   aliases: ["manuvie", "manulife bank"],                        domain: "manulifebank.ca",     countryCode: "CA"),
         BankInfo(id: "wealthsimple.com",    name: "Wealthsimple",                     aliases: ["wealthsimple"],                                   domain: "wealthsimple.com",    countryCode: "CA"),
         BankInfo(id: "motusbank.ca",        name: "motusbank",                        aliases: ["motus"],                                          domain: "motusbank.ca",        countryCode: "CA"),
         BankInfo(id: "pcfinancial.ca",      name: "PC Financial",                     aliases: ["pc financial", "president's choice"],              domain: "pcfinancial.ca",      countryCode: "CA"),
@@ -177,7 +216,7 @@ enum BankDirectory {
         BankInfo(id: "nesto.ca",            name: "nesto",                            aliases: ["nesto"],                                          domain: "nesto.ca",            countryCode: "CA"),
         BankInfo(id: "meridiancu.ca",       name: "Meridian Credit Union",            aliases: ["meridian"],                                       domain: "meridiancu.ca",       countryCode: "CA"),
         BankInfo(id: "cambridgesavings.com",name: "Cambridge Savings Bank",           aliases: ["cambridge"],                                      domain: "cambridgesavings.com",countryCode: "CA"),
-        BankInfo(id: "nbdb.ca",             name: "Banque Nationale Courtage direct", aliases: ["nbdb", "bncd"],                                   domain: "nbdb.ca",             countryCode: "CA"),
+        BankInfo(id: "nbdb.ca",             name: "Banque Nationale Courtage direct", nameEN: "National Bank Direct Brokerage", aliases: ["nbdb", "bncd"],                                   domain: "nbdb.ca",             countryCode: "CA"),
     ]
 
     // ─── USA ─────────────────────────────────────────────────────────────────
