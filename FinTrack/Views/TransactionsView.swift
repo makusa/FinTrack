@@ -20,6 +20,8 @@ struct TransactionsView: View {
     @State private var filterType: TypeFilter = .all
     @State private var filterAccount: Account? = nil
     @State private var searchText: String = ""
+    @State private var debouncedSearch: String = ""
+    @State private var debounceTask: Task<Void, Error>? = nil
     @State private var showAddTransaction = false
     @State private var showAddTransfer = false
 
@@ -46,7 +48,7 @@ struct TransactionsView: View {
             // Account
             if let acc = filterAccount, tx.account?.id != acc.id { return false }
             // Search
-            let q = searchText.trimmingCharacters(in: .whitespaces).lowercased()
+            let q = debouncedSearch.trimmingCharacters(in: .whitespaces).lowercased()
             if !q.isEmpty {
                 let haystack = [
                     tx.payee ?? "",
@@ -86,6 +88,13 @@ struct TransactionsView: View {
             }
             .navigationTitle(lang["tx.title"])
             .searchable(text: $searchText, prompt: lang["action.search"])
+            .onChange(of: searchText) { _, new in
+                debounceTask?.cancel()
+                debounceTask = Task {
+                    try? await Task.sleep(for: .milliseconds(300))
+                    debouncedSearch = new
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     filterMenu

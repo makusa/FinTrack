@@ -9,6 +9,18 @@ struct BalanceCard: View {
     let account: Account
     @Environment(ExchangeRateManager.self) private var rates
 
+    /// Cached gradient derived from colorHex — avoids inline recreation on every render.
+    private var cardGradient: LinearGradient {
+        let base = Color(hex: account.colorHex)
+        return LinearGradient(
+            colors: [base, base.opacity(0.7)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    private var cardShadowColor: Color { Color(hex: account.colorHex).opacity(0.25) }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -59,14 +71,7 @@ struct BalanceCard: View {
         }
         .padding(16)
         .frame(width: 200, height: 140)
-        .background(
-            LinearGradient(
-                colors: [Color(hex: account.colorHex), Color(hex: account.colorHex).opacity(0.7)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            ),
-            in: RoundedRectangle(cornerRadius: 16, style: .continuous)
-        )
-        .shadow(color: Color(hex: account.colorHex).opacity(0.25), radius: 8, x: 0, y: 4)
+        .background(cardGradient, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .shadow(color: cardShadowColor, radius: 8, x: 0, y: 4)
     }
 }

@@ -9,14 +9,20 @@
 import SwiftUI
 
 extension Color {
+    /// Cache: hex string → Color (parsing is expensive at 60 fps).
+    private static var hexCache: [String: Color] = [:]
+
     init(hex: String) {
+        if let cached = Color.hexCache[hex] { self = cached; return }
         let cleaned = hex.replacingOccurrences(of: "#", with: "").trimmingCharacters(in: .whitespaces)
         var rgb: UInt64 = 0
         Scanner(string: cleaned).scanHexInt64(&rgb)
         let r = Double((rgb & 0xFF0000) >> 16) / 255
         let g = Double((rgb & 0x00FF00) >> 8)  / 255
         let b = Double( rgb & 0x0000FF)        / 255
-        self.init(red: r, green: g, blue: b)
+        let color = Color(red: r, green: g, blue: b)
+        Color.hexCache[hex] = color
+        self = color
     }
 }
 

@@ -22,6 +22,8 @@ struct DashboardView: View {
     @Query(sort: \Transaction.date, order: .reverse)
     private var allTransactions: [Transaction]
 
+    @Query private var recentTransactions: [Transaction]
+
     @Query(filter: #Predicate<CreditLine> { $0.isActive },
            sort: \CreditLine.createdAt, order: .forward)
     private var activeCreditLines: [CreditLine]
@@ -40,10 +42,21 @@ struct DashboardView: View {
     private var futureTransferExpenses: [Transaction]
 
     @State private var config           = DashboardConfigManager.shared
+    @State private var cachedMonthSummary: (income: Decimal, expense: Decimal, currency: String?) = (0, 0, nil)
     @State private var showAddTransaction = false
     @State private var showAddAccount     = false
     @State private var showAddTransfer    = false
     @State private var showLibrary        = false
+
+    // MARK: - Init (performance: limited @Query for recent transactions)
+
+    init() {
+        var desc = FetchDescriptor<Transaction>(
+            sortBy: [SortDescriptor(\Transaction.date, order: .reverse)]
+        )
+        desc.fetchLimit = 10
+        _recentTransactions = Query(desc)
+    }
 
     // MARK: - Derived data
 
@@ -53,7 +66,8 @@ struct DashboardView: View {
             .sorted { $0.currency < $1.currency }
     }
 
-    private var recentTransactions: [Transaction]    { Array(allTransactions.prefix(10)) }
+    // recentTransactions fed by a dedicated limited @Query (C2 perf fix)
+    // See init() below for fetchLimit: 10
     private var recurringTransfers: [RecurringTransaction] {
         let horizon = Calendar.current.date(byAdding: .day, value: 60, to: .now) ?? .now
         return activeRecurring.filter { $0.isTransfer && $0.nextDueDate <= horizon }
@@ -128,6 +142,10 @@ struct DashboardView: View {
             .sheet(isPresented: $showAddTransfer) { AddTransferView() }
             .sheet(isPresented: $showAddAccount)   { AddEditAccountView(mode: .create) }
             .sheet(isPresented: $showLibrary)      { DashboardLibraryView() }
+            // C3 — refresh cached month summary only when transaction count changes
+            .task(id: allTransactions.count) {
+                cachedMonthSummary = thisMonthSummary
+            }
         }
     }
 
@@ -394,7 +412,7 @@ struct DashboardView: View {
 
     @ViewBuilder
     private var monthSummaryWidget: some View {
-        let summary = thisMonthSummary
+        let summary = cachedMonthSummary
         if let cur = summary.currency {
             VStack(alignment: .leading, spacing: 8) {
                 Text(lang["dashboard.thisMonth"] + " (\(cur))")
@@ -575,7 +593,7 @@ struct DashboardView: View {
             Spacer()
             VStack(alignment: .trailing, spacing: 2) {
                 Text(amtText).font(.body.weight(.semibold))
-                    .foregroundStyle(rule.type == .income ? .green : .primary)
+                    .foregroundStyle(rule.type == .income ? AnyShapeStyle(Color.green) : AnyShapeStyle(.primary))
                 Text(rule.dueDateLabel).font(.caption2).foregroundStyle(dueColor)
             }
         }

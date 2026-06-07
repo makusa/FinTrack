@@ -13,14 +13,23 @@ struct AccountDetailView: View {
 
     @Bindable var account: Account
 
+    /// @Query-backed sorted transactions — avoids O(n log n) in-memory sort
+    /// on every render by delegating sorting to SQLite.
+    @Query private var sortedTransactions: [Transaction]
+
+    init(account: Account) {
+        self.account = account
+        let id = account.persistentModelID
+        _sortedTransactions = Query(
+            filter: #Predicate<Transaction> { $0.account?.persistentModelID == id },
+            sort: \Transaction.date, order: .reverse
+        )
+    }
+
     @State private var showEdit = false
     @State private var showAddTransaction = false
     @State private var showAddTransfer = false
     @State private var confirmArchive = false
-
-    private var sortedTransactions: [Transaction] {
-        account.transactions.sorted { $0.date > $1.date }
-    }
 
     var body: some View {
         List {
