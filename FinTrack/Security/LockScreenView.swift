@@ -140,8 +140,23 @@ struct LockScreenView: View {
     }
 
     private func triggerBiometrics() {
-        Task {
-            let _ = await lockManager.unlockWithBiometrics()
+        Task { @MainActor in
+            let result = await lockManager.unlockWithBiometrics()
+            switch result {
+            case .success:
+                // Unlock handled inside AppLockManager — nothing to do
+                break
+            case .fallback:
+                // User tapped "Enter Passcode" on the Face ID sheet
+                // PIN pad is already visible — just highlight it briefly
+                errorMessage = lang["lock.biometric.usePIN"]
+            case .failed:
+                // Face ID did not recognise — nudge the user toward PIN
+                errorMessage = lang["lock.biometric.failed"]
+            case .cancelled, .unavailable:
+                // User dismissed or hardware unavailable — PIN pad is visible
+                break
+            }
         }
     }
 }

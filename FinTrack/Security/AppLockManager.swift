@@ -132,20 +132,46 @@ final class AppLockManager {
         clearBlockedKeychainEntries()
     }
 
+    // MARK: - Biometric unlock result
+
+    enum BiometricResult {
+        case success
+        case fallback      // user tapped "Enter Passcode" — show PIN
+        case cancelled     // user cancelled — do nothing, PIN pad is visible
+        case failed        // biometric mismatch — prompt user to use PIN
+        case unavailable   // hardware/policy issue — PIN only
+    }
+
     /// Attempt to unlock with FaceID/TouchID.
-    func unlockWithBiometrics() async -> Bool {
+    /// Returns a typed result so the UI can react appropriately.
+    @discardableResult
+    func unlockWithBiometrics() async -> BiometricResult {
         let ctx = LAContext()
-        var error: NSError?
-        guard ctx.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
-            return false
+        var nsError: NSError?
+        guard ctx.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics,
+                                    error: &nsError) else {
+            return .unavailable
         }
         do {
             let reason = LanguageManager.shared["lock.biometric.reason"]
-            let result = try await ctx.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason)
-            if result { await MainActor.run { unlock() } }
-            return result
+            let ok = try await ctx.evaluatePolicy(
+                .deviceOwnerAuthenticationWithBiometrics,
+                localizedReason: reason
+            )
+            if ok { await MainActor.run { unlock() } }
+            return ok ? .success : .failed
+        } catch let error as LAError {
+            switch error.code {
+            case .userFallback:            return .fallback    // "Enter Passcode" tapped
+            case .userCancel,
+                 .appCancelled,
+                 .systemCancel:            return .cancelled
+            case .biometryLockout:         return .unavailable
+            case .authenticationFailed:    return .failed
+            default:                       return .unavailable
+            }
         } catch {
-            return false
+            return .unavailable
         }
     }
 
