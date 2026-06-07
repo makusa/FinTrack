@@ -170,6 +170,8 @@ enum LocalizedStrings {
         "recurring.freq.s.yearly":["fr": "/ an",                 "en": "/ year",              "es": "/ año",              "pt": "/ ano"],
 
         // MARK: - Loans
+        "loan.free.cap.title":    ["fr": "Limite atteinte (2/2)",                          "en": "Limit reached (2/2)",                           "es": "Límite alcanzado (2/2)",                        "pt": "Limite atingido (2/2)"],
+        "loan.free.cap.subtitle": ["fr": "Passez à Épargne pour des prêts illimités",       "en": "Upgrade to Épargne for unlimited loans",        "es": "Actualiza a Épargne para préstamos ilimitados", "pt": "Atualize para Épargne para empréstimos ilimitados"],
         "loan.title":           ["fr": "Prêts",                  "en": "Loans",               "es": "Préstamos",          "pt": "Empréstimos"],
         "loan.create":          ["fr": "Nouveau prêt",           "en": "New Loan",            "es": "Nuevo préstamo",     "pt": "Novo empréstimo"],
         "loan.edit":            ["fr": "Modifier le prêt",       "en": "Edit Loan",           "es": "Editar préstamo",    "pt": "Editar empréstimo"],
@@ -503,7 +505,7 @@ enum LocalizedStrings {
         "entitlement.table.unlimited":  ["fr": "Connexion bancaire auto",           "en": "Auto bank connection",           "es": "Conexión bancaria auto",        "pt": "Conexão bancária auto"],
         "entitlement.table.transactions":["fr":"Transactions manuelles",            "en": "Manual transactions",            "es": "Transacciones manuales",        "pt": "Transações manuais"],
         "entitlement.table.budgets":    ["fr": "Budgets",                           "en": "Budgets",                        "es": "Presupuestos",                  "pt": "Orçamentos"],
-        "entitlement.table.loans":      ["fr": "Prêts & marges",                    "en": "Loans & credit lines",           "es": "Préstamos y créditos",          "pt": "Empréstimos e créditos"],
+        "entitlement.table.loans":      ["fr": "Prêts (max 2 en Courant)",          "en": "Loans (max 2 in free tier)",     "es": "Préstamos (máx 2 gratis)",      "pt": "Empréstimos (máx 2 grátis)"],
         "entitlement.table.analytics":  ["fr": "Analytiques",                       "en": "Analytics",                      "es": "Analíticas",                    "pt": "Análises"],
         "entitlement.table.recurring":  ["fr": "Récurrences (max 5 en Courant)",    "en": "Recurring (max 5 in free tier)", "es": "Recurrencias (máx 5 gratis)",   "pt": "Recorrências (máx 5 grátis)"],
         "entitlement.table.transfers":  ["fr": "Virements",                         "en": "Transfers",                      "es": "Transferencias",                "pt": "Transferências"],

@@ -9,6 +9,7 @@ import SwiftData
 struct LoansView: View {
     @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
+    @Environment(EntitlementManager.self) private var entitlements
 
     @Query(filter: #Predicate<Loan> { $0.isActive },
            sort: \Loan.createdAt, order: .forward)
@@ -20,6 +21,10 @@ struct LoansView: View {
 
     @State private var showAdd = false
     @State private var showArchived = false
+
+    private var isAtFreeLimit: Bool {
+        !entitlements.hasPro && activeLoans.count >= FinTrackLimit.freeMaxLoans
+    }
 
     // Total remaining debt grouped by currency
     private var debtByCurrency: [(currency: String, total: Decimal)] {
@@ -88,11 +93,56 @@ struct LoansView: View {
                 Button { showAdd = true } label: {
                     Image(systemName: "plus.circle.fill").font(.title3)
                 }
+                .disabled(isAtFreeLimit)
+            }
+        }
+        .safeAreaInset(edge: .bottom) {
+            if isAtFreeLimit {
+                freeCapBanner
             }
         }
         .sheet(isPresented: $showAdd) {
-            AddEditLoanView(mode: .create)
+            if isAtFreeLimit {
+                NavigationStack {
+                    ProGateView(feature: .loans)
+                        .environment(entitlements)
+                }
+            } else {
+                AddEditLoanView(mode: .create)
+            }
         }
+    }
+
+    // MARK: - Free tier cap banner
+
+    private var freeCapBanner: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "lock.fill")
+                .foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(lang["loan.free.cap.title"])
+                    .font(.callout.weight(.semibold))
+                Text(lang["loan.free.cap.subtitle"])
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            NavigationLink {
+                SubscriptionView()
+                    .environment(entitlements)
+            } label: {
+                Text(lang["entitlement.pro.cta"])
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color.orange.opacity(0.15), in: Capsule())
+                    .foregroundStyle(.orange)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(.bar)
+        .overlay(alignment: .top) { Divider() }
     }
 
     // MARK: - Sections
