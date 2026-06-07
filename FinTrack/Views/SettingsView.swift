@@ -523,7 +523,7 @@ struct AddCategoryView: View {
     ]
 
     var body: some View {
-        NavigationStack(path: $navPath) {
+        NavigationStack {
             Form {
                 Section(lang["label.name"]) {
                     TextField(lang["category.namePlaceholder"], text: $name)
