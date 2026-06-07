@@ -562,7 +562,10 @@ struct IncomeExpenseCard: View {
             // ── Range picker ───────────────────────────────────────────────
             HStack(spacing: 6) {
                 ForEach(Window.allCases, id: \.self) { w in
-                    RangePill(label: w.rawValue, isSelected: selectedWindow == w) {
+                    let isLocked = !entitlements.hasPro && w != .threeMonths
+                    RangePill(label: w.rawValue, isSelected: selectedWindow == w,
+                              isLocked: isLocked) {
+                        guard !isLocked else { return }
                         withAnimation(.easeInOut(duration: 0.2)) {
                             selectedWindow = w
                             selectedMonth  = nil
