@@ -301,7 +301,7 @@ struct SavingsProjectDetailView: View {
                     HStack {
                         if let d = scrubDate, let a = scrubAmount {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(d.formatted(date: .long, time: .omitted))
+                                Text(d.appFormattedLong())
                                     .font(.caption2).foregroundStyle(.secondary)
                                 Text(Decimal(a).formatted(asCurrency: project.currency))
                                     .font(.subheadline.weight(.bold))
@@ -387,7 +387,7 @@ struct SavingsProjectDetailView: View {
                         AxisMarks(values: .stride(by: .month, count: calc.xStrideMonths)) { _ in
                             AxisGridLine().foregroundStyle(Color(.separator).opacity(0.3))
                             AxisValueLabel(
-                                format: .dateTime.month(.abbreviated).locale(Locale(identifier: "fr_CA"))
+                                format: .dateTime.month(.abbreviated).locale(LanguageManager.shared.locale)
                             ).font(.system(size: 9))
                         }
                     }
@@ -439,7 +439,7 @@ struct SavingsProjectDetailView: View {
         Section(lang["savings.indicators"]) {
             if let reachDate = project.targetReachDate {
                 row(lang["savings.targetReach"],
-                    value: reachDate.formatted(date: .long, time: .omitted),
+                    value: reachDate.appFormattedLong(),
                     emphasis: true)
                 if let months = project.monthsToTarget {
                     row(lang["savings.monthsLeft"], value: String(format: lang["savings.projection.months"], months))

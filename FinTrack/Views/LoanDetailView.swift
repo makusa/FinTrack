@@ -100,7 +100,7 @@ struct LoanDetailView: View {
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                         Spacer()
-                        Text(lang["loan.endDateLabel"] + ": \(payoffDate.formatted(date: .abbreviated, time: .omitted))")
+                        Text(lang["loan.endDateLabel"] + ": \(payoffDate.appFormatted())")
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
@@ -136,7 +136,7 @@ struct LoanDetailView: View {
                 impactTile(
                     icon: "flag.checkered",
                     color: .blue,
-                    value: savings.newPayoffDate.formatted(.dateTime.month(.abbreviated).year()),
+                    value: savings.newPayoffDate.appFormattedMonthYear(),
                     label: lang["prepayment.newPayoffDate"]
                 )
             }
@@ -149,7 +149,7 @@ struct LoanDetailView: View {
                         Text(lang["prepayment.original"])
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                        Text(calc.payoffDate.formatted(date: .abbreviated, time: .omitted))
+                        Text(calc.payoffDate.appFormatted())
                             .font(.caption.weight(.medium))
                             .strikethrough(true, color: .secondary)
                             .foregroundStyle(.secondary)
@@ -162,7 +162,7 @@ struct LoanDetailView: View {
                         Text(lang["prepayment.newPayoffDate"])
                             .font(.caption)
                             .foregroundStyle(.secondary)
-                        Text(savings.newPayoffDate.formatted(date: .abbreviated, time: .omitted))
+                        Text(savings.newPayoffDate.appFormatted())
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(.green)
                     }
@@ -259,7 +259,7 @@ struct LoanDetailView: View {
 
             if let entry = nextEntry {
                 loanRow(lang["label.date"],
-                        value: entry.date.formatted(date: .long, time: .omitted))
+                        value: entry.date.appFormattedLong())
                 loanRow(lang["label.amount"],
                         value: Decimal(entry.payment).formatted(asCurrency: loan.currency),
                         emphasis: true)
@@ -340,7 +340,7 @@ struct LoanDetailView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(lang.f("loan.paymentNum", entry.paymentNumber))
                                 .font(.caption.weight(.medium))
-                            Text(entry.date.formatted(date: .abbreviated, time: .omitted))
+                            Text(entry.date.appFormatted())
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }
@@ -424,9 +424,9 @@ private struct PrepaymentRow: View {
                         Text("· \(freq.shortLabel)")
                     }
                     if !prep.isRecurring {
-                        Text("· \(prep.startDate.formatted(date: .abbreviated, time: .omitted))")
+                        Text("· \(prep.startDate.appFormatted())")
                     } else {
-                        Text(lang["loan.detail.from"] + " " + prep.startDate.formatted(date: .abbreviated, time: .omitted))
+                        Text(lang["loan.detail.from"] + " " + prep.startDate.appFormatted())
                     }
                 }
                 .font(.caption)
@@ -472,7 +472,7 @@ struct FullAmortizationView: View {
                         .frame(width: 28, alignment: .leading)
 
                     VStack(alignment: .leading, spacing: 1) {
-                        Text(entry.date.formatted(date: .abbreviated, time: .omitted))
+                        Text(entry.date.appFormatted())
                             .font(.caption.weight(.medium))
                         Text(Decimal(entry.balance).formatted(asCurrency: loan.currency))
                             .font(.caption2)

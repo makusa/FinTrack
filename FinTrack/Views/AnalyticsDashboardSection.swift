@@ -250,7 +250,7 @@ struct BalanceProjectionCard: View {
                         Text(Decimal(bal).formatted(asCurrency: currency))
                             .font(.subheadline.weight(.bold))
                             .foregroundStyle(date > .now ? .teal : .accentColor)
-                        Text(date.formatted(date: .abbreviated, time: .omitted))
+                        Text(date.appFormatted())
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     }
@@ -360,7 +360,7 @@ struct BalanceProjectionCard: View {
                     AxisGridLine().foregroundStyle(Color(.separator).opacity(0.3))
                     AxisValueLabel(
                         format: .dateTime.month(.abbreviated)
-                            .locale(Locale(identifier: "fr_CA"))
+                            .locale(LanguageManager.shared.locale)
                     ).font(.system(size: 9))
                 }
             }
@@ -464,9 +464,7 @@ struct IncomeExpenseCard: View {
 
     private func buildData() -> (bars: [BarData], summaries: [MonthSummary], labels: [String]) {
         let cal = Calendar.current
-        let fmt = DateFormatter()
-        fmt.locale = Locale(identifier: "fr_CA")
-        fmt.dateFormat = "MMM"
+        let fmt = FormatterCache.datePattern("MMM", locale: LanguageManager.shared.locale)
 
         var bars: [BarData] = []
         var summaries: [MonthSummary] = []

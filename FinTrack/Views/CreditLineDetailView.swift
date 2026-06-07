@@ -202,7 +202,7 @@ struct CreditLineDetailView: View {
                         AxisGridLine().foregroundStyle(Color(.separator).opacity(0.3))
                         AxisValueLabel(
                             format: .dateTime.month(.abbreviated)
-                                .locale(Locale(identifier: "fr_CA"))
+                                .locale(LanguageManager.shared.locale)
                         ).font(.system(size: 9))
                     }
                 }
@@ -268,7 +268,7 @@ struct CreditLineDetailView: View {
                             Text("\(sign)\(entry.amount.formatted(asCurrency: creditLine.currency))")
                                 .font(.callout.weight(.semibold))
                                 .foregroundStyle(color)
-                            Text(entry.date.formatted(date: .abbreviated, time: .omitted))
+                            Text(entry.date.appFormatted())
                                 .font(.caption2).foregroundStyle(.secondary)
                         }
                     }

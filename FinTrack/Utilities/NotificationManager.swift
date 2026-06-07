@@ -268,7 +268,7 @@ final class NotificationManager: NSObject {
     private func whenString(dueDate: Date, daysBefore: Int) -> String {
         let lang    = LanguageManager.shared
         let cal     = Calendar.current
-        let dateStr = dueDate.formatted(.dateTime.day().month(.wide))
+        let dateStr = dueDate.appFormattedDayMonth()
         let today   = cal.startOfDay(for: Date())
         let due     = cal.startOfDay(for: dueDate)
         let diff    = cal.dateComponents([.day], from: today, to: due).day ?? daysBefore

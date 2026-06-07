@@ -82,6 +82,7 @@
 		D80931AF4F47C09297ACCFDF /* SubscriptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A0AD383BE4701E81D73CA2 /* SubscriptionView.swift */; };
 		15539F781B5A2B739C2E8424 /* DeveloperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AE4B0630B5D4E85DC4B0A54 /* DeveloperView.swift */; };
 		5AF577950C60AD5B15E313FC /* LoanPrepaymentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD95044ACCF1DE837B49F106; };
+		79491CE6EDF9E67FCF371522 /* FormatterHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AD8C7A1094F9E2EA52CB0F1; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -162,6 +163,7 @@
 		F9A0AD383BE4701E81D73CA2 /* SubscriptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionView.swift; sourceTree = "<group>"; };
 		4AE4B0630B5D4E85DC4B0A54 /* DeveloperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperView.swift; sourceTree = "<group>"; };
 		AD95044ACCF1DE837B49F106 /* LoanPrepaymentManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoanPrepaymentManager.swift; sourceTree = "<group>"; };
+		2AD8C7A1094F9E2EA52CB0F1 /* FormatterHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormatterHelpers.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -176,6 +178,7 @@
 				72EA414C4647414C1515F2B7 /* CashFlowCalculator.swift */,
 				E2DFC423EA38CCA94DF33868 /* CreditLineInterestManager.swift */,
 				407761AC420D582595A7D633 /* SeedData.swift */,
+				2AD8C7A1094F9E2EA52CB0F1 /* FormatterHelpers.swift */,
 				AD95044ACCF1DE837B49F106 /* LoanPrepaymentManager.swift */,
 			);
 			path = Utilities;
@@ -444,6 +447,7 @@
 				167DD8D94BD2C94A5D09FCC6 /* RootView.swift in Sources */,
 				17D35A490B812757B7DA1041 /* SeedData.swift in Sources */,
 				FEBFF9935E3B84CAFF02F78B /* SettingsView.swift in Sources */,
+				79491CE6EDF9E67FCF371522 /* FormatterHelpers.swift in Sources */,
 				5AF577950C60AD5B15E313FC /* LoanPrepaymentManager.swift in Sources */,
 				15539F781B5A2B739C2E8424 /* DeveloperView.swift in Sources */,
 				E3D472CBE91E66DEEE5E40CD /* EntitlementManager.swift in Sources */,

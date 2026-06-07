@@ -371,10 +371,6 @@ struct AddEditCreditLineView: View {
     }
 
     private func decimalToText(_ d: Decimal) -> String {
-        let fmt = NumberFormatter()
-        fmt.numberStyle = .decimal; fmt.locale = Locale(identifier: "fr_CA")
-        fmt.maximumFractionDigits = 2; fmt.minimumFractionDigits = 0
-        fmt.usesGroupingSeparator = false
-        return fmt.string(from: NSDecimalNumber(decimal: d)) ?? "\(d)"
+        return d.appFormattedForInput
     }
 }

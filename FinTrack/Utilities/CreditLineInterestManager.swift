@@ -108,9 +108,7 @@ enum CreditLineInterestManager {
     }
 
     private static func formatDateRange(from start: Date, to end: Date) -> String {
-        let fmt = DateFormatter()
-        fmt.locale = Locale(identifier: "fr_CA")
-        fmt.dateFormat = "d MMM"
+        let fmt = FormatterCache.datePattern("d MMM", locale: LanguageManager.shared.locale)
         return "\(fmt.string(from: start)) → \(fmt.string(from: end))"
     }
 }

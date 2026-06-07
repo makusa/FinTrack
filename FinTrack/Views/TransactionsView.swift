@@ -173,10 +173,9 @@ struct TransactionsView: View {
         let cal = Calendar.current
         if cal.isDateInToday(date) { return lang["label.today"] }
         if cal.isDateInYesterday(date) { return lang["label.yesterday"] }
-        let formatter = DateFormatter()
-        formatter.locale = Locale(identifier: "fr_CA")
-        formatter.dateFormat = "EEEE d MMMM yyyy"
-        return formatter.string(from: date).capitalized
+        let formatted = FormatterCache.datePattern("EEEE d MMMM yyyy",
+                                                       locale: LanguageManager.shared.locale).string(from: date)
+        return formatted.capitalized
     }
 
     private func delete(in items: [Transaction], at offsets: IndexSet) {

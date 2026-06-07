@@ -87,10 +87,11 @@ struct AddEditRecurringTransactionView: View {
     }
     
     // Reusable number formatter (created once)
-    private static let decimalFormatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_CA")
+    // Note: decimalFormatter is no longer static — locale may change at runtime.
+    private var decimalFormatter: NumberFormatter {
+        FormatterCache.decimal(locale: LanguageManager.shared.locale)
+    }
+    private static let _unused: Int = {
         formatter.maximumFractionDigits = 2
         formatter.minimumFractionDigits = 0
         formatter.usesGroupingSeparator = false
@@ -493,7 +494,7 @@ struct AddEditRecurringTransactionView: View {
     }
 
     private func decimalToText(_ d: Decimal) -> String {
-        Self.decimalFormatter.string(from: NSDecimalNumber(decimal: d)) ?? "\(d)"
+        d.appFormattedForInput
     }
 }
 

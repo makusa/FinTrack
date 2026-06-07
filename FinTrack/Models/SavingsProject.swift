@@ -79,14 +79,12 @@ final class SavingsProject {
     var projectionLabel: String {
         if progressFraction >= 1 { return "Objectif atteint ✓" }
         if let d = targetReachDate {
-            let fmt = DateFormatter()
-            fmt.locale = Locale(identifier: "fr_CA")
-            fmt.dateFormat = "MMMM yyyy"
+            let fmt = FormatterCache.datePattern("MMMM yyyy", locale: LanguageManager.shared.locale)
             return "Atteint en \(fmt.string(from: d))"
         }
         if targetAmount == nil {
             let monthlyDouble = (monthlyContribution as NSDecimalNumber).doubleValue
-            if monthlyDouble > 0 { return "Accumulation libre · \(monthlyContribution.formatted(asCurrency: currency))/mois" }
+            if monthlyDouble > 0 { return "Accumulation libre · \(monthlyContribution.formatted(asCurrency: currency))" }
         }
         return "Contribution à définir"
     }

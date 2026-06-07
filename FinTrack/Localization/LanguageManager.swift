@@ -56,7 +56,10 @@ final class LanguageManager {
     static let shared = LanguageManager()
 
     private(set) var current: AppLanguage {
-        didSet { UserDefaults.standard.set(current.rawValue, forKey: "appLanguage") }
+        didSet {
+            UserDefaults.standard.set(current.rawValue, forKey: "appLanguage")
+            FormatterCache.invalidate()   // refresh all locale-sensitive formatters
+        }
     }
 
     /// The locale to use for date/number formatting throughout the app.

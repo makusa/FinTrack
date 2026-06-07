@@ -80,7 +80,7 @@ struct ExchangeRateSettingsView: View {
                     }
                 } else if let updated = rates.lastUpdated {
                     LabeledContent(lang["fx.lastUpdated"]) {
-                        Text(updated.formatted(date: .abbreviated, time: .shortened))
+                        Text(updated.appFormattedDateTime())
                             .foregroundStyle(.secondary)
                     }
                 }

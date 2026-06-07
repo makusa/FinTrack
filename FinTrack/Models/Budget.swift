@@ -65,16 +65,20 @@ enum BudgetPeriod: String, CaseIterable, Identifiable {
     func currentPeriodLabel() -> String {
         let start = periodStart()
         let end   = Calendar.current.date(byAdding: .day, value: -1, to: periodEnd()) ?? periodEnd()
+        let locale = LanguageManager.shared.locale
         let fmt   = DateFormatter()
         fmt.locale = LanguageManager.shared.locale
         switch self {
         case .weekly:
+            fmt.locale = locale
             fmt.dateFormat = "d MMM"
             return "\(fmt.string(from: start)) – \(fmt.string(from: end))"
         case .monthly:
+            fmt.locale = locale
             fmt.dateFormat = "MMMM yyyy"
             return fmt.string(from: start).capitalized
         case .yearly:
+            fmt.locale = locale
             fmt.dateFormat = "yyyy"
             return fmt.string(from: start)
         }

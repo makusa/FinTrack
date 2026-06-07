@@ -145,9 +145,7 @@ final class RecurringTransaction {
         case 1:      return "Demain"
         case 2...6:  return "Dans \(days) jours"
         default:
-            let fmt = DateFormatter()
-            fmt.locale = Locale(identifier: "fr_CA")
-            fmt.dateFormat = "d MMM"
+            let fmt = FormatterCache.datePattern("d MMM", locale: LanguageManager.shared.locale)
             return fmt.string(from: nextDueDate)
         }
     }

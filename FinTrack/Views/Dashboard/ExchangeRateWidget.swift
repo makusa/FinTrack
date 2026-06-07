@@ -73,7 +73,7 @@ struct ExchangeRateWidget: View {
                     ProgressView().scaleEffect(0.7)
                 } else if let updated = rates.lastUpdated {
                     Text(lang.f("fx.updated",
-                                updated.formatted(.relative(presentation: .named))))
+                                updated.appFormattedRelative()))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }

@@ -321,12 +321,6 @@ struct AddEditPrepaymentView: View {
     }
 
     private func decimalToText(_ d: Decimal) -> String {
-        let f = NumberFormatter()
-        f.numberStyle = .decimal
-        f.locale = Locale(identifier: "fr_CA")
-        f.maximumFractionDigits = 2
-        f.minimumFractionDigits = 0
-        f.usesGroupingSeparator = false
-        return f.string(from: NSDecimalNumber(decimal: d)) ?? "\(d)"
+        return d.appFormattedForInput
     }
 }

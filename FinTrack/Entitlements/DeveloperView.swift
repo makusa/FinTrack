@@ -257,7 +257,7 @@ struct DeveloperView: View {
                     }
                     if let trigger = req.trigger as? UNCalendarNotificationTrigger,
                        let next = trigger.nextTriggerDate() {
-                        Label(next.formatted(date: .abbreviated, time: .shortened),
+                        Label(next.appFormattedDateTime(),
                               systemImage: "clock")
                             .font(.caption2)
                             .foregroundStyle(.orange)

@@ -332,11 +332,6 @@ struct AddEditAccountView: View {
     }
 
     private func decimalToText(_ d: Decimal) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.locale = Locale(identifier: "fr_CA")
-        formatter.maximumFractionDigits = 2
-        formatter.minimumFractionDigits = 0
-        return formatter.string(from: NSDecimalNumber(decimal: d)) ?? "\(d)"
+        return d.appFormattedForInput
     }
 }

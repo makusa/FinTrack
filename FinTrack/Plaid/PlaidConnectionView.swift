@@ -190,7 +190,7 @@ struct ConnectedAccountsView: View {
                         .font(.body.weight(.semibold))
                     if let date = item.lastSyncDate {
                         Text(lang["plaid.last.sync"] + " " +
-                             date.formatted(.relative(presentation: .named)))
+                             date.appFormattedRelative())
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                     } else {

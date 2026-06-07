@@ -22,19 +22,21 @@ struct CurrencyInfo: Identifiable, Hashable {
     private static var formatterCache: [String: NumberFormatter] = [:]
 
     private static func cachedFormatter(code: String) -> NumberFormatter {
-        if let cached = formatterCache[code] { return cached }
+        let langID = LanguageManager.shared.locale.identifier
+        let cacheKey = "\(code)-\(langID)"
+        if let cached = formatterCache[cacheKey] { return cached }
         let f = NumberFormatter()
         f.numberStyle = .decimal
-        f.locale = Locale(identifier: "fr_CA")
+        f.locale = LanguageManager.shared.locale
         let noDecimals = code == "JPY" || code == "XAF" || code == "XOF"
         f.minimumFractionDigits = noDecimals ? 0 : 2
         f.maximumFractionDigits = noDecimals ? 0 : 2
-        formatterCache[code] = f
+        formatterCache[cacheKey] = f
         return f
     }
 
-    /// Format a Decimal using fr_CA locale conventions plus the currency symbol.
-    /// Uses a cached NumberFormatter — safe to call from hot render paths.
+    /// Format a Decimal using the app's current language locale plus the currency symbol.
+    /// Uses a cached NumberFormatter keyed by (currency code, locale) — safe to call from hot render paths.
     func format(_ amount: Decimal) -> String {
         let f = CurrencyInfo.cachedFormatter(code: code)
         let body = f.string(from: amount as NSDecimalNumber) ?? "\(amount)"
@@ -67,7 +69,7 @@ enum Currencies {
 }
 
 extension Decimal {
-    /// Format a Decimal as currency using the curated list. Uses fr_CA locale.
+    /// Format a Decimal as currency using the curated list. Uses the app's current language locale.
     func formatted(asCurrency code: String) -> String {
         Currencies.info(for: code).format(self)
     }
