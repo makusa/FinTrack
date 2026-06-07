@@ -42,7 +42,7 @@ struct SavingsProjectsView: View {
                 Section {
                     ForEach(totalsByCurrency, id: \.currency) { row in
                         HStack {
-                            Label("Épargne totale (\(row.currency))", systemImage: "checkmark.seal.fill")
+                            Label("\(lang[\"savings.total.byCurrency\"]) (\(row.currency))", systemImage: "checkmark.seal.fill")
                                 .foregroundStyle(.green)
                             Spacer()
                             Text(row.total.formatted(asCurrency: row.currency))
@@ -213,12 +213,12 @@ struct SavingsProjectDetailView: View {
                 Text(project.currentAmount.formatted(asCurrency: project.currency))
                     .font(.largeTitle.weight(.bold))
                 if let target = project.targetAmount {
-                    Text("sur \(target.formatted(asCurrency: project.currency))")
+                    Text(lang["savings.of"] + " " + target.formatted(asCurrency: project.currency))
                         .font(.subheadline).foregroundStyle(.secondary)
                     ProgressView(value: project.progressFraction)
                         .tint(Color(hex: project.colorHex))
                         .padding(.horizontal, 24)
-                    Text(String(format: "%.1f%% atteint", project.progressFraction * 100))
+                    Text(String(format: lang["savings.pct.reached"], project.progressFraction * 100))
                         .font(.caption).foregroundStyle(.secondary)
                 } else {
                     Text(lang["savings.freeAccumulation"]).font(.subheadline).foregroundStyle(.secondary)
@@ -231,16 +231,16 @@ struct SavingsProjectDetailView: View {
 
     private var statusSection: some View {
         Section(lang["savings.currentAmount.section"]) {
-            row("Épargné", value: project.currentAmount.formatted(asCurrency: project.currency))
+            row(lang["savings.detail.saved"], value: project.currentAmount.formatted(asCurrency: project.currency))
             if let target = project.targetAmount {
                 row(lang["savings.target"], value: target.formatted(asCurrency: project.currency))
-                row("Restant", value: project.amountRemaining?.formatted(asCurrency: project.currency) ?? "—",
+                row(lang["savings.detail.remaining"], value: project.amountRemaining?.formatted(asCurrency: project.currency) ?? "—",
                     color: .orange)
             }
             row(lang["savings.contribution"],
                 value: (project.monthlyContribution as NSDecimalNumber).doubleValue > 0
                     ? project.monthlyContribution.formatted(asCurrency: project.currency) + lang["label.perMonth"]
-                    : "Non définie",
+                    : lang["savings.detail.noDeadline"],
                 emphasis: true)
         }
     }
@@ -402,7 +402,7 @@ struct SavingsProjectDetailView: View {
                     row(lang["savings.monthsLeft"], value: "\(months) mois")
                 }
             } else if project.targetAmount != nil {
-                row("Date d'atteinte", value: "Définissez une contribution mensuelle")
+                row("Date d'atteinte", value: lang["savings.detail.noContrib"])
             }
 
             if let req = project.requiredMonthlyForDeadline {

@@ -175,25 +175,25 @@ struct SettingsView: View {
             NavigationLink {
                 CreditLinesView()
             } label: {
-                Label("Marges de crédit", systemImage: "creditcard.fill")
+                Label(lang["cl.title"], systemImage: "creditcard.fill")
             }
 
             NavigationLink {
                 SavingsProjectsView()
             } label: {
-                Label("Projets d'épargne", systemImage: "target")
+                Label(lang["savings.title"], systemImage: "target")
             }
 
             NavigationLink {
                 LoansView()
             } label: {
-                Label("Prêts", systemImage: "house.fill")
+                Label(lang["loan.title"], systemImage: "house.fill")
             }
 
             NavigationLink {
                 RecurrencesView()
             } label: {
-                Label("Récurrences", systemImage: "arrow.2.squarepath")
+                Label(lang["recurring.title"], systemImage: "arrow.2.squarepath")
             }
 
             NavigationLink {

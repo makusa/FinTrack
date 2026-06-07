@@ -336,6 +336,28 @@ enum LocalizedStrings {
         "cashflow.free":        ["fr": "Libre (non alloué)",      "en": "Free (Unallocated)",  "es": "Libre (no asignado)","pt": "Livre (não alocado)"],
         "cashflow.warning.deficit":["fr":"Attention : les sorties dépassent les entrées ce mois-ci.","en": "Warning: outflows exceed inflows this month.","es": "Atención: las salidas superan las entradas este mes.","pt": "Atenção: saídas superam entradas este mês."],
         "cashflow.warning.overAllocated":["fr":"Les allocations dépassent le surplus. Réduisez certaines contributions.","en": "Allocations exceed the surplus. Reduce some contributions.","es": "Las asignaciones superan el superávit. Reduce algunas contribuciones.","pt": "Alocações superam o excedente. Reduza algumas contribuições."],
+
+        // Savings project detail (hardcoded strings fixed)
+        "savings.total.byCurrency":  ["fr": "Épargne totale",                      "en": "Total Savings",                  "es": "Ahorro total",                  "pt": "Poupança total"],
+        "savings.detail.saved":      ["fr": "Épargné",                             "en": "Saved",                          "es": "Ahorrado",                      "pt": "Poupado"],
+        "savings.detail.remaining":  ["fr": "Restant",                             "en": "Remaining",                      "es": "Restante",                      "pt": "Restante"],
+        "savings.detail.noDeadline": ["fr": "Non définie",                         "en": "Not set",                        "es": "No definida",                   "pt": "Não definida"],
+        "savings.detail.noContrib":  ["fr": "Définissez une contribution mensuelle","en": "Set a monthly contribution",    "es": "Define una contribución mensual","pt": "Defina uma contribuição mensal"],
+        "savings.projection.onTrack":["fr": "À ce rythme, vous atteindrez l'objectif le","en": "At this rate, you will reach your goal on","es": "A este ritmo, alcanzarás tu meta el","pt": "Neste ritmo, você atingirá seu objetivo em"],
+        "savings.projection.duration":["fr":"Durée estimée",                       "en": "Estimated duration",             "es": "Duración estimada",             "pt": "Duração estimada"],
+        "savings.projection.months": ["fr": "%d mois",                             "en": "%d months",                     "es": "%d meses",                      "pt": "%d meses"],
+        "savings.projection.reached":["fr": "Objectif déjà atteint ! 🎉",          "en": "Goal already reached! 🎉",       "es": "¡Meta ya alcanzada! 🎉",        "pt": "Meta já atingida! 🎉"],
+        "savings.projection.required":["fr":"Contribution requise pour l'échéance","en": "Required contribution for deadline","es": "Contribución requerida para la fecha","pt": "Contribuição necessária para o prazo"],
+        "savings.notes.placeholder": ["fr": "Détails, motivation, liens…",         "en": "Details, motivation, links…",    "es": "Detalles, motivación, enlaces…","pt": "Detalhes, motivação, links…"],
+        "savings.of":                ["fr": "sur",                                 "en": "of",                             "es": "de",                            "pt": "de"],
+        "savings.pct.reached":       ["fr": "%.1f%% atteint",                      "en": "%.1f%% reached",                "es": "%.1f%% alcanzado",              "pt": "%.1f%% atingido"],
+
+        // Loan detail (hardcoded strings fixed)
+        "loan.detail.paidPct":       ["fr": "%.1f%% remboursé",                   "en": "%.1f%% paid off",               "es": "%.1f%% pagado",                 "pt": "%.1f%% pago"],
+        "loan.detail.ofInterest":    ["fr": "dont intérêts",                      "en": "of which interest",             "es": "de los cuales intereses",       "pt": "dos quais juros"],
+        "loan.detail.interestPct":   ["fr": "Intérêts %.0f%%",                    "en": "Interest %.0f%%",               "es": "Intereses %.0f%%",              "pt": "Juros %.0f%%"],
+        "loan.detail.from":          ["fr": "· dès",                              "en": "· from",                        "es": "· desde",                       "pt": "· a partir de"],
+
         "cashflow.note":        ["fr": "Basé uniquement sur vos transactions et prêts récurrents. Les dépenses non planifiées ne sont pas incluses.", "en": "Based only on your recurring transactions and loans. Unplanned expenses are not included.", "es": "Basado solo en tus transacciones y préstamos recurrentes. Los gastos no planificados no están incluidos.", "pt": "Baseado apenas em suas transações e empréstimos recorrentes. Despesas não planejadas não estão incluídas."],
 
         // MARK: - Analytics

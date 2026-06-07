@@ -250,12 +250,12 @@ struct AddEditSavingsProjectView: View {
            let target = targetDecimal, (target as NSDecimalNumber).doubleValue > 0 {
             Section {
                 if let reachDate = p.targetReachDate, let months = p.monthsToTarget {
-                    summaryRow("À ce rythme, vous atteindrez l'objectif le",
+                    summaryRow(lang["savings.projection.onTrack"],
                                value: reachDate.formatted(date: .long, time: .omitted),
                                emphasis: true)
-                    summaryRow("Durée estimée", value: "\(months) mois")
+                    summaryRow(lang["savings.projection.duration"], value: String(format: lang["savings.projection.months"], months))
                 } else if (currentDecimal as NSDecimalNumber).doubleValue >= (target as NSDecimalNumber).doubleValue {
-                    Label("Objectif déjà atteint ! 🎉", systemImage: "checkmark.circle.fill")
+                    Label(lang["savings.projection.reached"], systemImage: "checkmark.circle.fill")
                         .foregroundStyle(.green)
                 }
             } header: { Text(lang["savings.projection"]) }
@@ -267,7 +267,7 @@ struct AddEditSavingsProjectView: View {
         let p = previewProject
         Section {
             if let req = p.requiredMonthlyForDeadline {
-                summaryRow("Contribution requise pour l'échéance",
+                summaryRow(lang["savings.projection.required"],
                            value: req.formatted(asCurrency: currency) + "/mois",
                            emphasis: true,
                            color: req > contributionDecimal && (contributionDecimal as NSDecimalNumber).doubleValue > 0 ? .orange : .green)
@@ -277,7 +277,7 @@ struct AddEditSavingsProjectView: View {
 
     private var notesSection: some View {
         Section("Notes (optionnel)") {
-            TextField("Détails, motivation, liens…", text: $notes, axis: .vertical).lineLimit(2...4)
+            TextField(lang["savings.notes.placeholder"], text: $notes, axis: .vertical).lineLimit(2...4)
         }
     }
 

@@ -96,7 +96,7 @@ struct LoanDetailView: View {
                     ProgressView(value: progressFraction)
                         .tint(.green)
                     HStack {
-                        Text(String(format: "%.1f%% remboursé", progressFraction * 100))
+                        Text(String(format: lang["loan.detail.paidPct"], progressFraction * 100))
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                         Spacer()
@@ -263,7 +263,7 @@ struct LoanDetailView: View {
                 loanRow(lang["label.amount"],
                         value: Decimal(entry.payment).formatted(asCurrency: loan.currency),
                         emphasis: true)
-                loanRow("dont intérêts",
+                loanRow(lang["loan.detail.ofInterest"],
                         value: Decimal(entry.interest).formatted(asCurrency: loan.currency),
                         color: .orange)
                 loanRow("dont capital",
@@ -318,7 +318,7 @@ struct LoanDetailView: View {
                 .frame(height: 8)
                 HStack {
                     legendDot(.accentColor, String(format: "Capital %.0f%%", (1 - interestRatio) * 100))
-                    legendDot(.orange,       String(format: "Intérêts %.0f%%", interestRatio * 100))
+                    legendDot(.orange, String(format: lang["loan.detail.interestPct"], interestRatio * 100))
                 }
             }
         }
@@ -426,7 +426,7 @@ private struct PrepaymentRow: View {
                     if !prep.isRecurring {
                         Text("· \(prep.startDate.formatted(date: .abbreviated, time: .omitted))")
                     } else {
-                        Text("· dès \(prep.startDate.formatted(date: .abbreviated, time: .omitted))")
+                        Text("\(lang[\"loan.detail.from\"]) \(prep.startDate.formatted(date: .abbreviated, time: .omitted))")
                     }
                 }
                 .font(.caption)

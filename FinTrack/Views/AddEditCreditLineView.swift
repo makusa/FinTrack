@@ -326,12 +326,12 @@ struct AddEditCreditLineView: View {
             // Recurring repayment
             if createRecurring, let recAmt = parseDecimal(recurringAmountText), recAmt > 0 {
                 let rule = RecurringTransaction(
-                    title: trimName.isEmpty ? "Marge de crédit" : trimName,
+                    title: trimName.isEmpty ? lang["cl.title"] : trimName,
                     amount: recAmt, type: .expense,
                     frequency: recurringFrequency,
                     startDate: Calendar.current.date(byAdding: .month, value: 1, to: .now) ?? .now,
                     account: selectedAccount,
-                    note: "Remboursement \(trimLender.isEmpty ? "marge de crédit" : trimLender)",
+                    note: "Remboursement \(trimLender.isEmpty ? lang["cl.title"].lowercased() : trimLender)",
                     payee: trimLender.isEmpty ? nil : trimLender,
                     isCreditLinePayment: true
                 )

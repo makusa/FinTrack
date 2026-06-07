@@ -20,10 +20,10 @@ struct CashFlowView: View {
                                   amount: line.amount, currency: summary.currency,
                                   color: .green, sign: "+")
                     }
-                    totalRow(label: "Total revenus", amount: summary.monthlyIncome,
+                    totalRow(label: lang["cashflow.totalIncome"], amount: summary.monthlyIncome,
                              currency: summary.currency, color: .green)
                 } header: {
-                    Label("Revenus mensuels estimés", systemImage: "arrow.down.left.circle.fill")
+                    Label(lang["cashflow.monthlyIncome"], systemImage: "arrow.down.left.circle.fill")
                         .foregroundStyle(.green)
                 }
             }
@@ -36,10 +36,10 @@ struct CashFlowView: View {
                                   amount: line.amount, currency: summary.currency,
                                   color: .primary, sign: "−")
                     }
-                    totalRow(label: "Total dépenses", amount: summary.monthlyExpenses,
+                    totalRow(label: lang["cashflow.totalExp"], amount: summary.monthlyExpenses,
                              currency: summary.currency, color: .red)
                 } header: {
-                    Label("Dépenses récurrentes", systemImage: "arrow.up.right.circle.fill")
+                    Label(lang["cashflow.recurringExp"], systemImage: "arrow.up.right.circle.fill")
                         .foregroundStyle(.red)
                 }
             }
@@ -52,10 +52,10 @@ struct CashFlowView: View {
                                   amount: line.amount, currency: summary.currency,
                                   color: .primary, sign: "−")
                     }
-                    totalRow(label: "Total remboursements", amount: summary.monthlyLoanPayments,
+                    totalRow(label: lang["cashflow.totalLoans"], amount: summary.monthlyLoanPayments,
                              currency: summary.currency, color: .orange)
                 } header: {
-                    Label("Remboursements de prêts", systemImage: "house.fill")
+                    Label(lang["cashflow.loanPayments"], systemImage: "house.fill")
                         .foregroundStyle(.orange)
                 }
             }
@@ -68,10 +68,10 @@ struct CashFlowView: View {
                                   amount: line.amount, currency: summary.currency,
                                   color: .primary, sign: "−")
                     }
-                    totalRow(label: "Total paiements minima", amount: summary.monthlyCreditLinePayments,
+                    totalRow(label: lang["cashflow.totalCL"], amount: summary.monthlyCreditLinePayments,
                              currency: summary.currency, color: .red)
                 } header: {
-                    Label("Marges de crédit (paiements minima)", systemImage: "creditcard.fill")
+                    Label(lang["cashflow.clPayments"], systemImage: "creditcard.fill")
                         .foregroundStyle(.red)
                 }
             }
@@ -100,7 +100,7 @@ struct CashFlowView: View {
                         .foregroundStyle(.orange)
                 }
             } header: {
-                Label("Résultat net", systemImage: "equal.circle.fill")
+                Label(lang["cashflow.netResult"], systemImage: "equal.circle.fill")
             }
 
             // ── Project allocations ──────────────────────────────────────────
@@ -121,13 +121,13 @@ struct CashFlowView: View {
                             .foregroundStyle(summary.isCovered ? .green : .red)
                     }
                     if !summary.isCovered {
-                        Label("Les allocations dépassent le surplus. Réduisez certaines contributions.",
+                        Label(lang["cashflow.warning.overAllocated"],
                               systemImage: "exclamationmark.triangle.fill")
                             .font(.caption)
                             .foregroundStyle(.red)
                     }
                 } header: {
-                    Label("Allocation aux projets d'épargne", systemImage: "target")
+                    Label(lang["cashflow.allocation"], systemImage: "target")
                 }
             }
 
