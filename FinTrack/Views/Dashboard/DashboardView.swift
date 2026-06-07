@@ -269,7 +269,7 @@ struct DashboardView: View {
                 .frame(width: 36, height: 36)
                 .background(Color.orange.opacity(0.12), in: Circle())
             VStack(alignment: .leading, spacing: 2) {
-                Text(id.label)
+                Text(id.title)
                     .font(.callout.weight(.semibold))
                 Text(lang["entitlement.pro.teaser"])
                     .font(.caption)
