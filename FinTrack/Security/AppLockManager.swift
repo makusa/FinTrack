@@ -169,7 +169,6 @@ final class AppLockManager {
             switch error.code {
             case .userFallback:            return .fallback    // "Enter Passcode" tapped
             case .userCancel,
-                 .appCancelled,
                  .systemCancel:            return .cancelled
             case .biometryLockout:         return .unavailable
             case .authenticationFailed:    return .failed
