@@ -8,6 +8,21 @@ import SwiftUI
 struct ExchangeRateSettingsView: View {
     @Environment(LanguageManager.self) private var lang
     @Environment(ExchangeRateManager.self) private var rates
+    @Environment(EntitlementManager.self) private var entitlements
+
+    /// Devises sélectionnables : CAD + USD pour Courant, toutes pour Pro.
+    private var selectableCurrencies: [CurrencyInfo] {
+        entitlements.hasPro
+            ? Currencies.all
+            : Currencies.all.filter { ["CAD", "USD"].contains($0.code) }
+    }
+
+    /// Devises affichées dans le tableau des taux : même filtre.
+    private var displayableCurrencies: [CurrencyInfo] {
+        Currencies.all.filter {
+            entitlements.hasPro || ["CAD", "USD"].contains($0.code)
+        }
+    }
 
     var body: some View {
         List {
@@ -17,7 +32,7 @@ struct ExchangeRateSettingsView: View {
                     get: { rates.displayCurrency },
                     set: { rates.displayCurrency = $0 }
                 )) {
-                    ForEach(Currencies.all) { c in
+                    ForEach(selectableCurrencies) { c in
                         HStack {
                             Text(c.symbol)
                                 .frame(width: 40, alignment: .leading)
@@ -25,6 +40,11 @@ struct ExchangeRateSettingsView: View {
                             Text(c.code + " — " + c.nameFR)
                         }
                         .tag(c.code)
+                    }
+                    if !entitlements.hasPro {
+                        Label(lang["fx.pro.hint"], systemImage: "lock.fill")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                 }
                 .pickerStyle(.navigationLink)
@@ -82,7 +102,7 @@ struct ExchangeRateSettingsView: View {
             if !rates.rates.isEmpty {
                 Section(lang["fx.rates.current"]) {
                     let display = rates.displayCurrency
-                    ForEach(Currencies.all.filter { $0.code != rates.baseCurrency }, id: \.code) { currency in
+                    ForEach(displayableCurrencies.filter { $0.code != rates.baseCurrency }, id: \.code) { currency in
                         let rate = rates.convert(1, from: rates.baseCurrency, to: currency.code)
                         HStack {
                             Text("1 \(rates.baseCurrency)")

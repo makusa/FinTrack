@@ -12,17 +12,29 @@ import SwiftUI
 struct ExchangeRateWidget: View {
     @Environment(LanguageManager.self) private var lang
     @Environment(ExchangeRateManager.self) private var rates
+    @Environment(EntitlementManager.self) private var entitlements
 
     /// Currency codes used in the user's accounts.
     let accountCurrencies: [String]
 
-    // Always-shown priority pairs (Régis's corridor)
-    private let priorityPairs: [(from: String, to: String)] = [
-        ("CAD", "XAF"),
-        ("CAD", "USD"),
-        ("CAD", "EUR"),
-        ("USD", "XAF"),
-    ]
+    // Priority pairs differ by tier
+    private var priorityPairs: [(from: String, to: String)] {
+        if entitlements.hasPro {
+            // Pro: full corridor CAD/XAF/USD/EUR
+            return [
+                ("CAD", "USD"),
+                ("CAD", "EUR"),
+                ("CAD", "XAF"),
+                ("USD", "XAF"),
+            ]
+        } else {
+            // Courant: CAD and USD only
+            return [
+                ("CAD", "USD"),
+                ("USD", "CAD"),
+            ]
+        }
+    }
 
     /// Deduplicated pairs: priority first, then account-derived extras.
     private var pairs: [(from: String, to: String)] {
@@ -38,10 +50,12 @@ struct ExchangeRateWidget: View {
         // Priority corridor pairs first
         for p in priorityPairs { add(p) }
 
-        // Extra pairs derived from account currencies vs display currency
-        let display = rates.displayCurrency
-        for cur in accountCurrencies where cur != display && cur != "CAD" {
-            add((from: "CAD", to: cur))
+        // Extra pairs from account currencies (Pro only — free tier stays CAD/USD)
+        if entitlements.hasPro {
+            let display = rates.displayCurrency
+            for cur in accountCurrencies where cur != display && cur != "CAD" {
+                add((from: "CAD", to: cur))
+            }
         }
 
         return Array(result.prefix(6))   // max 6 rows

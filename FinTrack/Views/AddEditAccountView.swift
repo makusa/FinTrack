@@ -29,10 +29,10 @@ struct AddEditAccountView: View {
     @State private var notes: String = ""
     @State private var bankDomain: String? = nil   // domain for logo; set on institution selection
 
-    /// CAD + EUR for free tier; all currencies for Pro.
+    /// CAD + USD for free tier; all currencies for Pro.
     private var availableCurrencies: [CurrencyInfo] {
         if entitlements.hasPro { return Currencies.all }
-        return Currencies.all.filter { ["CAD", "EUR"].contains($0.code) }
+        return Currencies.all.filter { ["CAD", "USD"].contains($0.code) }
     }
 
     private var isEditing: Bool {

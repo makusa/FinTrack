@@ -439,6 +439,7 @@ enum LocalizedStrings {
         "fx.loading":              ["fr": "Mise à jour des taux…",                 "en": "Updating rates…",                    "es": "Actualizando tipos…",               "pt": "Atualizando taxas…"],
         "fx.refresh":              ["fr": "Actualiser les taux",                   "en": "Refresh Rates",                      "es": "Actualizar tipos",                  "pt": "Atualizar taxas"],
         "fx.updated":              ["fr": "Mis à jour %@",                         "en": "Updated %@",                         "es": "Actualizado %@",                    "pt": "Atualizado %@"],
+        "fx.pro.hint":             ["fr": "Toutes les devises disponibles avec Épargne", "en": "All currencies available with Épargne", "es": "Todas las divisas disponibles con Épargne", "pt": "Todas as moedas disponíveis com Épargne"],
         "fx.unavailable":          ["fr": "Taux non disponibles (mode hors ligne)","en": "Rates unavailable (offline)",        "es": "Tipos no disponibles (sin conexión)","pt": "Taxas indisponíveis (offline)"],
 
         // MARK: - Budgets
