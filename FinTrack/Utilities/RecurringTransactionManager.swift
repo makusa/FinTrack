@@ -31,6 +31,11 @@ enum RecurringTransactionManager {
         }
 
         if didChange {
+            // Recalculate balance for all accounts touched by this run
+            for rule in rules {
+                rule.account?.recalculateBalance()
+                rule.destinationAccount?.recalculateBalance()
+            }
             try? context.save()
         }
     }
@@ -131,12 +136,10 @@ enum RecurringTransactionManager {
         }
         // Advance the due date by one period.
         rule.nextDueDate = rule.frequency.nextDate(after: rule.nextDueDate)
-        // Recalculate affected accounts after batch apply
-        let affected = Set(transactions.compactMap { $0.account?.persistentModelID })
-        if !affected.isEmpty {
-            let all = (try? context.fetch(FetchDescriptor<Account>())) ?? []
-            all.filter { affected.contains($0.persistentModelID) }
-               .forEach { $0.recalculateBalance() }
+        // Recalculate balance for accounts touched by this manual post
+        rule.account?.recalculateBalance()
+        if rule.isTransfer, let destination = rule.destinationAccount {
+            destination.recalculateBalance()
         }
         try? context.save()
     }
