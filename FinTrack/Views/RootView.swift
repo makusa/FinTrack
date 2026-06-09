@@ -4,9 +4,15 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct RootView: View {
+    @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
+
+    // Widget data sync — triggers WidgetDataWriter when accounts or transactions change
+    @Query private var _accounts:     [Account]
+    @Query private var _transactions: [Transaction]
     @State private var lockManager = AppLockManager.shared
     @Environment(EntitlementManager.self) private var entitlements
 
@@ -44,6 +50,14 @@ struct RootView: View {
                             .foregroundStyle(Color.accentColor.opacity(0.6))
                     }
             }
+        }
+        .task(id: _transactions.count + _accounts.count) {
+            // Sync widget data whenever account/transaction count changes
+            WidgetDataWriter.write(context: context)
+        }
+        .onAppear {
+            // Sync widget data on first launch
+            WidgetDataWriter.write(context: context)
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
             isObscured = true
