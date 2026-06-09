@@ -176,25 +176,25 @@ final class EntitlementManager {
 
     @MainActor
     func refreshEntitlements() async {
-        var newHasPro   = false
-        var newHasPlaid = false
+        var newHasPaidTier   = false
+        var newHasPlacement  = false
 
         for await result in StoreKit.Transaction.currentEntitlements {
             if let transaction = try? checkVerified(result) {
                 switch transaction.productID {
                 case FinTrackProduct.epargne.rawValue:
-                    newHasPro = true
+                    newHasPaidTier = true
                 case FinTrackProduct.placement.rawValue:
-                    newHasPlaid = true
-                    newHasPaidTier = true  // Placement implies Épargne
+                    newHasPlacement = true
+                    newHasPaidTier  = true  // Placement includes Épargne features
                 default:
                     break
                 }
             }
         }
 
-        hasPaidTier   = newHasPro
-        hasPlacement = newHasPlaid
+        hasPaidTier  = newHasPaidTier
+        hasPlacement = newHasPlacement
     }
 
     // MARK: - Transaction listener
