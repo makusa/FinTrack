@@ -49,7 +49,7 @@ struct DeveloperView: View {
             features: ["Comptes manuels illimités", "Transactions manuelles", "Dashboard basique"]
         ),
         TierOption(
-            tier:     .pro,
+            tier:     .epargne,
             name:     "Épargne",
             subtitle: "Achat unique",
             icon:     "star.circle.fill",
@@ -58,7 +58,7 @@ struct DeveloperView: View {
                        "Récurrences & virements", "Taux de change", "Dashboard custom", "Export CSV"]
         ),
         TierOption(
-            tier:     .plaid,
+            tier:     .placement,
             name:     "Placement",
             subtitle: "Abonnement mensuel",
             icon:     "building.columns.circle.fill",
