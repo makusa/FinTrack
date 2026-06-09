@@ -35,5 +35,33 @@ targets:
         ENABLE_PREVIEWS: YES
         SWIFT_EMIT_LOC_STRINGS: YES
         DEVELOPMENT_LANGUAGE: en
-        # Signing left blank intentionally — set your team in Xcode after generation.
         CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: 38N594NGP9
+        CODE_SIGN_IDENTITY: "iPhone Developer"
+    entitlements:
+      path: FinTrack/FinTrack.entitlements
+    dependencies:
+      - target: FinTrackWidget
+        embed: true
+  FinTrackWidget:
+    type: app-extension
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: FinTrackWidget
+      - path: FinTrack/Models/WidgetData.swift
+    entitlements:
+      path: FinTrackWidget/FinTrackWidget.entitlements
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ca.regis.fintrack.widget
+        PRODUCT_NAME: FinTrackWidget
+        SWIFT_VERSION: "5.9"
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        GENERATE_INFOPLIST_FILE: NO
+        INFOPLIST_FILE: FinTrackWidget/Info.plist
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: 38N594NGP9
+        CODE_SIGN_IDENTITY: "iPhone Developer"
+        SKIP_INSTALL: YES
+        ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: NO
