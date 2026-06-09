@@ -23,7 +23,7 @@ struct CreditLinesView: View {
     @State private var showArchived = false
 
     private var isAtFreeLimit: Bool {
-        !entitlements.hasPro && activeLines.count >= FinTrackLimit.freeMaxCreditLines
+        !entitlements.hasPaidTier && activeLines.count >= FinTrackLimit.freeMaxCreditLines
     }
 
     private var debtByCurrency: [(currency: String, total: Decimal)] {

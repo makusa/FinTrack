@@ -171,8 +171,8 @@ struct DeveloperView: View {
             Button {
                 UIPasteboard.general.string = """
                 Tier: \(currentOption.name)
-                hasPro: \(entitlements.hasPro)
-                hasPlaid: \(entitlements.hasPlaid)
+                hasPaidTier: \(entitlements.hasPaidTier)
+                hasPlacement: \(entitlements.hasPlacement)
                 """
             } label: {
                 Label("Copier l'état actuel", systemImage: "doc.on.doc")
@@ -412,8 +412,8 @@ struct DeveloperView: View {
         Task { @MainActor in
             switch tier {
             case .free:  entitlements.simulateFree()
-            case .pro:   entitlements.simulatePro()
-            case .plaid: entitlements.simulatePlaid()
+            case .epargne:   entitlements.simulateEpargne()
+            case .placement: entitlements.simulatePlacement()
             }
         }
         pendingTier = nil

@@ -19,7 +19,7 @@ struct RecurrencesView: View {
 
     /// True when a free-tier user has reached the 5-rule cap.
     private var isAtFreeLimit: Bool {
-        !entitlements.hasPro && allRules.count >= FinTrackLimit.freeMaxRecurring
+        !entitlements.hasPaidTier && allRules.count >= FinTrackLimit.freeMaxRecurring
     }
 
     private var activeRules: [RecurringTransaction] {

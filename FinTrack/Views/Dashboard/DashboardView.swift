@@ -207,7 +207,7 @@ struct DashboardView: View {
 
     @ViewBuilder
     private func widgetView(for id: DashboardWidgetID) -> some View {
-        if id.requiresPro && !entitlements.hasPro {
+        if id.requiresPro && !entitlements.hasPaidTier {
             // Pro-only widget — show upsell teaser for Courant users
             proTeaser(for: id)
         } else {

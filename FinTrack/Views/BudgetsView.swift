@@ -26,7 +26,7 @@ struct BudgetsView: View {
     @State private var showArchived     = false
 
     private var isAtFreeLimit: Bool {
-        !entitlements.hasPro && activeBudgets.count >= FinTrackLimit.freeMaxBudgets
+        !entitlements.hasPaidTier && activeBudgets.count >= FinTrackLimit.freeMaxBudgets
     }
 
     private var statuses: [BudgetStatus] {

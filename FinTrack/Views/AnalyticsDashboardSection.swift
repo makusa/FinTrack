@@ -293,7 +293,7 @@ struct BalanceProjectionCard: View {
             // ── Range picker ───────────────────────────────────────────────
             HStack(spacing: 6) {
                 ForEach(Range.allCases, id: \.self) { r in
-                    let isLocked = !entitlements.hasPro && r != .threeMonths
+                    let isLocked = !entitlements.hasPaidTier && r != .threeMonths
                     RangePill(label: r.rawValue, isSelected: selectedRange == r,
                               isLocked: isLocked) {
                         guard !isLocked else { return }
@@ -560,7 +560,7 @@ struct IncomeExpenseCard: View {
             .animation(.easeInOut(duration: 0.15), value: selectedMonth?.id)
             .onAppear {
                 // Courant: force 3-month window — 6m and 1a are locked
-                if !entitlements.hasPro {
+                if !entitlements.hasPaidTier {
                     selectedWindow = .threeMonths
                 }
             }
@@ -568,7 +568,7 @@ struct IncomeExpenseCard: View {
             // ── Range picker ───────────────────────────────────────────────
             HStack(spacing: 6) {
                 ForEach(Window.allCases, id: \.self) { w in
-                    let isLocked = !entitlements.hasPro && w != .threeMonths
+                    let isLocked = !entitlements.hasPaidTier && w != .threeMonths
                     RangePill(label: w.rawValue, isSelected: selectedWindow == w,
                               isLocked: isLocked) {
                         guard !isLocked else { return }

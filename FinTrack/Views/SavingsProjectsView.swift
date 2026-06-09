@@ -26,7 +26,7 @@ struct SavingsProjectsView: View {
     @State private var showArchived = false
 
     private var isAtFreeLimit: Bool {
-        !entitlements.hasPro && activeProjects.count >= FinTrackLimit.freeMaxSavingsProjects
+        !entitlements.hasPaidTier && activeProjects.count >= FinTrackLimit.freeMaxSavingsProjects
     }
 
     // Total by currency
@@ -221,7 +221,7 @@ struct SavingsProjectDetailView: View {
     @State private var scrubAmount:  Double? = nil
 
     private var calc: ProjectionData {
-        ProjectionData(project: project, maxMonths: entitlements.hasPro ? 120 : 3)
+        ProjectionData(project: project, maxMonths: entitlements.hasPaidTier ? 120 : 3)
     }
 
     var body: some View {

@@ -94,8 +94,8 @@ enum BankDirectory {
     static let freeTierCountries: Set<String> = ["CA", "US"]
 
     /// Filtered bank list: free tier = CA+US only, pro tier = all.
-    static func search(_ query: String, hasPro: Bool, limit: Int = 12) -> [BankInfo] {
-        let filtered = hasPro ? all : all.filter { freeTierCountries.contains($0.countryCode) }
+    static func search(_ query: String, hasPaidTier: Bool, limit: Int = 12) -> [BankInfo] {
+        let filtered = hasPaidTier ? all : all.filter { freeTierCountries.contains($0.countryCode) }
         let q = query.trimmingCharacters(in: .whitespaces).lowercased()
         guard !q.isEmpty else { return [] }
 
@@ -114,17 +114,17 @@ enum BankDirectory {
     }
 
     /// Countries to display in grouped picker, filtered by tier.
-    static func availableCountries(hasPro: Bool) -> [String] {
-        let allowed: Set<String> = hasPro ? Set(all.map { $0.countryCode }) : freeTierCountries
-        let preferred = hasPro
+    static func availableCountries(hasPaidTier: Bool) -> [String] {
+        let allowed: Set<String> = hasPaidTier ? Set(all.map { $0.countryCode }) : freeTierCountries
+        let preferred = hasPaidTier
             ? ["CA", "US", "GB", "FR", "DE", "ES", "PT", "NL", "BE", "CH", "AF", "INT"]
             : ["CA", "US"]
         return preferred.filter { allowed.contains($0) && !banks(for: $0).isEmpty }
     }
 
     /// Banks for a country, respecting tier.
-    static func banks(for countryCode: String, hasPro: Bool = true) -> [BankInfo] {
-        guard hasPro || freeTierCountries.contains(countryCode) else { return [] }
+    static func banks(for countryCode: String, hasPaidTier: Bool = true) -> [BankInfo] {
+        guard hasPaidTier || freeTierCountries.contains(countryCode) else { return [] }
         return all.filter { $0.countryCode == countryCode }.sorted { $0.name < $1.name }
     }
 

@@ -31,7 +31,7 @@ struct AddEditAccountView: View {
 
     /// CAD + USD for free tier; all currencies for Pro.
     private var availableCurrencies: [CurrencyInfo] {
-        if entitlements.hasPro { return Currencies.all }
+        if entitlements.hasPaidTier { return Currencies.all }
         return Currencies.all.filter { ["CAD", "USD"].contains($0.code) }
     }
 
@@ -74,7 +74,7 @@ struct AddEditAccountView: View {
                                 colorHex = hex
                             }
                         },
-                        hasPro: entitlements.hasPro
+                        hasPaidTier: entitlements.hasPaidTier
                     )
                     Picker(lang["label.type"], selection: $type) {
                         ForEach(AccountType.allCases) { t in
@@ -96,7 +96,7 @@ struct AddEditAccountView: View {
                             Text("\(cur.code) — \(cur.nameFR)").tag(cur.code)
                         }
                     }
-                    if !entitlements.hasPro {
+                    if !entitlements.hasPaidTier {
                         Label(lang["account.currency.proHint"], systemImage: "lock.fill")
                             .font(.caption)
                             .foregroundStyle(.secondary)

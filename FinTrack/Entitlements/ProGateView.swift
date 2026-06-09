@@ -68,8 +68,8 @@ enum GatedFeature {
 
     var requiredProduct: FinTrackProduct {
         switch self {
-        case .plaidSync: return .plaidMonthly
-        default:         return .pro
+        case .plaidSync: return .placement
+        default:         return .epargne
         }
     }
 }
@@ -84,7 +84,7 @@ struct ProGateView: View {
     @State private var isPurchasing = false
     @State private var showError    = false
 
-    private var isPlaidGate: Bool { feature.requiredProduct == .plaidMonthly }
+    private var isPlaidGate: Bool { feature.requiredProduct == .placement }
 
     var body: some View {
         ScrollView {
@@ -288,8 +288,8 @@ struct ProGated<Content: View>: View {
     var body: some View {
         let hasAccess: Bool = {
             switch feature.requiredProduct {
-            case .pro:          return entitlements.hasPro
-            case .plaidMonthly: return entitlements.hasPlaid
+            case .epargne:          return entitlements.hasPaidTier
+            case .placement: return entitlements.hasPlacement
             }
         }()
 

@@ -176,9 +176,9 @@ final class DashboardConfigManager {
         save()
     }
 
-    func resetToDefaults(hasPro: Bool = true) {
-        enabled  = DashboardWidgetID.allCases.filter { hasPro || !$0.requiresPro }
-        disabled = hasPro ? [] : DashboardWidgetID.allCases.filter { $0.requiresPro }
+    func resetToDefaults(hasPaidTier: Bool = true) {
+        enabled  = DashboardWidgetID.allCases.filter { hasPaidTier || !$0.requiresPro }
+        disabled = hasPaidTier ? [] : DashboardWidgetID.allCases.filter { $0.requiresPro }
         save()
     }
 

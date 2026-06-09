@@ -16,7 +16,7 @@ struct ExchangeRateSettingsView: View {
 
     /// Devises sélectionnables : CAD + USD pour Courant, toutes pour Pro.
     private var selectableCurrencies: [CurrencyInfo] {
-        entitlements.hasPro
+        entitlements.hasPaidTier
             ? Currencies.all
             : Currencies.all.filter { ["CAD", "USD"].contains($0.code) }
     }
@@ -24,7 +24,7 @@ struct ExchangeRateSettingsView: View {
     /// Devises affichées dans le tableau des taux : même filtre.
     private var displayableCurrencies: [CurrencyInfo] {
         Currencies.all.filter {
-            entitlements.hasPro || ["CAD", "USD"].contains($0.code)
+            entitlements.hasPaidTier || ["CAD", "USD"].contains($0.code)
         }
     }
 
@@ -42,7 +42,7 @@ struct ExchangeRateSettingsView: View {
                         }
                         .tag(c.code)
                     }
-                    if !entitlements.hasPro {
+                    if !entitlements.hasPaidTier {
                         Label(lang["fx.pro.hint"], systemImage: "lock.fill")
                             .font(.caption)
                             .foregroundStyle(.secondary)

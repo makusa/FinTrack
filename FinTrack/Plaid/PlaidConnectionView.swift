@@ -33,7 +33,7 @@ struct ConnectedAccountsView: View {
 
     var body: some View {
         NavigationStack {
-            if !entitlements.hasPlaid {
+            if !entitlements.hasPlacement {
                 ProGateView(feature: .plaidSync)
             } else {
             List {

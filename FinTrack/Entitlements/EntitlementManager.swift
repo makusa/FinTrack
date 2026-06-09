@@ -5,13 +5,13 @@
 //  Manages in-app purchases and subscriptions via StoreKit 2.
 //
 //  Products (configure in App Store Connect):
-//    ca.regis.fintrack.pro           — Non-consumable, $19.99 CAD (one-time)
-//    ca.regis.fintrack.plaid_monthly — Auto-renewable subscription, $3.99 CAD/month
+//    ca.regis.fintrack.epargne   — Non-consumable, ~28,99 $ CAD (achat unique — Épargne)
+//    ca.regis.fintrack.placement — Auto-renewable subscription, ~6,49 $/mois (Placement)
 //
 //  Tier summary:
-//    Free  — unlimited accounts (manual), unlimited transactions, max 5 recurring, max 2 loans, max 1 credit line, max 2 savings projects, max 3 budgets, basic dashboard
-//    Pro   — Everything: analytics, budgets, loans, recurring, transfers, FX, export…
-//    Plaid — Automatic bank sync (requires active subscription)
+//    Courant   — gratuit: comptes illimités, max 5 récurrences, max 2 prêts, max 1 marge, max 2 projets, max 3 budgets
+//    Épargne   — achat unique: tout illimité + analytiques + export + FX
+//    Placement — abonnement: tout Épargne + sync Plaid automatique
 //
 
 import StoreKit
@@ -20,27 +20,27 @@ import SwiftUI
 // MARK: - Product IDs
 
 enum FinTrackProduct: String, CaseIterable {
-    case pro         = "ca.regis.fintrack.pro"
-    case plaidMonthly = "ca.regis.fintrack.plaid_monthly"
+    case epargne         = "ca.regis.fintrack.epargne"
+    case placement = "ca.regis.fintrack.placement"
 
     var displayName: String {
         switch self {
-        case .pro:          return LanguageManager.shared["entitlement.pro.name"]
-        case .plaidMonthly: return LanguageManager.shared["entitlement.plaid.name"]
+        case .epargne:          return LanguageManager.shared["entitlement.pro.name"]
+        case .placement: return LanguageManager.shared["entitlement.plaid.name"]
         }
     }
 
     var price: String {
         switch self {
-        case .pro:          return "19,99 $"
-        case .plaidMonthly: return "3,99 $/mois"
+        case .epargne:          return "19,99 $"
+        case .placement: return "3,99 $/mois"
         }
     }
 
     var icon: String {
         switch self {
-        case .pro:          return "star.fill"
-        case .plaidMonthly: return "building.columns.badge.plus"
+        case .epargne:          return "star.fill"
+        case .placement: return "building.columns.badge.plus"
         }
     }
 }
@@ -49,8 +49,8 @@ enum FinTrackProduct: String, CaseIterable {
 
 enum FinTrackTier: Equatable {
     case free
-    case pro           // one-time purchase
-    case plaid         // monthly subscription (implies pro)
+    case epargne           // one-time purchase
+    case placement     // abonnement mensuel — Placement (implique Épargne)
 }
 
 // MARK: - Limits
@@ -78,15 +78,15 @@ final class EntitlementManager {
 
     // MARK: State
 
-    private(set) var hasPro:   Bool = false
-    private(set) var hasPlaid: Bool = false
+    private(set) var hasPaidTier:   Bool = false
+    private(set) var hasPlacement: Bool = false
     private(set) var isLoading = false
     private(set) var products: [Product] = []
     private(set) var purchaseError: String? = nil
 
     var tier: FinTrackTier {
-        if hasPlaid { return .plaid }
-        if hasPro   { return .pro }
+        if hasPlacement { return .placement }
+        if hasPaidTier   { return .epargne }
         return .free
     }
 
@@ -182,19 +182,19 @@ final class EntitlementManager {
         for await result in StoreKit.Transaction.currentEntitlements {
             if let transaction = try? checkVerified(result) {
                 switch transaction.productID {
-                case FinTrackProduct.pro.rawValue:
+                case FinTrackProduct.epargne.rawValue:
                     newHasPro = true
-                case FinTrackProduct.plaidMonthly.rawValue:
+                case FinTrackProduct.placement.rawValue:
                     newHasPlaid = true
-                    newHasPro   = true  // Plaid implies Pro
+                    newHasPaidTier = true  // Placement implies Épargne
                 default:
                     break
                 }
             }
         }
 
-        hasPro   = newHasPro
-        hasPlaid = newHasPlaid
+        hasPaidTier   = newHasPro
+        hasPlacement = newHasPlaid
     }
 
     // MARK: - Transaction listener
@@ -211,11 +211,11 @@ final class EntitlementManager {
     @MainActor
     private func updateEntitlements(for transaction: StoreKit.Transaction) async {
         switch transaction.productID {
-        case FinTrackProduct.pro.rawValue:
-            hasPro = transaction.revocationDate == nil
-        case FinTrackProduct.plaidMonthly.rawValue:
-            hasPlaid = transaction.revocationDate == nil
-            if hasPlaid { hasPro = true }
+        case FinTrackProduct.epargne.rawValue:
+            hasPaidTier = transaction.revocationDate == nil
+        case FinTrackProduct.placement.rawValue:
+            hasPlacement = transaction.revocationDate == nil
+            if hasPlacement { hasPaidTier = true }  // Placement includes Épargne features
         default:
             break
         }
@@ -235,8 +235,8 @@ final class EntitlementManager {
     // MARK: - Override (debug / promo)
 
     #if DEBUG
-    @MainActor func simulatePro()   { hasPro = true }
-    @MainActor func simulatePlaid() { hasPro = true; hasPlaid = true }
-    @MainActor func simulateFree()  { hasPro = false; hasPlaid = false }
+    @MainActor func simulateEpargne()   { hasPaidTier = true; hasPlacement = false }
+    @MainActor func simulatePlacement() { hasPaidTier = true; hasPlacement = true }
+    @MainActor func simulateFree()      { hasPaidTier = false; hasPlacement = false }
     #endif
 }

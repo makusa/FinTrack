@@ -19,7 +19,7 @@ struct ExchangeRateWidget: View {
 
     // Priority pairs differ by tier
     private var priorityPairs: [(from: String, to: String)] {
-        if entitlements.hasPro {
+        if entitlements.hasPaidTier {
             // Pro: full corridor CAD/XAF/USD/EUR
             return [
                 ("CAD", "USD"),
@@ -51,7 +51,7 @@ struct ExchangeRateWidget: View {
         for p in priorityPairs { add(p) }
 
         // Extra pairs from account currencies (Pro only — free tier stays CAD/USD)
-        if entitlements.hasPro {
+        if entitlements.hasPaidTier {
             let display = rates.displayCurrency
             for cur in accountCurrencies where cur != display && cur != "CAD" {
                 add((from: "CAD", to: cur))

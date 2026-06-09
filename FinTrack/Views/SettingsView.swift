@@ -281,8 +281,8 @@ struct SettingsView: View {
     @ViewBuilder
     private var developerSection: some View {
         let e = EntitlementManager.shared
-        let tierName = e.hasPlaid ? "Placement" : e.hasPro ? "Épargne" : "Courant"
-        let tierColor: Color = e.hasPlaid ? .teal : e.hasPro ? .orange : .gray
+        let tierName = e.hasPlacement ? "Placement" : e.hasPaidTier ? "Épargne" : "Courant"
+        let tierColor: Color = e.hasPlacement ? .teal : e.hasPaidTier ? .orange : .gray
 
         Section {
             NavigationLink {
@@ -314,10 +314,10 @@ struct SettingsView: View {
         case .free:
             label = "Free"
             color = .gray
-        case .pro:
+        case .epargne:
             label = "Pro"
             color = .orange
-        case .plaid:
+        case .placement:
             label = "Plaid"
             color = .teal
         }

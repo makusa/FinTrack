@@ -25,15 +25,15 @@ struct SubscriptionView: View {
             .listRowInsets(.init(top: 0, leading: 0, bottom: 0, trailing: 0))
 
             // MARK: Plans
-            if !entitlements.hasPro {
+            if !entitlements.hasPaidTier {
                 Section(lang["entitlement.plans"]) {
-                    planRow(product: .pro)
+                    planRow(product: .epargne)
                 }
             }
 
-            if !entitlements.hasPlaid {
+            if !entitlements.hasPlacement {
                 Section {
-                    planRow(product: .plaidMonthly)
+                    planRow(product: .placement)
                 } footer: {
                     Text(lang["entitlement.plaid.footer"])
                 }
@@ -46,7 +46,7 @@ struct SubscriptionView: View {
                 }
                 .disabled(entitlements.isLoading)
 
-                if entitlements.hasPlaid {
+                if entitlements.hasPlacement {
                     Link(lang["entitlement.manage.subscription"],
                          destination: URL(string: "https://apps.apple.com/account/subscriptions")!)
                 }
@@ -98,24 +98,24 @@ struct SubscriptionView: View {
     private var tierIcon: String {
         switch entitlements.tier {
         case .free:  return "person.circle"
-        case .pro:   return "star.fill"
-        case .plaid: return "building.columns.badge.plus"
+        case .epargne:   return "star.fill"
+        case .placement: return "building.columns.badge.plus"
         }
     }
 
     private var tierName: String {
         switch entitlements.tier {
         case .free:  return lang["entitlement.free.name"]
-        case .pro:   return lang["entitlement.pro.name"]
-        case .plaid: return lang["entitlement.plaid.name"] + " + Pro"
+        case .epargne:   return lang["entitlement.pro.name"]
+        case .placement: return lang["entitlement.plaid.name"] + " + Pro"
         }
     }
 
     private var tierSubtitle: String {
         switch entitlements.tier {
         case .free:  return lang["entitlement.free.subtitle"]
-        case .pro:   return lang["entitlement.pro.subtitle"]
-        case .plaid: return lang["entitlement.plaid.subtitle"]
+        case .epargne:   return lang["entitlement.pro.subtitle"]
+        case .placement: return lang["entitlement.plaid.subtitle"]
         }
     }
 
@@ -123,9 +123,9 @@ struct SubscriptionView: View {
         switch entitlements.tier {
         case .free:
             return LinearGradient(colors: [.gray, .gray.opacity(0.7)], startPoint: .top, endPoint: .bottom)
-        case .pro:
+        case .epargne:
             return LinearGradient(colors: [.orange, .yellow], startPoint: .topLeading, endPoint: .bottomTrailing)
-        case .plaid:
+        case .placement:
             return LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing)
         }
     }
@@ -136,7 +136,7 @@ struct SubscriptionView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Image(systemName: product.icon)
-                    .foregroundStyle(product == .pro ? .orange : .teal)
+                    .foregroundStyle(product == .epargne ? .orange : .teal)
                 Text(product.displayName)
                     .font(.body.weight(.semibold))
                 Spacer()
@@ -147,7 +147,7 @@ struct SubscriptionView: View {
                 }
             }
 
-            Text(product == .pro
+            Text(product == .epargne
                  ? lang["entitlement.pro.description"]
                  : lang["entitlement.plaid.description"])
                 .font(.callout)
@@ -160,7 +160,7 @@ struct SubscriptionView: View {
                     if entitlements.isLoading {
                         ProgressView().tint(.white)
                     } else {
-                        Text(product == .pro
+                        Text(product == .epargne
                              ? lang["entitlement.pro.cta"]
                              : lang["entitlement.plaid.cta"])
                     }
@@ -170,7 +170,7 @@ struct SubscriptionView: View {
                 .font(.body.weight(.semibold))
             }
             .buttonStyle(.borderedProminent)
-            .tint(product == .pro ? .orange : .teal)
+            .tint(product == .epargne ? .orange : .teal)
             .disabled(entitlements.isLoading)
         }
         .padding(.vertical, 4)

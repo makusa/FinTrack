@@ -23,7 +23,7 @@ struct LoansView: View {
     @State private var showArchived = false
 
     private var isAtFreeLimit: Bool {
-        !entitlements.hasPro && activeLoans.count >= FinTrackLimit.freeMaxLoans
+        !entitlements.hasPaidTier && activeLoans.count >= FinTrackLimit.freeMaxLoans
     }
 
     // Total remaining debt grouped by currency

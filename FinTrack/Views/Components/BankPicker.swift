@@ -147,7 +147,7 @@ struct InstitutionPickerField: View {
     /// Provides the matched BankInfo so the caller can set the logo domain etc.
     var onBankSelected: ((BankInfo) -> Void)? = nil
     /// Restricts the picker to free-tier institutions (CA + US) when false.
-    var hasPro: Bool = true
+    var hasPaidTier: Bool = true
 
     @State private var showPicker = false
 
@@ -172,7 +172,7 @@ struct InstitutionPickerField: View {
         .sheet(isPresented: $showPicker) {
             BankPickerSheet(
                 selectedName: $text,
-                hasPro: hasPro,
+                hasPaidTier: hasPaidTier,
                 onBankSelected: onBankSelected
             )
         }
@@ -186,14 +186,14 @@ struct BankPickerSheet: View {
     @Environment(LanguageManager.self) private var lang
 
     @Binding var selectedName: String
-    var hasPro: Bool = true
+    var hasPaidTier: Bool = true
     var onBankSelected: ((BankInfo) -> Void)? = nil
 
     @State private var query: String = ""
 
     private var isSearching: Bool { !query.trimmingCharacters(in: .whitespaces).isEmpty }
-    private var searchResults: [BankInfo] { BankDirectory.search(query, hasPro: hasPro) }
-    private var countries: [String] { BankDirectory.availableCountries(hasPro: hasPro) }
+    private var searchResults: [BankInfo] { BankDirectory.search(query, hasPaidTier: hasPaidTier) }
+    private var countries: [String] { BankDirectory.availableCountries(hasPaidTier: hasPaidTier) }
 
     var body: some View {
         NavigationStack {
@@ -230,7 +230,7 @@ struct BankPickerSheet: View {
                 } else {
                     ForEach(countries, id: \.self) { code in
                         Section {
-                            ForEach(BankDirectory.banks(for: code, hasPro: hasPro)) { bank in
+                            ForEach(BankDirectory.banks(for: code, hasPaidTier: hasPaidTier)) { bank in
                                 bankRow(bank)
                             }
                         } header: {
