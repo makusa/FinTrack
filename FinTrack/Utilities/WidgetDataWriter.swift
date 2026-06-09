@@ -3,10 +3,14 @@
 import Foundation
 import SwiftData
 import WidgetKit
+import os
+
+private let widgetLog = Logger(subsystem: "ca.regis.fintrack", category: "widget")
 
 enum WidgetDataWriter {
 
     static func write(context: ModelContext) {
+        widgetLog.info("WidgetDataWriter.write() called")
         let accounts     = (try? context.fetch(FetchDescriptor<Account>())) ?? []
         let transactions = (try? context.fetch(FetchDescriptor<Transaction>(
             sortBy: [SortDescriptor(\Transaction.date, order: .reverse)]
@@ -83,7 +87,14 @@ enum WidgetDataWriter {
             updatedAt:          .now
         )
 
+        let defaults = UserDefaults(suiteName: FinTrackWidgetData.appGroupID)
+        if defaults == nil {
+            widgetLog.error("App Group UserDefaults nil — group.ca.regis.fintrack not entitled. Add App Groups capability in Xcode.")
+        } else {
+            widgetLog.info("Writing widget data: \(balances.count) balances, \(recent.count) tx, updatedAt \(Date.now.description)")
+        }
         data.save()
         WidgetCenter.shared.reloadAllTimelines()
+        widgetLog.info("WidgetCenter.reloadAllTimelines() called")
     }
 }
