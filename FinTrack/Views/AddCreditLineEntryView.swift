@@ -230,6 +230,7 @@ struct AddCreditLineEntryView: View {
                 payee:    creditLine.lenderName.isEmpty ? nil : creditLine.lenderName
             )
             context.insert(tx)
+            acc.recalculateBalance()
         }
 
         try? context.save()

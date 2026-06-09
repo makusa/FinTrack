@@ -265,6 +265,8 @@ struct AddTransferView: View {
 
         context.insert(debit)
         context.insert(credit)
+        sourceAccount?.recalculateBalance()
+        destinationAccount?.recalculateBalance()
         try? context.save()
         dismiss()
     }

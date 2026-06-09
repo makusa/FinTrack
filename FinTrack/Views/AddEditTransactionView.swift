@@ -302,6 +302,7 @@ struct AddEditTransactionView: View {
             tx.notificationDaysBefore = notifDaysBefore
         }
 
+        account.recalculateBalance()
         do {
             try context.save()
             dismiss()
@@ -314,7 +315,9 @@ struct AddEditTransactionView: View {
 
     private func deleteIfEditing() {
         guard case .edit(let tx) = mode else { return }
+        let acct = tx.account
         context.delete(tx)
+        acct?.recalculateBalance()
         try? context.save()
         let ctx = context
         Task { await NotificationManager.shared.scheduleAll(context: ctx) }

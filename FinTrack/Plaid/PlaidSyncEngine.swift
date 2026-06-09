@@ -82,6 +82,10 @@ final class PlaidSyncEngine {
 
             try? context.save()
 
+            // Recalculate balance for all accounts touched by this sync
+            let allAccounts = (try? context.fetch(FetchDescriptor<Account>())) ?? []
+            allAccounts.forEach { $0.recalculateBalance() }
+
             // Update cursor for next sync
             PlaidManager.shared.updateCursor(for: item.id, cursor: response.next_cursor)
 

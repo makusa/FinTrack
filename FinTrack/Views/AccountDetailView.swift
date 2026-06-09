@@ -173,6 +173,7 @@ struct AccountDetailView: View {
         for tx in toDelete {
             context.delete(tx)
         }
+        account.recalculateBalance()
         try? context.save()
     }
 }

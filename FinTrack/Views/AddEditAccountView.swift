@@ -308,6 +308,7 @@ struct AddEditAccountView: View {
             account.iconSystemName = iconSystemName
             account.bankDomain = bankDomain
             account.notes = trimmedNotes.isEmpty ? nil : trimmedNotes
+            account.recalculateBalance()  // initialBalance may have changed
         }
 
         do {

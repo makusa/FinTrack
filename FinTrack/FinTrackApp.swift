@@ -49,6 +49,16 @@ struct FinTrackApp: App {
             }
         }
 
+        // C1 migration — on first launch after cachedBalance was added,
+        // recalculate all accounts (they have cachedBalance = 0 from migration).
+        let migrationKey = "accountBalanceCacheInitialized_v1"
+        if !UserDefaults.standard.bool(forKey: migrationKey) {
+            let accounts = (try? modelContainer.mainContext.fetch(FetchDescriptor<Account>())) ?? []
+            accounts.forEach { $0.recalculateBalance() }
+            try? modelContainer.mainContext.save()
+            UserDefaults.standard.set(true, forKey: migrationKey)
+        }
+
         // Seed default categories on the main context.
         SeedData.seedIfNeeded(context: modelContainer.mainContext)
 

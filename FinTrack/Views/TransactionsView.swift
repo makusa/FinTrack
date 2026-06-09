@@ -188,8 +188,14 @@ struct TransactionsView: View {
     }
 
     private func delete(in items: [Transaction], at offsets: IndexSet) {
+        var affected: Set<Account.ID> = []
         for index in offsets {
+            if let a = items[index].account { affected.insert(a.id) }
             context.delete(items[index])
+        }
+        // Recalculate after deletes
+        for acc in accounts where affected.contains(acc.id) {
+            acc.recalculateBalance()
         }
         try? context.save()
     }

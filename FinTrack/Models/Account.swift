@@ -64,12 +64,17 @@ final class Account {
         set { typeRaw = newValue.rawValue }
     }
 
-    /// Computed balance = initial balance + sum of signed transactions.
-    /// We never store this; the source of truth is always the transaction history.
-    var balance: Decimal {
-        transactions.reduce(initialBalance) { partial, tx in
-            partial + tx.signedAmount
-        }
+    /// Denormalised balance — cached for O(1) reads (C1 perf fix).
+    /// Updated by recalculateBalance() on every transaction write.
+    var cachedBalance: Decimal = 0
+
+    /// O(1) read — returns the cached value.
+    var balance: Decimal { cachedBalance }
+
+    /// Full recomputation from scratch. Call after any write that touches
+    /// this account's transactions or initialBalance.
+    func recalculateBalance() {
+        cachedBalance = transactions.reduce(initialBalance) { $0 + $1.signedAmount }
     }
 
     init(

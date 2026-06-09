@@ -31,14 +31,21 @@ enum LoanPrepaymentManager {
         let all = (try? context.fetch(descriptor)) ?? []
 
         var didChange = false
+        var affectedAccounts: Set<PersistentIdentifier> = []
         for prep in all {
-            guard prep.account != nil else { continue }
+            guard let account = prep.account else { continue }
             if generateTransactions(for: prep, upTo: now, context: context) {
                 didChange = true
+                affectedAccounts.insert(account.persistentModelID)
             }
         }
 
-        if didChange { try? context.save() }
+        if didChange {
+            let allAccounts = (try? context.fetch(FetchDescriptor<Account>())) ?? []
+            allAccounts.filter { affectedAccounts.contains($0.persistentModelID) }
+                       .forEach { $0.recalculateBalance() }
+            try? context.save()
+        }
     }
 
     // MARK: - Internal
