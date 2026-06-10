@@ -140,7 +140,7 @@ final class CreditLine {
 
 
     var notes: String?
-    var createdAt: Date
+    var createdAt: Date = Date.now
 
     var account: Account?   // bank account debited for repayments
 

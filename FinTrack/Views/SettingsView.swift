@@ -15,6 +15,9 @@ struct SettingsView: View {
     @Environment(LanguageManager.self) private var lang
     @Environment(ExchangeRateManager.self) private var rateManager
     @Environment(EntitlementManager.self) private var entitlements
+
+    @AppStorage("fintrack.cloudSyncEnabled") private var cloudSyncEnabled = false
+    @State private var showCloudRestartAlert = false
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query(sort: \Account.createdAt) private var allAccounts: [Account]
 
@@ -32,6 +35,7 @@ struct SettingsView: View {
                 plaidSection
                 securitySection
                 notificationsSection
+                cloudSyncSection
                 dataSection
                 statsSection
                 dangerZoneSection
@@ -197,6 +201,39 @@ struct SettingsView: View {
     }
 
     @ViewBuilder
+    private var cloudSyncSection: some View {
+        Section {
+            if entitlements.hasPaidTier {
+                Toggle(isOn: $cloudSyncEnabled) {
+                    Label(lang["settings.cloudSync"], systemImage: "icloud.fill")
+                }
+                .onChange(of: cloudSyncEnabled) { _, _ in
+                    showCloudRestartAlert = true
+                }
+            } else {
+                HStack {
+                    Label(lang["settings.cloudSync"], systemImage: "icloud.fill")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Image(systemName: "lock.fill")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
+            }
+        } header: {
+            Text(lang["settings.cloudSync.section"])
+        } footer: {
+            Text(entitlements.hasPaidTier
+                 ? lang["settings.cloudSync.footer"]
+                 : lang["settings.cloudSync.locked"])
+        }
+        .alert(lang["settings.cloudSync.restart.title"], isPresented: $showCloudRestartAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(lang["settings.cloudSync.restart.body"])
+        }
+    }
+
     private var dataSection: some View {
         Section(lang["settings.data"]) {
             NavigationLink {

@@ -14,22 +14,47 @@ struct FinTrackApp: App {
     let container: ModelContainer
 
     init() {
-        // SwiftData performs lightweight migration automatically when
-        // optional properties with default values are added to models.
-        // No VersionedSchema needed for these changes.
-        let schema = Schema([
-            Account.self, Transaction.self, Category.self,
-            RecurringTransaction.self, Loan.self, SavingsProject.self,
-            CreditLine.self, CreditLineEntry.self,
-            LoanPrepayment.self, Budget.self
-        ])
-        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-        let modelContainer: ModelContainer
+        // Versioned schema (FinTrackSchemaV1) — prerequisite for CloudKit.
+        // All future model changes go through FinTrackMigrationPlan.
+        let schema = Schema(versionedSchema: FinTrackSchemaV1.self)
 
+        // CloudKit sync is reserved for paid tiers (Épargne / Placement).
+        // The flag is persisted by EntitlementManager so it is readable here,
+        // before any SwiftUI environment exists.
+        let cloudSyncEnabled = UserDefaults.standard.bool(forKey: "fintrack.cloudSyncEnabled")
+
+        let config: ModelConfiguration
+        if cloudSyncEnabled {
+            config = ModelConfiguration(
+                schema: schema,
+                cloudKitDatabase: .private("iCloud.ca.regis.fintrack")
+            )
+        } else {
+            config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        }
+
+        let modelContainer: ModelContainer
         do {
-            modelContainer = try ModelContainer(for: schema, configurations: [config])
+            modelContainer = try ModelContainer(
+                for: schema,
+                migrationPlan: FinTrackMigrationPlan.self,
+                configurations: [config]
+            )
         } catch {
-            fatalError("FinTrack: ModelContainer init failed — \(error)")
+            // CloudKit container may fail (no iCloud account, entitlement missing).
+            // Fall back to the local store rather than crashing — losing sync is
+            // recoverable, losing the app is not.
+            do {
+                let localConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+                modelContainer = try ModelContainer(
+                    for: schema,
+                    migrationPlan: FinTrackMigrationPlan.self,
+                    configurations: [localConfig]
+                )
+                UserDefaults.standard.set(false, forKey: "fintrack.cloudSyncEnabled")
+            } catch {
+                fatalError("FinTrack: ModelContainer init failed — \(error)")
+            }
         }
 
         container = modelContainer

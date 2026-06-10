@@ -195,6 +195,13 @@ final class EntitlementManager {
 
         hasPaidTier  = newHasPaidTier
         hasPlacement = newHasPlacement
+
+        // CloudKit sync is a paid feature — if the entitlement lapsed
+        // (refund, expired subscription), disable the sync flag so the
+        // next launch falls back to the local store.
+        if !newHasPaidTier {
+            UserDefaults.standard.set(false, forKey: "fintrack.cloudSyncEnabled")
+        }
     }
 
     // MARK: - Transaction listener

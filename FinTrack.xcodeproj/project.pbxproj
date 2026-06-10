@@ -44,6 +44,7 @@
 		6D2913EF9D1E6FC93EDD4478 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56B856841A3233981584E382 /* KeychainHelper.swift */; };
 		6E037B33C990E82581CD6827 /* RecurringTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB73684BE58709BA98D84D2 /* RecurringTransaction.swift */; };
 		6E75D36FFEB6E8DB565F3207 /* AddEditBudgetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B8833492251E28C1FC5943F /* AddEditBudgetView.swift */; };
+		6E8D2A6A6C3F3D290EBA87E3 /* FinTrackSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148949877907760B7E338297 /* FinTrackSchema.swift */; };
 		6F557C03EC16CE672E209ECF /* RecurrencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79879028C8F8BC32BD5A8523 /* RecurrencesView.swift */; };
 		708A7E841F0FE54C408D2E08 /* AccountDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D76D2AF0CE6FEC33302AB61E /* AccountDetailView.swift */; };
 		762FF16D61FD6F647D8B3FA8 /* SubscriptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD3CF16E621A3AE8D61CC443 /* SubscriptionView.swift */; };
@@ -126,6 +127,7 @@
 		0E30611F5C70AADC2D5758AE /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		0E5A5665A30F1D56650390EE /* AppLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogger.swift; sourceTree = "<group>"; };
 		11560DDA34E50EFE06CF757A /* SecuritySettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecuritySettingsView.swift; sourceTree = "<group>"; };
+		148949877907760B7E338297 /* FinTrackSchema.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinTrackSchema.swift; sourceTree = "<group>"; };
 		1576E72DD76DAD0C99318B64 /* DashboardConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardConfigManager.swift; sourceTree = "<group>"; };
 		17B5A8A48F6F1A2A395FA28D /* FinTrackWidgetEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinTrackWidgetEntry.swift; sourceTree = "<group>"; };
 		19AD119703063332E899FA3A /* BudgetDashboardSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetDashboardSection.swift; sourceTree = "<group>"; };
@@ -352,6 +354,7 @@
 				F053C63C61980B18AA6263E4 /* Category.swift */,
 				DABA356B051CEFE3BBDC6F0B /* CreditLine.swift */,
 				A343B877C383A2628511AF5E /* Currency.swift */,
+				148949877907760B7E338297 /* FinTrackSchema.swift */,
 				744E9158B684ECD95A1401FD /* Loan.swift */,
 				B74500B771A1359075449229 /* LoanPrepayment.swift */,
 				2FB73684BE58709BA98D84D2 /* RecurringTransaction.swift */,
@@ -546,6 +549,7 @@
 				2DAD357BA0A08278B5026DCA /* ExchangeRateSettingsView.swift in Sources */,
 				31482AB09AF55110E0E261F1 /* ExchangeRateWidget.swift in Sources */,
 				BDDA758C9D4C28BFA7174B8A /* FinTrackApp.swift in Sources */,
+				6E8D2A6A6C3F3D290EBA87E3 /* FinTrackSchema.swift in Sources */,
 				40B7E6CDE09831892A6C9DA9 /* FormatterHelpers.swift in Sources */,
 				6D2913EF9D1E6FC93EDD4478 /* KeychainHelper.swift in Sources */,
 				8A7D25C6B0F713B980B95688 /* LanguageManager.swift in Sources */,
