@@ -22,7 +22,10 @@ struct TransactionsView: View {
     @State private var searchText: String = ""
     @State private var debouncedSearch: String = ""
     @State private var debounceTask: Task<Void, Error>? = nil
+    @State private var viewMode: ViewMode = .list
     @State private var showAddTransaction = false
+
+    enum ViewMode { case list, calendar }
     @State private var showAddTransfer = false
 
     enum TypeFilter: String, CaseIterable, Identifiable {
@@ -76,7 +79,13 @@ struct TransactionsView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if allTransactions.isEmpty {
+                if viewMode == .calendar {
+                    TransactionsCalendarView(
+                        realTransactions: allTransactions,
+                        typeFilter: filterType,
+                        accountFilter: filterAccount
+                    )
+                } else if allTransactions.isEmpty {
                     ContentUnavailableView(
                         lang["tx.noTx"],
                         systemImage: "list.bullet.rectangle",
@@ -98,6 +107,13 @@ struct TransactionsView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     filterMenu
+                }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        withAnimation { viewMode = viewMode == .list ? .calendar : .list }
+                    } label: {
+                        Image(systemName: viewMode == .list ? "calendar" : "list.bullet")
+                    }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
