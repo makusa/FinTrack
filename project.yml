@@ -74,6 +74,9 @@ schemes:
         FinTrack: all
     run:
       config: Debug
+      commandLineArguments:
+        "-com.apple.CoreData.Logging.stderr 1": true
+        "-com.apple.CoreData.CloudKitDebug 1": true
     archive:
       config: Release
   FinTrackWidget:
