@@ -32,7 +32,7 @@ struct SettingsView: View {
                 languageSection
                 exchangeRatesSection
                 subscriptionSection
-                plaidSection
+                bankSyncSection
                 securitySection
                 notificationsSection
                 cloudSyncSection
@@ -156,23 +156,34 @@ struct SettingsView: View {
     }
 
     @ViewBuilder
-    private var plaidSection: some View {
-        Section(lang["plaid.settings.section"]) {
-            NavigationLink {
-                ConnectedAccountsView()
-            } label: {
-                HStack {
-                    Label(lang["plaid.title"], systemImage: "building.columns.badge.plus")
-                    Spacer()
-                    let count = PlaidManager.shared.connectedItems.count
-                    if count > 0 {
-                        Text("\(count)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 3)
-                            .background(Color(.systemGray5), in: Capsule())
+    private var bankSyncSection: some View {
+        Section(lang["flinks.settings.section"]) {
+            if entitlements.hasPaidTier {
+                NavigationLink {
+                    BankSyncView()
+                } label: {
+                    HStack {
+                        Label(lang["flinks.title"], systemImage: "building.columns.badge.plus")
+                        Spacer()
+                        let count = FlinksManager.shared.connectedLogins.count
+                        if count > 0 {
+                            Text("\(count)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(Color(.systemGray5), in: Capsule())
+                        }
                     }
+                }
+            } else {
+                HStack {
+                    Label(lang["flinks.title"], systemImage: "building.columns.badge.plus")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Image(systemName: "lock.fill")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
                 }
             }
         }

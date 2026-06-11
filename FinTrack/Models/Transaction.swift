@@ -50,7 +50,7 @@ final class Transaction {
     /// to avoid circular SwiftData constraints.
     var sourceRecurringId: Int?
     var transferPairId: UUID? = nil   // links the two legs of a transfer
-    var plaidTransactionId: String? = nil  // Plaid deduplication ID
+    var externalId: String? = nil  // Bank-sync deduplication ID (Flinks Transaction.Id)
 
     var account: Account?
     var category: Category?

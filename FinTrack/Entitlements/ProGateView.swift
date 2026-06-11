@@ -26,8 +26,8 @@ enum GatedFeature {
     case csvExport
     case unlimitedAccounts
 
-    // Plaid feature
-    case plaidSync
+    // Bank sync feature (Flinks)
+    case bankSync
 
     var title: String {
         let lang = LanguageManager.shared
@@ -44,7 +44,7 @@ enum GatedFeature {
         case .dashboardCustom:   return lang["library.title"]
         case .csvExport:         return lang["settings.export"]
         case .unlimitedAccounts: return lang["entitlement.unlimited.accounts"]
-        case .plaidSync:         return lang["plaid.title"]
+        case .bankSync:          return lang["flinks.title"]
         }
     }
 
@@ -62,13 +62,13 @@ enum GatedFeature {
         case .dashboardCustom:   return "square.grid.2x2"
         case .csvExport:         return "square.and.arrow.up"
         case .unlimitedAccounts: return "building.columns.fill"
-        case .plaidSync:         return "building.columns.badge.plus"
+        case .bankSync:          return "building.columns.badge.plus"
         }
     }
 
     var requiredProduct: FinTrackProduct {
         switch self {
-        case .plaidSync: return .placement
+        case .bankSync: return .epargne  // tous les tiers payants
         default:         return .epargne
         }
     }
