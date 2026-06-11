@@ -35,11 +35,21 @@ struct FinTrackApp: App {
 
         let modelContainer: ModelContainer
         do {
-            modelContainer = try ModelContainer(
-                for: schema,
-                migrationPlan: FinTrackMigrationPlan.self,
-                configurations: [config]
-            )
+            // CloudKit + migrationPlan are incompatible in several SwiftData
+            // versions (staged migration is unsupported with mirroring).
+            // CloudKit performs its own schema reconciliation.
+            if cloudSyncEnabled {
+                modelContainer = try ModelContainer(for: schema, configurations: [config])
+            } else {
+                modelContainer = try ModelContainer(
+                    for: schema,
+                    migrationPlan: FinTrackMigrationPlan.self,
+                    configurations: [config]
+                )
+            }
+            if cloudSyncEnabled {
+                UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.lastError")
+            }
             AppLogger.persistence.info("Store started: \(cloudSyncEnabled ? "CloudKit (iCloud.ca.regis.fintrack)" : "local", privacy: .public)")
         } catch {
             // CloudKit container may fail (no iCloud account, entitlement missing).
@@ -53,6 +63,7 @@ struct FinTrackApp: App {
                     configurations: [localConfig]
                 )
                 UserDefaults.standard.set(false, forKey: "fintrack.cloudSyncEnabled")
+                UserDefaults.standard.set("\(error)", forKey: "fintrack.cloudSync.lastError")
                 AppLogger.persistence.error("CloudKit container init FAILED — fell back to local store: \(error, privacy: .public)")
             } catch {
                 fatalError("FinTrack: ModelContainer init failed — \(error)")

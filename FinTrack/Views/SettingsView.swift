@@ -234,9 +234,15 @@ struct SettingsView: View {
         } header: {
             Text(lang["settings.cloudSync.section"])
         } footer: {
-            Text(entitlements.hasPaidTier
-                 ? lang["settings.cloudSync.footer"]
-                 : lang["settings.cloudSync.locked"])
+            VStack(alignment: .leading, spacing: 4) {
+                Text(entitlements.hasPaidTier
+                     ? lang["settings.cloudSync.footer"]
+                     : lang["settings.cloudSync.locked"])
+                if let lastError = UserDefaults.standard.string(forKey: "fintrack.cloudSync.lastError") {
+                    Text("\(lang["settings.cloudSync.lastError"]) \(lastError)")
+                        .foregroundStyle(.orange)
+                }
+            }
         }
         .alert(lang["settings.cloudSync.restart.title"], isPresented: $showCloudRestartAlert) {
             Button("OK", role: .cancel) {}
