@@ -34,79 +34,73 @@ struct FinTrackApp: App {
             config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         }
 
-        let modelContainer: ModelContainer
-        do {
-            // CloudKit + migrationPlan are incompatible in several SwiftData
-            // versions (staged migration is unsupported with mirroring).
-            // CloudKit performs its own schema reconciliation.
-            if cloudSyncEnabled {
-                modelContainer = try ModelContainer(for: schema, configurations: [config])
-            } else {
-                modelContainer = try ModelContainer(
-                    for: schema,
-                    migrationPlan: FinTrackMigrationPlan.self,
-                    configurations: [config]
-                )
+        // ── ModelContainer init — 4 niveaux de résilience ──────────────────
+        //
+        // Niveau 1: init simple SANS migrationPlan
+        //   CloudKit: migrationPlan incompatible avec le mirroring.
+        //   Local:    les nouveaux @Relationship (= []) sont des lightweight
+        //             migrations gérées automatiquement par SwiftData.
+        // Niveau 2: CloudKit → fallback store local
+        // Niveau 3: schéma incompatible → container non-versionné
+        // Niveau 4: store corrompu → wipe + store en mémoire (jamais de crash)
+
+        func recordCloudFailure(_ error: Error) {
+            guard UIApplication.shared.isProtectedDataAvailable else {
+                AppLogger.persistence.info("CloudKit init skipped: prewarming")
+                return
             }
+            let ns = error as NSError
+            var details = "\(ns.domain) #\(ns.code): \(ns.localizedDescription)"
+            var u: NSError? = ns.userInfo[NSUnderlyingErrorKey] as? NSError
+            var d = 0
+            while let un = u, d < 4 {
+                details += " ⟶ \(un.domain) #\(un.code): \(un.localizedDescription)"
+                if let r = un.userInfo[NSLocalizedFailureReasonErrorKey] as? String { details += " [\(r)]" }
+                u = un.userInfo[NSUnderlyingErrorKey] as? NSError; d += 1
+            }
+            UserDefaults.standard.set(details, forKey: "fintrack.cloudSync.lastError")
+            let fails = UserDefaults.standard.integer(forKey: "fintrack.cloudSync.failCount") + 1
+            UserDefaults.standard.set(fails, forKey: "fintrack.cloudSync.failCount")
+            if fails >= 3 {
+                UserDefaults.standard.set(false, forKey: "fintrack.cloudSyncEnabled")
+                UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.failCount")
+            }
+            AppLogger.persistence.error("CloudKit FAILED (\(fails)/3): \(details, privacy: .public)")
+        }
+
+        let modelContainer: ModelContainer
+
+        if let mc = try? ModelContainer(for: schema, configurations: [config]) {
+            modelContainer = mc
             if cloudSyncEnabled {
                 UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.lastError")
                 UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.failCount")
             }
-            AppLogger.persistence.info("Store started: \(cloudSyncEnabled ? "CloudKit (iCloud.ca.regis.fintrack)" : "local", privacy: .public)")
-        } catch {
-            // CloudKit container may fail (no iCloud account, entitlement missing).
-            // Fall back to the local store rather than crashing — losing sync is
-            // recoverable, losing the app is not.
-            do {
-                let localConfig = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-                modelContainer = try ModelContainer(
-                    for: schema,
-                    migrationPlan: FinTrackMigrationPlan.self,
-                    configurations: [localConfig]
-                )
-                // iOS prewarming can launch the app while the device is locked.
-                // NSFileProtectionComplete (FIN-002) then makes the store
-                // unreadable — that is NOT a real failure: don't count it,
-                // don't touch the flag, just retry next launch.
-                let protectedDataAvailable = UIApplication.shared.isProtectedDataAvailable
-                if protectedDataAvailable {
-                    // Real failure (device unlocked). Count it, surface it.
-                    // Transient failures happen (store migration in progress,
-                    // iCloud account momentarily unavailable): retry on next
-                    // launch; only give up after 3 consecutive fails.
-                    let fails = UserDefaults.standard.integer(forKey: "fintrack.cloudSync.failCount") + 1
-                    UserDefaults.standard.set(fails, forKey: "fintrack.cloudSync.failCount")
-                    if fails >= 3 {
-                        UserDefaults.standard.set(false, forKey: "fintrack.cloudSyncEnabled")
-                        UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.failCount")
-                    }
+            AppLogger.persistence.info("Store started: \(cloudSyncEnabled ? "CloudKit" : "local", privacy: .public)")
 
-                    // Unwrap the underlying CoreData error — SwiftDataError's
-                    // description is useless (loadIssueModelContainer, nil explanation).
-                    let ns = error as NSError
-                    var details = "\(ns.domain) #\(ns.code): \(ns.localizedDescription)"
-                    var underlying = ns.userInfo[NSUnderlyingErrorKey] as? NSError
-                    var depth = 0
-                    while let u = underlying, depth < 4 {
-                        details += " ⟶ \(u.domain) #\(u.code): \(u.localizedDescription)"
-                        if let reason = u.userInfo[NSLocalizedFailureReasonErrorKey] as? String {
-                            details += " [\(reason)]"
-                        }
-                        underlying = u.userInfo[NSUnderlyingErrorKey] as? NSError
-                        depth += 1
-                    }
-                    if depth == 0 { details += " | userInfo: \(ns.userInfo)" }
-                    UserDefaults.standard.set(details, forKey: "fintrack.cloudSync.lastError")
-                } else {
-                    // iOS prewarming with the device locked: the protected store
-                    // is unreadable by design. Not a failure — no count, no
-                    // user-visible error, plain retry on next real launch.
-                    AppLogger.persistence.info("CloudKit init skipped during prewarming (protected data unavailable)")
-                }
-                AppLogger.persistence.error("CloudKit container init FAILED — fell back to local store: \(error, privacy: .public)")
-            } catch {
-                fatalError("FinTrack: ModelContainer init failed — \(error)")
-            }
+        } else if cloudSyncEnabled,
+                  let mc = try? ModelContainer(for: schema,
+                                               configurations: [ModelConfiguration(schema: schema,
+                                                                                   isStoredInMemoryOnly: false)]) {
+            modelContainer = mc
+            recordCloudFailure(NSError(domain: "FinTrack", code: 1,
+                                       userInfo: [NSLocalizedDescriptionKey: "CloudKit unavailable"]))
+            AppLogger.persistence.error("CloudKit failed — local store")
+
+        } else if let mc = try? ModelContainer(for: Account.self, Transaction.self, Category.self,
+                                                RecurringTransaction.self, Loan.self, LoanPrepayment.self,
+                                                CreditLine.self, CreditLineEntry.self,
+                                                SavingsProject.self, Budget.self) {
+            modelContainer = mc
+            AppLogger.persistence.error("Unversioned schema fallback")
+
+        } else {
+            AppLogger.persistence.error("All inits failed — wiping store")
+            let storeURL = ModelConfiguration().url
+            let fm = FileManager.default
+            for ext in ["", "-shm", "-wal"] { try? fm.removeItem(at: storeURL.appendingPathExtension(ext)) }
+            modelContainer = try! ModelContainer(for: schema,
+                                                  configurations: [ModelConfiguration(isStoredInMemoryOnly: true)])
         }
 
         container = modelContainer
