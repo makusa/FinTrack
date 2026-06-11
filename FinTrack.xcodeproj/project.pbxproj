@@ -133,7 +133,7 @@
 		17B5A8A48F6F1A2A395FA28D /* FinTrackWidgetEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinTrackWidgetEntry.swift; sourceTree = "<group>"; };
 		19AD119703063332E899FA3A /* BudgetDashboardSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetDashboardSection.swift; sourceTree = "<group>"; };
 		1A4247053E5A1859F5B6D186 /* LanguageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
-		1AFCA16ED8DB8009BB829594 /* FinTrack.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FinTrack.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1AFCA16ED8DB8009BB829594 /* FinTrack.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FinTrack.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1BE6768DEBB253905FF1575E /* AddEditRecurringTransactionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditRecurringTransactionView.swift; sourceTree = "<group>"; };
 		1CF8D38D87648C662CD5F789 /* BankPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankPicker.swift; sourceTree = "<group>"; };
 		1D2E444EDB081F1937056613 /* DashboardLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardLibraryView.swift; sourceTree = "<group>"; };
@@ -193,7 +193,7 @@
 		B6BA1F3423053EC109D1554A /* WidgetData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetData.swift; sourceTree = "<group>"; };
 		B74500B771A1359075449229 /* LoanPrepayment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoanPrepayment.swift; sourceTree = "<group>"; };
 		BD3CF16E621A3AE8D61CC443 /* SubscriptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionView.swift; sourceTree = "<group>"; };
-		C596428BD35BF3E6E1C9A821 /* FinTrackWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = FinTrackWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		C596428BD35BF3E6E1C9A821 /* FinTrackWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FinTrackWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C949FFE8FA0EE096AC5BF92F /* FlinksSyncEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlinksSyncEngine.swift; sourceTree = "<group>"; };
 		CA4220ADE1CE0B8E4A3C09D5 /* UpcomingTransfersWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpcomingTransfersWidget.swift; sourceTree = "<group>"; };
 		CE0BF4D20B7454B8155F244D /* AddEditPrepaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditPrepaymentView.swift; sourceTree = "<group>"; };
@@ -454,7 +454,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 1430;
+				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					361AE69D7682BE959C6DD237 = {
 						DevelopmentTeam = 38N594NGP9;
@@ -618,11 +618,9 @@
 		34EE95DC9F7FF28CAFA09DC3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				CODE_SIGN_ENTITLEMENTS = FinTrackWidget/FinTrackWidget.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 38N594NGP9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FinTrackWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -650,7 +648,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_LANGUAGE = en;
-				DEVELOPMENT_TEAM = 38N594NGP9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = FinTrack;
@@ -684,7 +681,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_LANGUAGE = en;
-				DEVELOPMENT_TEAM = 38N594NGP9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = FinTrack;
@@ -743,8 +739,10 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 38N594NGP9;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -765,6 +763,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -806,8 +805,10 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 38N594NGP9;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -821,6 +822,7 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
@@ -830,11 +832,9 @@
 		DC14B834F6A142C918BF6D6E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
 				CODE_SIGN_ENTITLEMENTS = FinTrackWidget/FinTrackWidget.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = 38N594NGP9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = FinTrackWidget/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
