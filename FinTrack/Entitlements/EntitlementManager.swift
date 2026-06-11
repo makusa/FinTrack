@@ -175,7 +175,27 @@ final class EntitlementManager {
     // MARK: - Entitlement refresh
 
     @MainActor
+    /// UserDefaults key for the persisted developer tier override (DEBUG builds only).
+    /// Values: "free" | "epargne" | "placement". Absent = real StoreKit entitlements.
+    static let devTierOverrideKey = "fintrack.dev.tierOverride"
+
     func refreshEntitlements() async {
+        #if DEBUG
+        // Developer override — survives app restarts so paid features can be
+        // tested across launches. Cleared via clearSimulation().
+        if let override = UserDefaults.standard.string(forKey: Self.devTierOverrideKey) {
+            switch override {
+            case "epargne":   hasPaidTier = true;  hasPlacement = false
+            case "placement": hasPaidTier = true;  hasPlacement = true
+            default:          hasPaidTier = false; hasPlacement = false
+            }
+            if !hasPaidTier {
+                UserDefaults.standard.set(false, forKey: "fintrack.cloudSyncEnabled")
+            }
+            return
+        }
+        #endif
+
         var newHasPaidTier   = false
         var newHasPlacement  = false
 
@@ -242,8 +262,27 @@ final class EntitlementManager {
     // MARK: - Override (debug / promo)
 
     #if DEBUG
-    @MainActor func simulateEpargne()   { hasPaidTier = true; hasPlacement = false }
-    @MainActor func simulatePlacement() { hasPaidTier = true; hasPlacement = true }
-    @MainActor func simulateFree()      { hasPaidTier = false; hasPlacement = false }
+    @MainActor func simulateEpargne() {
+        hasPaidTier = true; hasPlacement = false
+        UserDefaults.standard.set("epargne", forKey: Self.devTierOverrideKey)
+    }
+    @MainActor func simulatePlacement() {
+        hasPaidTier = true; hasPlacement = true
+        UserDefaults.standard.set("placement", forKey: Self.devTierOverrideKey)
+    }
+    @MainActor func simulateFree() {
+        hasPaidTier = false; hasPlacement = false
+        UserDefaults.standard.set("free", forKey: Self.devTierOverrideKey)
+        UserDefaults.standard.set(false, forKey: "fintrack.cloudSyncEnabled")
+    }
+    /// Removes the developer override and restores real StoreKit entitlements.
+    @MainActor func clearSimulation() async {
+        UserDefaults.standard.removeObject(forKey: Self.devTierOverrideKey)
+        await refreshEntitlements()
+    }
+    /// True when a persisted developer override is active.
+    var isSimulating: Bool {
+        UserDefaults.standard.string(forKey: Self.devTierOverrideKey) != nil
+    }
     #endif
 }

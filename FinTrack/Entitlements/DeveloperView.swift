@@ -167,7 +167,7 @@ struct DeveloperView: View {
     }
 
     private var quickActionsSection: some View {
-        Section("Actions rapides") {
+        Section {
             Button {
                 UIPasteboard.general.string = """
                 Tier: \(currentOption.name)
@@ -182,6 +182,20 @@ struct DeveloperView: View {
                 entitlements.simulateFree()
             } label: {
                 Label("Réinitialiser → Courant", systemImage: "arrow.counterclockwise")
+            }
+
+            if entitlements.isSimulating {
+                Button {
+                    Task { await entitlements.clearSimulation() }
+                } label: {
+                    Label("Restaurer les achats réels (StoreKit)", systemImage: "cart.badge.questionmark")
+                }
+            }
+        } header: {
+            Text("Actions rapides")
+        } footer: {
+            if entitlements.isSimulating {
+                Text("⚠️ Simulation active — persistée entre les redémarrages. Le tier affiché ignore StoreKit.")
             }
         }
     }
