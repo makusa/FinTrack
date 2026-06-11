@@ -174,11 +174,11 @@ final class EntitlementManager {
 
     // MARK: - Entitlement refresh
 
-    @MainActor
     /// UserDefaults key for the persisted developer tier override (DEBUG builds only).
     /// Values: "free" | "epargne" | "placement". Absent = real StoreKit entitlements.
-    static let devTierOverrideKey = "fintrack.dev.tierOverride"
+    nonisolated static let devTierOverrideKey = "fintrack.dev.tierOverride"
 
+    @MainActor
     func refreshEntitlements() async {
         #if DEBUG
         // Developer override — survives app restarts so paid features can be
