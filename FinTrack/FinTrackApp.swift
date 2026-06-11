@@ -4,6 +4,7 @@
 //
 
 import SwiftUI
+import UIKit
 import SwiftData
 
 @main
@@ -63,14 +64,21 @@ struct FinTrackApp: App {
                     migrationPlan: FinTrackMigrationPlan.self,
                     configurations: [localConfig]
                 )
-                // Transient failures happen (store migration in progress,
-                // iCloud account momentarily unavailable). Keep the flag and
-                // retry on next launch; only give up after 3 consecutive fails.
-                let fails = UserDefaults.standard.integer(forKey: "fintrack.cloudSync.failCount") + 1
-                UserDefaults.standard.set(fails, forKey: "fintrack.cloudSync.failCount")
-                if fails >= 3 {
-                    UserDefaults.standard.set(false, forKey: "fintrack.cloudSyncEnabled")
-                    UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.failCount")
+                // iOS prewarming can launch the app while the device is locked.
+                // NSFileProtectionComplete (FIN-002) then makes the store
+                // unreadable — that is NOT a real failure: don't count it,
+                // don't touch the flag, just retry next launch.
+                let protectedDataAvailable = UIApplication.shared.isProtectedDataAvailable
+                if protectedDataAvailable {
+                    // Transient failures happen (store migration in progress,
+                    // iCloud account momentarily unavailable). Keep the flag and
+                    // retry on next launch; only give up after 3 consecutive fails.
+                    let fails = UserDefaults.standard.integer(forKey: "fintrack.cloudSync.failCount") + 1
+                    UserDefaults.standard.set(fails, forKey: "fintrack.cloudSync.failCount")
+                    if fails >= 3 {
+                        UserDefaults.standard.set(false, forKey: "fintrack.cloudSyncEnabled")
+                        UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.failCount")
+                    }
                 }
                 // Unwrap the underlying CoreData error — SwiftDataError's
                 // description is useless (loadIssueModelContainer, nil explanation).
@@ -87,6 +95,7 @@ struct FinTrackApp: App {
                     depth += 1
                 }
                 if depth == 0 { details += " | userInfo: \(ns.userInfo)" }
+                details += " | protectedData: \(protectedDataAvailable)"
                 UserDefaults.standard.set(details, forKey: "fintrack.cloudSync.lastError")
                 AppLogger.persistence.error("CloudKit container init FAILED — fell back to local store: \(error, privacy: .public)")
             } catch {
