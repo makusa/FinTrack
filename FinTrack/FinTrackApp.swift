@@ -49,6 +49,7 @@ struct FinTrackApp: App {
             }
             if cloudSyncEnabled {
                 UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.lastError")
+                UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.failCount")
             }
             AppLogger.persistence.info("Store started: \(cloudSyncEnabled ? "CloudKit (iCloud.ca.regis.fintrack)" : "local", privacy: .public)")
         } catch {
@@ -62,8 +63,31 @@ struct FinTrackApp: App {
                     migrationPlan: FinTrackMigrationPlan.self,
                     configurations: [localConfig]
                 )
-                UserDefaults.standard.set(false, forKey: "fintrack.cloudSyncEnabled")
-                UserDefaults.standard.set("\(error)", forKey: "fintrack.cloudSync.lastError")
+                // Transient failures happen (store migration in progress,
+                // iCloud account momentarily unavailable). Keep the flag and
+                // retry on next launch; only give up after 3 consecutive fails.
+                let fails = UserDefaults.standard.integer(forKey: "fintrack.cloudSync.failCount") + 1
+                UserDefaults.standard.set(fails, forKey: "fintrack.cloudSync.failCount")
+                if fails >= 3 {
+                    UserDefaults.standard.set(false, forKey: "fintrack.cloudSyncEnabled")
+                    UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.failCount")
+                }
+                // Unwrap the underlying CoreData error — SwiftDataError's
+                // description is useless (loadIssueModelContainer, nil explanation).
+                let ns = error as NSError
+                var details = "\(ns.domain) #\(ns.code): \(ns.localizedDescription)"
+                var underlying = ns.userInfo[NSUnderlyingErrorKey] as? NSError
+                var depth = 0
+                while let u = underlying, depth < 4 {
+                    details += " ⟶ \(u.domain) #\(u.code): \(u.localizedDescription)"
+                    if let reason = u.userInfo[NSLocalizedFailureReasonErrorKey] as? String {
+                        details += " [\(reason)]"
+                    }
+                    underlying = u.userInfo[NSUnderlyingErrorKey] as? NSError
+                    depth += 1
+                }
+                if depth == 0 { details += " | userInfo: \(ns.userInfo)" }
+                UserDefaults.standard.set(details, forKey: "fintrack.cloudSync.lastError")
                 AppLogger.persistence.error("CloudKit container init FAILED — fell back to local store: \(error, privacy: .public)")
             } catch {
                 fatalError("FinTrack: ModelContainer init failed — \(error)")

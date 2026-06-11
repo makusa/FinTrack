@@ -59,6 +59,30 @@ final class Account {
     @Relationship(deleteRule: .cascade, inverse: \Transaction.account)
     var transactions: [Transaction] = []
 
+    // CloudKit requires every relationship to have an inverse.
+    // These to-many sides exist solely to satisfy that requirement;
+    // .nullify preserves the pre-existing behaviour (no new cascades).
+    @Relationship(deleteRule: .nullify, inverse: \Loan.account)
+    var loans: [Loan] = []
+
+    @Relationship(deleteRule: .nullify, inverse: \SavingsProject.account)
+    var savingsProjects: [SavingsProject] = []
+
+    @Relationship(deleteRule: .nullify, inverse: \RecurringTransaction.account)
+    var recurringRules: [RecurringTransaction] = []
+
+    @Relationship(deleteRule: .nullify, inverse: \RecurringTransaction.destinationAccount)
+    var incomingTransferRules: [RecurringTransaction] = []
+
+    @Relationship(deleteRule: .nullify, inverse: \LoanPrepayment.account)
+    var loanPrepayments: [LoanPrepayment] = []
+
+    @Relationship(deleteRule: .nullify, inverse: \CreditLineEntry.account)
+    var creditLineEntries: [CreditLineEntry] = []
+
+    @Relationship(deleteRule: .nullify, inverse: \CreditLine.account)
+    var creditLines: [CreditLine] = []
+
     var type: AccountType {
         get { AccountType(rawValue: typeRaw) ?? .other }
         set { typeRaw = newValue.rawValue }
