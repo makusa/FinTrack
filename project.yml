@@ -65,3 +65,25 @@ targets:
         CODE_SIGN_IDENTITY: "iPhone Developer"
         SKIP_INSTALL: YES
         ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: NO
+
+schemes:
+  FinTrack:
+    build:
+      targets:
+        FinTrack: all
+    run:
+      config: Debug
+    archive:
+      config: Release
+  FinTrackWidget:
+    build:
+      targets:
+        FinTrackWidget: all
+        FinTrack: [run]
+    run:
+      config: Debug
+      askForAppToLaunch: true
+      launchAutomaticallySubstyle: 2
+      environmentVariables:
+        _XCWidgetKind: fintrack.balance
+        _XCWidgetFamily: medium
