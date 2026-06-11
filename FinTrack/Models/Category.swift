@@ -33,12 +33,6 @@ final class Category {
     @Relationship(deleteRule: .nullify, inverse: \Transaction.category)
     var transactions: [Transaction] = []
 
-    // CloudKit inverse requirements (see Account.swift for rationale).
-    @Relationship(deleteRule: .nullify, inverse: \RecurringTransaction.category)
-    var recurringRules: [RecurringTransaction] = []
-
-    @Relationship(deleteRule: .nullify, inverse: \Budget.category)
-    var budgets: [Budget] = []
 
     /// Returns the translated name for system categories, or `name` for user-created ones.
     var localizedName: String {
