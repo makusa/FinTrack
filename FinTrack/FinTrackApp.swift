@@ -15,34 +15,31 @@ struct FinTrackApp: App {
     let container: ModelContainer
 
     init() {
-        // Versioned schema (FinTrackSchemaV1) — prerequisite for CloudKit.
-        // All future model changes go through FinTrackMigrationPlan.
-        let schema = Schema(versionedSchema: FinTrackSchemaV1.self)
-
-        // CloudKit sync is reserved for paid tiers (Épargne / Placement).
-        // The flag is persisted by EntitlementManager so it is readable here,
-        // before any SwiftUI environment exists.
-        let cloudSyncEnabled = UserDefaults.standard.bool(forKey: "fintrack.cloudSyncEnabled")
-
-        let config: ModelConfiguration
-        if cloudSyncEnabled {
-            config = ModelConfiguration(
-                schema: schema,
-                cloudKitDatabase: .private("iCloud.ca.regis.fintrack")
-            )
-        } else {
-            config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-        }
-
-        // ── ModelContainer init — 4 niveaux de résilience ──────────────────
+        // ── Persistence bootstrap ───────────────────────────────────────────
         //
-        // Niveau 1: init simple SANS migrationPlan
-        //   CloudKit: migrationPlan incompatible avec le mirroring.
-        //   Local:    les nouveaux @Relationship (= []) sont des lightweight
-        //             migrations gérées automatiquement par SwiftData.
-        // Niveau 2: CloudKit → fallback store local
-        // Niveau 3: schéma incompatible → container non-versionné
-        // Niveau 4: store corrompu → wipe + store en mémoire (jamais de crash)
+        // Plain (non-versioned) Schema + explicit cloudKitDatabase on every
+        // ModelConfiguration. Two hard-won lessons baked in:
+        //
+        //  1. cloudKitDatabase defaults to .automatic — when the binary has
+        //     iCloud entitlements, SwiftData silently enables CloudKit even
+        //     for "local" stores, enforcing CloudKit schema rules (inverses,
+        //     optional relationships) and failing init. ALWAYS pass .none
+        //     for local stores.
+        //  2. A VersionedSchema triggers CloudKit validation internally even
+        //     with .none (and requires its migrationPlan, which CloudKit
+        //     mirroring rejects). A plain Schema avoids the whole trap; our
+        //     model changes are additive lightweight migrations anyway.
+        //
+        // CloudKit path: requires model conformance (all relationships
+        // optional + inverses). Until the models are made conformant, the
+        // cloud branch fails fast and we record the reason + fall back.
+
+        let baseSchema = Schema([Account.self, Transaction.self, Category.self,
+                                 RecurringTransaction.self, Loan.self, LoanPrepayment.self,
+                                 CreditLine.self, CreditLineEntry.self,
+                                 SavingsProject.self, Budget.self])
+
+        let cloudSyncEnabled = UserDefaults.standard.bool(forKey: "fintrack.cloudSyncEnabled")
 
         func recordCloudFailure(_ error: Error) {
             guard UIApplication.shared.isProtectedDataAvailable else {
@@ -68,39 +65,43 @@ struct FinTrackApp: App {
             AppLogger.persistence.error("CloudKit FAILED (\(fails)/3): \(details, privacy: .public)")
         }
 
+        func makeLocalContainer() throws -> ModelContainer {
+            try ModelContainer(for: baseSchema,
+                               configurations: [ModelConfiguration(schema: baseSchema,
+                                                                   isStoredInMemoryOnly: false,
+                                                                   cloudKitDatabase: .none)])
+        }
+
         let modelContainer: ModelContainer
 
-        if let mc = try? ModelContainer(for: schema, configurations: [config]) {
-            modelContainer = mc
+        if cloudSyncEnabled,
+           let cloud = try? ModelContainer(
+               for: baseSchema,
+               configurations: [ModelConfiguration(schema: baseSchema,
+                                                   cloudKitDatabase: .private("iCloud.ca.regis.fintrack"))]) {
+            modelContainer = cloud
+            UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.lastError")
+            UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.failCount")
+            AppLogger.persistence.info("Store started: CloudKit")
+
+        } else if let local = try? makeLocalContainer() {
+            modelContainer = local
             if cloudSyncEnabled {
-                UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.lastError")
-                UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.failCount")
+                recordCloudFailure(NSError(domain: "FinTrack", code: 1,
+                                           userInfo: [NSLocalizedDescriptionKey: "CloudKit container init failed"]))
             }
-            AppLogger.persistence.info("Store started: \(cloudSyncEnabled ? "CloudKit" : "local", privacy: .public)")
-
-        } else if cloudSyncEnabled,
-                  let mc = try? ModelContainer(for: schema,
-                                               configurations: [ModelConfiguration(schema: schema,
-                                                                                   isStoredInMemoryOnly: false)]) {
-            modelContainer = mc
-            recordCloudFailure(NSError(domain: "FinTrack", code: 1,
-                                       userInfo: [NSLocalizedDescriptionKey: "CloudKit unavailable"]))
-            AppLogger.persistence.error("CloudKit failed — local store")
-
-        } else if let mc = try? ModelContainer(for: Account.self, Transaction.self, Category.self,
-                                                RecurringTransaction.self, Loan.self, LoanPrepayment.self,
-                                                CreditLine.self, CreditLineEntry.self,
-                                                SavingsProject.self, Budget.self) {
-            modelContainer = mc
-            AppLogger.persistence.error("Unversioned schema fallback")
+            AppLogger.persistence.info("Store started: local")
 
         } else {
-            AppLogger.persistence.error("All inits failed — wiping store")
-            let storeURL = ModelConfiguration().url
-            let fm = FileManager.default
-            for ext in ["", "-shm", "-wal"] { try? fm.removeItem(at: storeURL.appendingPathExtension(ext)) }
-            modelContainer = try! ModelContainer(for: schema,
-                                                  configurations: [ModelConfiguration(isStoredInMemoryOnly: true)])
+            // Disk store unreadable. Emergency in-memory store: the user sees
+            // an empty session (data on disk is untouched and recoverable),
+            // never a crash. NEVER wipe automatically.
+            AppLogger.persistence.error("Local store failed to open — emergency in-memory session")
+            modelContainer = try! ModelContainer(
+                for: baseSchema,
+                configurations: [ModelConfiguration(schema: baseSchema,
+                                                    isStoredInMemoryOnly: true,
+                                                    cloudKitDatabase: .none)])
         }
 
         container = modelContainer
