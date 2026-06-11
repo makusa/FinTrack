@@ -40,6 +40,7 @@ struct FinTrackApp: App {
                 migrationPlan: FinTrackMigrationPlan.self,
                 configurations: [config]
             )
+            AppLogger.persistence.info("Store started: \(cloudSyncEnabled ? "CloudKit (iCloud.ca.regis.fintrack)" : "local", privacy: .public)")
         } catch {
             // CloudKit container may fail (no iCloud account, entitlement missing).
             // Fall back to the local store rather than crashing — losing sync is
@@ -52,6 +53,7 @@ struct FinTrackApp: App {
                     configurations: [localConfig]
                 )
                 UserDefaults.standard.set(false, forKey: "fintrack.cloudSyncEnabled")
+                AppLogger.persistence.error("CloudKit container init FAILED — fell back to local store: \(error, privacy: .public)")
             } catch {
                 fatalError("FinTrack: ModelContainer init failed — \(error)")
             }
