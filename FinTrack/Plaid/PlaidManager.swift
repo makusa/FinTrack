@@ -15,10 +15,10 @@ import SwiftUI
 /// NEVER hardcode the API key in source control — use Xcode build settings or a config file.
 enum PlaidConfig {
     /// Base URL of your NAS backend, e.g. "https://fintrack.your-domain.com"
-    static let baseURL = "https://VOTRE_NAS_URL_ICI"
+    static let baseURL = "https://hidden-block-e3ed.regis-bile.workers.dev/"
 
     /// Must match API_KEY in the .env file on your NAS
-    static let apiKey  = "VOTRE_API_KEY_ICI"
+    static let apiKey  = "fintrack-2026-bmsk"
 }
 
 // MARK: - Connected Item (stored in Keychain + SwiftData metadata)
