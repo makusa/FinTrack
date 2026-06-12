@@ -160,25 +160,15 @@ struct SettingsView: View {
         Section(lang["flinks.settings.section"]) {
             if entitlements.hasPaidTier {
                 NavigationLink {
-                    BankSyncView()
+                    BankSyncDestinationView()
                 } label: {
-                    HStack {
-                        Label(lang["flinks.title"], systemImage: "building.columns.badge.plus")
-                        Spacer()
-                        let count = FlinksManager.shared.connectedLogins.count
-                        if count > 0 {
-                            Text("\(count)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 3)
-                                .background(Color(.systemGray5), in: Capsule())
-                        }
-                    }
+                    Label(bankSyncProviderLabel,
+                          systemImage: "building.columns.badge.plus")
                 }
             } else {
                 HStack {
-                    Label(lang["flinks.title"], systemImage: "building.columns.badge.plus")
+                    Label(bankSyncProviderLabel,
+                          systemImage: "building.columns.badge.plus")
                         .foregroundStyle(.secondary)
                     Spacer()
                     Image(systemName: "lock.fill")

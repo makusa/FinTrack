@@ -26,8 +26,9 @@ enum GatedFeature {
     case csvExport
     case unlimitedAccounts
 
-    // Bank sync feature (Flinks)
+    // Bank sync feature (Flinks ou Plaid — même gate)
     case bankSync
+    static var plaidSync: GatedFeature { .bankSync }  // rétrocompatibilité
 
     var title: String {
         let lang = LanguageManager.shared
