@@ -213,6 +213,7 @@
 		EF0E60F4AEBB656CE3C74BA5 /* PlaidConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaidConnectionView.swift; sourceTree = "<group>"; };
 		F053C63C61980B18AA6263E4 /* Category.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Category.swift; sourceTree = "<group>"; };
 		F1829FFD6EB0076039DC19BA /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
+		F262FBA26B15D2C4597BBD7C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		F32B9E3CEF39A89575D3FD0F /* CreditLinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditLinesView.swift; sourceTree = "<group>"; };
 		FA19A380ED381C3B8F4A0057 /* AddEditLoanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditLoanView.swift; sourceTree = "<group>"; };
 		FA75C9EEFB489048F50342E4 /* FinTrackApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinTrackApp.swift; sourceTree = "<group>"; };
@@ -354,6 +355,7 @@
 				FF689CB36E8CEEFF2657D413 /* Assets.xcassets */,
 				0C082A0C923A6D3A07BE3D85 /* FinTrack.entitlements */,
 				FA75C9EEFB489048F50342E4 /* FinTrackApp.swift */,
+				F262FBA26B15D2C4597BBD7C /* Info.plist */,
 				02DF24527A311E25C3D71A55 /* BankSync */,
 				97E28331FB4C5B02B6392054 /* Entitlements */,
 				A63AEF89D477055BB47BDF51 /* Flinks */,
@@ -685,6 +687,7 @@
 				DEVELOPMENT_TEAM = 38N594NGP9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FinTrack/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = FinTrack;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "FinTrack utilise Face ID pour déverrouiller l'app et protéger vos données financières.";
@@ -719,6 +722,7 @@
 				DEVELOPMENT_TEAM = 38N594NGP9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FinTrack/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = FinTrack;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.finance";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "FinTrack utilise Face ID pour déverrouiller l'app et protéger vos données financières.";
