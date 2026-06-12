@@ -16,7 +16,7 @@ struct CreditLineDetailView: View {
     @State private var defaultEntryType = CreditLineEntryType.repayment
 
     private var sortedEntries: [CreditLineEntry] {
-        creditLine.entries.sorted { $0.date > $1.date }
+        (creditLine.entries ?? []).sorted { $0.date > $1.date }
     }
 
     var body: some View {
@@ -303,7 +303,7 @@ struct CreditLineDetailView: View {
     }
 
     private func balancePoints() -> [(Date, Double)] {
-        let sorted = creditLine.entries.sorted { $0.date < $1.date }
+        let sorted = (creditLine.entries ?? []).sorted { $0.date < $1.date }
         var running: Double = 0
         var points: [(Date, Double)] = []
         for entry in sorted {

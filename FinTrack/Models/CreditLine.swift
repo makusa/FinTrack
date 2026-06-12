@@ -59,6 +59,7 @@ final class CreditLineEntry {
 
     /// Account debited (repayment) or credited (draw) when this entry is saved.
     /// nil = entry not linked to an account (e.g. auto-generated interest accruals).
+    @Relationship(deleteRule: .nullify, inverse: \Account.creditLineEntries)
     var account: Account? = nil
 
     var creditLine: CreditLine?
@@ -142,10 +143,11 @@ final class CreditLine {
     var notes: String?
     var createdAt: Date = Date.now
 
+    @Relationship(deleteRule: .nullify, inverse: \Account.creditLines)
     var account: Account?   // bank account debited for repayments
 
     @Relationship(deleteRule: .cascade, inverse: \CreditLineEntry.creditLine)
-    var entries: [CreditLineEntry] = []
+    var entries: [CreditLineEntry]? = []
 
     // MARK: Accessors
 
@@ -163,7 +165,7 @@ final class CreditLine {
 
     /// Current outstanding balance (amount owed). Always >= 0.
     var currentBalance: Decimal {
-        max(0, entries.reduce(Decimal(0)) { $0 + $1.signedAmount })
+        max(0, (entries ?? []).reduce(Decimal(0)) { $0 + $1.signedAmount })
     }
 
     /// Available credit remaining.

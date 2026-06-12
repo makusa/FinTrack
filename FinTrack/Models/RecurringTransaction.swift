@@ -109,8 +109,11 @@ final class RecurringTransaction {
     var payee: String?
     var createdAt: Date = Date.now
 
+    @Relationship(deleteRule: .nullify, inverse: \Account.recurringRules)
     var account: Account?
+    @Relationship(deleteRule: .nullify, inverse: \Account.incomingTransfers)
     var destinationAccount: Account? = nil   // target account for transfers
+    @Relationship(deleteRule: .nullify, inverse: \Category.recurringRules)
     var category: Category?
 
     // MARK: Computed

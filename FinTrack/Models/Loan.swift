@@ -509,10 +509,11 @@ final class Loan {
     var notes: String?
     var createdAt: Date = Date.now
 
+    @Relationship(deleteRule: .nullify, inverse: \Account.loans)
     var account: Account?
 
     @Relationship(deleteRule: .cascade, inverse: \LoanPrepayment.loan)
-    var prepayments: [LoanPrepayment] = []
+    var prepayments: [LoanPrepayment]? = []
 
     // MARK: Accessors
 
@@ -554,7 +555,7 @@ final class Loan {
         let cap = horizon ?? cal.date(byAdding: .year, value: 10, to: calculator.payoffDate) ?? calculator.payoffDate
         var result: [PrepaymentInfo] = []
 
-        for prep in prepayments {
+        for prep in (prepayments ?? []) {
             let amt = (prep.amount as NSDecimalNumber).doubleValue
             guard amt > 0 else { continue }
 
@@ -574,7 +575,7 @@ final class Loan {
     }
 
     /// True if this loan has at least one active prepayment defined.
-    var hasPrepayments: Bool { !prepayments.isEmpty }
+    var hasPrepayments: Bool { !(prepayments ?? []).isEmpty }
 
     // MARK: Init
 

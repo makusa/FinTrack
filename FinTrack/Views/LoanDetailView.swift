@@ -196,7 +196,7 @@ struct LoanDetailView: View {
 
     private var prepaymentSection: some View {
         Section {
-            if loan.prepayments.isEmpty {
+            if (loan.prepayments ?? []).isEmpty {
                 Button {
                     showAddPrepayment = true
                 } label: {
@@ -215,7 +215,7 @@ struct LoanDetailView: View {
                 }
                 .buttonStyle(.plain)
             } else {
-                ForEach(loan.prepayments.sorted { $0.startDate < $1.startDate }) { prep in
+                ForEach((loan.prepayments ?? []).sorted { $0.startDate < $1.startDate }) { prep in
                     PrepaymentRow(prep: prep, currency: loan.currency)
                         .contentShape(Rectangle())
                         .onTapGesture { prepaymentToEdit = prep }

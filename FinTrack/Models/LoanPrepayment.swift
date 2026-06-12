@@ -32,6 +32,7 @@ final class LoanPrepayment {
 
     /// Source account debited for each prepayment occurrence.
     /// When set, a Transaction is automatically generated to reflect the cash outflow.
+    @Relationship(deleteRule: .nullify, inverse: \Account.loanPrepayments)
     var account: Account? = nil
 
     /// Tracks which occurrences have already been posted as Transactions.

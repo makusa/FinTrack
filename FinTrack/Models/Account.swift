@@ -57,7 +57,17 @@ final class Account {
     var createdAt: Date = Date.now
 
     @Relationship(deleteRule: .cascade, inverse: \Transaction.account)
-    var transactions: [Transaction] = []
+    var transactions: [Transaction]? = []
+
+    // CloudKit inverse back-references. Declared here without @Relationship
+    // so SwiftData infers them from the child-side @Relationship(inverse:).
+    var loans:               [Loan]?               = []
+    var savingsProjects:     [SavingsProject]?      = []
+    var recurringRules:      [RecurringTransaction]? = []
+    var incomingTransfers:   [RecurringTransaction]? = []
+    var loanPrepayments:     [LoanPrepayment]?      = []
+    var creditLineEntries:   [CreditLineEntry]?     = []
+    var creditLines:         [CreditLine]?          = []
 
 
     var type: AccountType {
@@ -75,7 +85,7 @@ final class Account {
     /// Full recomputation from scratch. Call after any write that touches
     /// this account's transactions or initialBalance.
     func recalculateBalance() {
-        cachedBalance = transactions.reduce(initialBalance) { $0 + $1.signedAmount }
+        cachedBalance = (transactions ?? []).reduce(initialBalance) { $0 + $1.signedAmount }
     }
 
     init(

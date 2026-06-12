@@ -99,6 +99,7 @@ final class Budget {
     var createdAt: Date = Date.now
 
     /// Nil = applies to ALL expense categories (global spending budget).
+    @Relationship(deleteRule: .nullify, inverse: \Category.budgets)
     var category: Category? = nil
 
     var period: BudgetPeriod {

@@ -549,7 +549,7 @@ struct ManageCategoriesView: View {
                 }
             }
             Spacer()
-            Text("\(cat.transactions.count)")
+            Text("\((cat.transactions ?? []).count)")
                 .font(.caption)
                 .foregroundStyle(.secondary)
         }

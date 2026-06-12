@@ -32,6 +32,7 @@ final class SavingsProject {
     var createdAt: Date = Date.now
 
     /// Optional savings account (e.g., a dedicated TFSA or FHSA).
+    @Relationship(deleteRule: .nullify, inverse: \Account.savingsProjects)
     var account: Account?
 
     // MARK: Computed

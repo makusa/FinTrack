@@ -31,7 +31,11 @@ final class Category {
     var createdAt: Date = Date.now
 
     @Relationship(deleteRule: .nullify, inverse: \Transaction.category)
-    var transactions: [Transaction] = []
+    var transactions: [Transaction]? = []
+
+    // CloudKit inverse back-references.
+    var recurringRules: [RecurringTransaction]? = []
+    var budgets:        [Budget]?               = []
 
 
     /// Returns the translated name for system categories, or `name` for user-created ones.

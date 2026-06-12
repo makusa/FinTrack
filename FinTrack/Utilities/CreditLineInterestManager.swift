@@ -53,13 +53,13 @@ enum CreditLineInterestManager {
 
         // Collect all entries after the last accrual date, sorted by date.
         // These entries (draws/repayments) change the balance mid-period.
-        let movementsSinceAccrual = line.entries
+        let movementsSinceAccrual = (line.entries ?? [])
             .filter { $0.type != .interestAccrual && $0.date > line.lastInterestAccrualDate }
             .sorted { $0.date < $1.date }
 
         // Balance at the start of the accrual period
         var runningBalance: Double = {
-            let all = line.entries
+            let all = (line.entries ?? [])
                 .filter { $0.date <= line.lastInterestAccrualDate }
                 .reduce(Decimal(0)) { $0 + $1.signedAmount }
             return max(0, (all as NSDecimalNumber).doubleValue)
@@ -98,7 +98,7 @@ enum CreditLineInterestManager {
             type: .interestAccrual,
             amount: Decimal(rounded),
             date: today,
-            note: "Intérêts courus (\(line.entries.count > 0 ? formatDateRange(from: start, to: today) : ""))"
+            note: "Intérêts courus (\((line.entries ?? []).count > 0 ? formatDateRange(from: start, to: today) : ""))"
         )
         entry.creditLine = line
         context.insert(entry)
