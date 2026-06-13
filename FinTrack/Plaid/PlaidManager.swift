@@ -336,6 +336,14 @@ final class PlaidManager {
         saveItems()
     }
 
+    func clearAccountMapping(itemId: String, plaidAccountId: String) {
+        guard let itemIdx = connectedItems.firstIndex(where: { $0.id == itemId }),
+              let accIdx  = connectedItems[itemIdx].accounts.firstIndex(where: { $0.id == plaidAccountId })
+        else { return }
+        connectedItems[itemIdx].accounts[accIdx].fintrackAccountId = nil
+        saveItems()
+    }
+
     // MARK: - Persistence (items metadata in UserDefaults; secrets in Keychain)
 
     private func saveItems() {

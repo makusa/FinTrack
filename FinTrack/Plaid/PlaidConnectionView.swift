@@ -433,30 +433,32 @@ struct AccountMappingView: View {
 
                 ForEach(item.accounts) { plaidAcc in
                     Section(plaidAcc.name + (plaidAcc.mask.map { " •••\($0)" } ?? "")) {
-                        Picker(lang["plaid.map.to"], selection: Binding(
-                            get: { plaidAcc.fintrackAccountId },
-                            set: { newVal in
-                                if let id = newVal {
-                                    plaid.updateAccountMapping(
-                                        itemId: item.id,
-                                        plaidAccountId: plaidAcc.id,
-                                        fintrackAccountId: id
-                                    )
-                                }
-                            }
-                        )) {
-                            Text(lang["plaid.map.none"]).tag(String?.none)
-                            ForEach(compatibleAccounts(for: plaidAcc)) { acc in
-                                HStack {
-                                    Image(systemName: acc.iconSystemName)
-                                        .foregroundStyle(Color(hex: acc.colorHex))
-                                    Text(acc.name)
-                                    Text("(\(acc.currency))").foregroundStyle(.secondary)
-                                }
-                                .tag(Optional(acc.uuid))
+                        // "Don't import" row
+                        mappingRow(
+                            title: lang["plaid.map.none"],
+                            systemImage: "nosign",
+                            tint: .secondary,
+                            isSelected: plaidAcc.fintrackAccountId == nil
+                        ) {
+                            plaid.clearAccountMapping(itemId: item.id, plaidAccountId: plaidAcc.id)
+                        }
+
+                        // One row per compatible FinTrack account
+                        ForEach(compatibleAccounts(for: plaidAcc)) { acc in
+                            mappingRow(
+                                title: acc.name,
+                                subtitle: acc.currency,
+                                systemImage: acc.iconSystemName,
+                                tint: Color(hex: acc.colorHex),
+                                isSelected: plaidAcc.fintrackAccountId == acc.uuid
+                            ) {
+                                plaid.updateAccountMapping(
+                                    itemId: item.id,
+                                    plaidAccountId: plaidAcc.id,
+                                    fintrackAccountId: acc.uuid
+                                )
                             }
                         }
-                        .pickerStyle(.navigationLink)
                     }
                 }
             }
@@ -469,6 +471,35 @@ struct AccountMappingView: View {
                 }
             }
         }
+    }
+
+    @ViewBuilder
+    private func mappingRow(title: String,
+                            subtitle: String? = nil,
+                            systemImage: String,
+                            tint: Color,
+                            isSelected: Bool,
+                            action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: systemImage)
+                    .foregroundStyle(tint)
+                    .frame(width: 24)
+                Text(title)
+                    .foregroundStyle(.primary)
+                if let subtitle {
+                    Text("(\(subtitle))").foregroundStyle(.secondary)
+                }
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(.tint)
+                        .fontWeight(.semibold)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 
     private func compatibleAccounts(for plaidAcc: PlaidAccountMeta) -> [Account] {
