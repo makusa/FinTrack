@@ -409,7 +409,7 @@ struct PlaidWebView: UIViewRepresentable {
         web.navigationDelegate = context.coordinator
 
         // Hosted Link page: receives the token via query param and emits postMessage events.
-        let urlStr = "https://cdn.plaid.com/link/v2/stable/link.html?isWebview=true&token=\(linkToken)"
+        let urlStr = "https://cdn.plaid.com/link/v2/stable/link.html?token=\(linkToken)"
         if let url = URL(string: urlStr) {
             web.load(URLRequest(url: url))
         }
@@ -429,12 +429,61 @@ struct PlaidWebView: UIViewRepresentable {
             self.onExit    = onExit
         }
 
+        func webView(_ webView: WKWebView,
+                     decidePolicyFor action: WKNavigationAction,
+                     decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
+            if let url = action.request.url, url.scheme == "plaidlink" {
+                handleRedirect(url: url)
+                decisionHandler(.cancel)
+                return
+            }
+            decisionHandler(.allow)
+        }
+
+        private func handleRedirect(url: URL) {
+            guard !delivered,
+                  let comps = URLComponents(url: url, resolvingAgainstBaseURL: false),
+                  let items = comps.queryItems else { return }
+            let params = Dictionary(items.compactMap { i in i.value.map { (i.name, $0) } },
+                                    uniquingKeysWith: { a, _ in a })
+            // Persist trace
+            var trace = UserDefaults.standard.stringArray(forKey: "fintrack.plaid.eventTrace") ?? []
+            trace.append("NAV plaidlink: \(url.absoluteString.prefix(200))")
+            UserDefaults.standard.set(Array(trace.suffix(20)), forKey: "fintrack.plaid.eventTrace")
+
+            if let token = params["public_token"], !token.isEmpty {
+                delivered = true
+                let metadata = PlaidLinkMetadata(
+                    accounts: [],
+                    institution: (params["institution_name"]).map {
+                        PlaidLinkMetadata.Institution(id: params["institution_id"] ?? "", name: $0)
+                    },
+                    linkSessionId: params["link_session_id"] ?? ""
+                )
+                onSuccess(token, metadata)
+            } else if params["event_name"]?.uppercased().contains("EXIT") == true {
+                onExit()
+            }
+        }
+
+        func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
+            AppLogger.persistence.error("Plaid WebView load FAILED: \(error.localizedDescription, privacy: .public)")
+        }
+
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            AppLogger.persistence.info("Plaid WebView finished loading")
+        }
+
         func userContentController(_ ucc: WKUserContentController,
                                    didReceive message: WKScriptMessage) {
             guard let body = message.body as? [String: Any] else { return }
 
-            // Log every event for diagnosis (visible in Console / device logs).
+            // Log every event for diagnosis. OSLog isn't readable remotely on
+            // device, so ALSO append to UserDefaults (readable via devicectl).
             AppLogger.persistence.info("Plaid event: \(String(describing: body), privacy: .public)")
+            var trace = UserDefaults.standard.stringArray(forKey: "fintrack.plaid.eventTrace") ?? []
+            trace.append(String(describing: body))
+            UserDefaults.standard.set(Array(trace.suffix(20)), forKey: "fintrack.plaid.eventTrace")
 
             // Plaid emits various events; the terminal ones we care about:
             //   { eventName: "HANDOFF" }              → user finished, token coming
@@ -444,7 +493,21 @@ struct PlaidWebView: UIViewRepresentable {
             let eventName = (body["eventName"] as? String) ?? ""
             let key       = type.isEmpty ? eventName : type
 
-            if let publicToken = (body["public_token"] as? String)
+            // Plaid webview mode encodes the result in webview_redirect_uri =
+            // "plaidlink://...&public_token=...". Parse it first.
+            var tokenFromRedirect: String? = nil
+            var instFromRedirect: [String: String] = [:]
+            if let redirect = body["webview_redirect_uri"] as? String,
+               let comps = URLComponents(string: redirect),
+               let items = comps.queryItems {
+                let params = Dictionary(items.compactMap { i in i.value.map { (i.name, $0) } },
+                                        uniquingKeysWith: { a, _ in a })
+                tokenFromRedirect = params["public_token"]
+                instFromRedirect = params
+            }
+
+            if let publicToken = tokenFromRedirect
+                              ?? (body["public_token"] as? String)
                               ?? ((body["metadata"] as? [String: Any])?["public_token"] as? String) {
                 guard !delivered else { return }
                 delivered = true
