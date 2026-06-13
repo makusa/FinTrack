@@ -7,6 +7,13 @@ options:
   createIntermediateGroups: true
   defaultConfig: Debug
 
+# Project-level settings inherited by all targets (XcodeGen "Validate Settings").
+settings:
+  base:
+    DEVELOPMENT_TEAM: 38N594NGP9
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    SWIFT_EMIT_LOC_STRINGS: YES
+
 targets:
   FinTrack:
     type: application
@@ -37,11 +44,8 @@ targets:
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         ENABLE_PREVIEWS: YES
-        SWIFT_EMIT_LOC_STRINGS: YES
         DEVELOPMENT_LANGUAGE: en
         CODE_SIGN_STYLE: Automatic
-
-        DEVELOPMENT_TEAM: 38N594NGP9
         CODE_SIGN_IDENTITY: "iPhone Developer"
     entitlements:
       path: FinTrack/FinTrack.entitlements
@@ -66,11 +70,8 @@ targets:
         GENERATE_INFOPLIST_FILE: NO
         INFOPLIST_FILE: FinTrackWidget/Info.plist
         CODE_SIGN_STYLE: Automatic
-
-        DEVELOPMENT_TEAM: 38N594NGP9
         CODE_SIGN_IDENTITY: "iPhone Developer"
         SKIP_INSTALL: YES
-        ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES: NO
 
 schemes:
   FinTrack:
