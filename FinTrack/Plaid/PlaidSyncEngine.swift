@@ -158,13 +158,12 @@ final class PlaidSyncEngine {
                                  item: PlaidConnectedItem,
                                  context: ModelContext) -> Account? {
         guard let meta = item.accounts.first(where: { $0.id == plaidAccountId }),
-              let fintrackIdStr = meta.fintrackAccountId,
-              let uuid = UUID(uuidString: fintrackIdStr)
+              let fintrackIdStr = meta.fintrackAccountId
         else { return nil }
 
-        // Fetch the Account from SwiftData by UUID (stored in Account.name — we match by persistent ID)
+        // Fetch the Account from SwiftData by its stable uuid.
         let accounts = (try? context.fetch(FetchDescriptor<Account>())) ?? []
-        return accounts.first { $0.persistentModelID.hashValue == uuid.hashValue }
+        return accounts.first { $0.uuid == fintrackIdStr }
     }
 
     private func existingTransaction(plaidId: String, context: ModelContext) -> Transaction? {

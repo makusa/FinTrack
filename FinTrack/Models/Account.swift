@@ -44,6 +44,7 @@ enum AccountType: String, CaseIterable, Identifiable {
 
 @Model
 final class Account {
+    var uuid: String = UUID().uuidString   // stable id for external mapping (Plaid, etc.)
     var name: String = ""
     var institution: String = ""
     var typeRaw: String = AccountType.checking.rawValue

@@ -453,7 +453,7 @@ struct AccountMappingView: View {
                                     Text(acc.name)
                                     Text("(\(acc.currency))").foregroundStyle(.secondary)
                                 }
-                                .tag(Optional(acc.persistentModelID.hashValue.description))
+                                .tag(Optional(acc.uuid))
                             }
                         }
                         .pickerStyle(.navigationLink)
