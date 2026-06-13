@@ -432,10 +432,17 @@ struct PlaidWebView: UIViewRepresentable {
         func webView(_ webView: WKWebView,
                      decidePolicyFor action: WKNavigationAction,
                      decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            if let url = action.request.url, url.scheme == "plaidlink" {
-                handleRedirect(url: url)
-                decisionHandler(.cancel)
-                return
+            if let url = action.request.url {
+                // Trace EVERY navigation to see what Plaid actually navigates to.
+                var t = UserDefaults.standard.stringArray(forKey: "fintrack.plaid.eventTrace") ?? []
+                t.append("NAV→ \(url.scheme ?? "?"): \(url.absoluteString.prefix(120))")
+                UserDefaults.standard.set(Array(t.suffix(25)), forKey: "fintrack.plaid.eventTrace")
+
+                if url.scheme == "plaidlink" {
+                    handleRedirect(url: url)
+                    decisionHandler(.cancel)
+                    return
+                }
             }
             decisionHandler(.allow)
         }
@@ -466,47 +473,57 @@ struct PlaidWebView: UIViewRepresentable {
 
             // Trace (OSLog isn't readable remotely on device).
             var trace = UserDefaults.standard.stringArray(forKey: "fintrack.plaid.eventTrace") ?? []
-            trace.append(String(describing: body).prefix(150).description)
+            trace.append(String(describing: body).prefix(600).description)
             UserDefaults.standard.set(Array(trace.suffix(20)), forKey: "fintrack.plaid.eventTrace")
 
             tryCapture(from: body)
         }
 
-        /// Single capture path: look for a public_token anywhere Plaid might
-        /// put it (top-level, metadata, or inside webview_redirect_uri).
+        /// Recursively search any nested dict/array/string for a public token.
+        private func findPublicToken(in value: Any) -> String? {
+            if let s = value as? String {
+                if s.hasPrefix("public-") { return s }
+                // Could be a plaidlink:// URL carrying public_token=…
+                if s.contains("public_token="),
+                   let comps = URLComponents(string: s),
+                   let t = comps.queryItems?.first(where: { $0.name == "public_token" })?.value,
+                   t.hasPrefix("public-") { return t }
+                return nil
+            }
+            if let dict = value as? [String: Any] {
+                if let t = dict["public_token"] as? String, t.hasPrefix("public-") { return t }
+                for (_, v) in dict { if let t = findPublicToken(in: v) { return t } }
+            }
+            if let arr = value as? [Any] {
+                for v in arr { if let t = findPublicToken(in: v) { return t } }
+            }
+            return nil
+        }
+
+        private func findString(_ key: String, in value: Any) -> String? {
+            if let dict = value as? [String: Any] {
+                if let s = dict[key] as? String, s != "<null>", !s.isEmpty { return s }
+                for (_, v) in dict { if let s = findString(key, in: v) { return s } }
+            }
+            if let arr = value as? [Any] {
+                for v in arr { if let s = findString(key, in: v) { return s } }
+            }
+            return nil
+        }
+
+        /// Single capture path: search the entire event payload recursively.
         private func tryCapture(from body: [String: Any]) {
             guard !delivered else { return }
 
-            // 1. webview_redirect_uri = "plaidlink://connected?public_token=…"
-            if let redirect = body["webview_redirect_uri"] as? String,
-               let comps = URLComponents(string: redirect),
-               let items = comps.queryItems {
-                let p = Dictionary(items.compactMap { i in i.value.map { (i.name, $0) } },
-                                   uniquingKeysWith: { a, _ in a })
-                if let token = p["public_token"], !token.isEmpty {
-                    deliver(token: token,
-                            institutionName: p["institution_name"],
-                            institutionId:   p["institution_id"],
-                            sessionId:       p["link_session_id"])
-                    return
-                }
-                if p["event_name"]?.uppercased().contains("EXIT") == true { onExit(); return }
-            }
-
-            // 2. Direct public_token (top-level or in metadata)
-            if let token = (body["public_token"] as? String)
-                        ?? ((body["metadata"] as? [String: Any])?["public_token"] as? String),
-               !token.isEmpty {
-                let inst = (body["institution"] as? [String: Any])
-                        ?? ((body["metadata"] as? [String: Any])?["institution"] as? [String: Any])
+            if let token = findPublicToken(in: body) {
                 deliver(token: token,
-                        institutionName: inst?["name"] as? String,
-                        institutionId:   inst?["institution_id"] as? String,
-                        sessionId:       body["link_session_id"] as? String)
+                        institutionName: findString("institution_name", in: body),
+                        institutionId:   findString("institution_id", in: body),
+                        sessionId:       findString("link_session_id", in: body))
                 return
             }
 
-            // 3. Explicit EXIT
+            // Explicit EXIT (only if no token found)
             let key = (body["type"] as? String) ?? (body["eventName"] as? String) ?? ""
             if key.uppercased() == "EXIT" { onExit() }
         }
