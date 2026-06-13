@@ -267,7 +267,8 @@ struct ConnectedAccountsView: View {
                 institutionName: metadata.institution?.name ?? "Banque",
                 accounts: accounts
             )
-            // Auto-open mapping after connection
+            // Close the Plaid sheet, then auto-open mapping.
+            showPlaidLink = false
             if let newItem = plaid.connectedItems.last {
                 itemToMap = newItem
             }
@@ -314,39 +315,38 @@ struct PlaidLinkMetadata {
     let linkSessionId: String
 }
 
-// MARK: - PlaidLinkView (WKWebView wrapping Plaid Link)
+// MARK: - PlaidLinkView (Hosted Link via ASWebAuthenticationSession)
 
+import AuthenticationServices
+
+/// Opens Plaid Hosted Link in a secure ASWebAuthenticationSession (required
+/// by Plaid for webview apps). Plaid hosts the entire flow; on completion we
+/// poll the backend for the public_token — no postMessage parsing.
 struct PlaidLinkView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(LanguageManager.self) private var lang
     let onSuccess: (String, PlaidLinkMetadata) -> Void
 
-    @State private var linkToken: String? = nil
-    @State private var isLoading = true
+    @State private var status: String = ""
     @State private var error: String? = nil
+    @State private var controller = WebAuthController()
 
     var body: some View {
         NavigationStack {
-            Group {
-                if let token = linkToken {
-                    PlaidWebView(linkToken: token, onSuccess: onSuccess, onExit: { dismiss() })
-                } else if let err = error {
-                    VStack(spacing: 16) {
-                        Image(systemName: "exclamationmark.triangle")
-                            .font(.system(size: 40))
-                            .foregroundStyle(.orange)
-                        Text(err)
-                            .multilineTextAlignment(.center)
-                            .foregroundStyle(.secondary)
-                        Button(lang["action.cancel"]) { dismiss() }
-                            .buttonStyle(.bordered)
-                    }
-                    .padding()
+            VStack(spacing: 16) {
+                if let err = error {
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.system(size: 40)).foregroundStyle(.orange)
+                    Text(err).multilineTextAlignment(.center).foregroundStyle(.secondary)
+                    Button(lang["action.cancel"]) { dismiss() }.buttonStyle(.bordered)
                 } else {
-                    ProgressView(lang["plaid.connecting"])
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    ProgressView()
+                    Text(status.isEmpty ? lang["plaid.connecting"] : status)
+                        .foregroundStyle(.secondary)
                 }
             }
+            .padding()
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .navigationTitle(lang["plaid.connect.title"])
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -355,191 +355,59 @@ struct PlaidLinkView: View {
                 }
             }
         }
-        .task { await loadLinkToken() }
+        .task { await start() }
     }
 
-    private func loadLinkToken() async {
+    private func start() async {
         do {
-            linkToken = try await PlaidManager.shared.fetchLinkToken()
-            isLoading = false
+            status = lang["plaid.connecting"]
+            let (hostedURL, linkToken) = try await PlaidManager.shared.createHostedLink()
+
+            // Open the hosted flow. Plaid redirects to a plaidlink:// URL on finish.
+            try await controller.authenticate(urlString: hostedURL, scheme: "plaidlink")
+
+            // Session finished — poll for the public_token (Plaid needs a moment).
+            status = lang["plaid.connecting"]
+            var token: String? = nil
+            for _ in 0..<10 {
+                token = try await PlaidManager.shared.fetchLinkResult(linkToken: linkToken)
+                if token != nil { break }
+                try? await Task.sleep(nanoseconds: 1_500_000_000)
+            }
+            guard let publicToken = token else {
+                error = lang["plaid.connected.error"]; return
+            }
+            onSuccess(publicToken, PlaidLinkMetadata(accounts: [], institution: nil, linkSessionId: ""))
+        } catch let e as ASWebAuthenticationSessionError where e.code == .canceledLogin {
+            dismiss()  // user closed the sheet
         } catch {
             self.error = error.localizedDescription
-            isLoading  = false
         }
     }
 }
 
-// MARK: - PlaidWebView
+/// Bridges ASWebAuthenticationSession to async/await.
+@MainActor
+final class WebAuthController: NSObject, ASWebAuthenticationPresentationContextProviding {
+    private var session: ASWebAuthenticationSession?
 
-/// WKWebView that loads Plaid Link via the hosted redirect flow.
-/// Plaid Link (CDN/hosted) communicates via window.postMessage, NOT via
-/// navigation to a custom scheme. We inject a script that forwards every
-/// Plaid event to native code through a WKScriptMessageHandler.
-///
-/// Plaid events: https://plaid.com/docs/link/web/#onevent
-///   - eventName "HANDOFF" / type "SUCCESS" carries public_token
-struct PlaidWebView: UIViewRepresentable {
-    let linkToken: String
-    let onSuccess: (String, PlaidLinkMetadata) -> Void
-    let onExit:    () -> Void
-
-    func makeCoordinator() -> Coordinator { Coordinator(onSuccess: onSuccess, onExit: onExit) }
-
-    func makeUIView(context: Context) -> WKWebView {
-        let config = WKWebViewConfiguration()
-
-        // Forward Plaid's postMessage events to native.
-        let script = """
-        function fintrackPost(d){ window.webkit.messageHandlers.plaid.postMessage(d); }
-        window.addEventListener('message', function(e){
-            try {
-                var data = (typeof e.data === 'string') ? JSON.parse(e.data) : e.data;
-                fintrackPost(data);
-            } catch(err) {
-                fintrackPost({ raw: String(e.data) });
+    func authenticate(urlString: String, scheme: String) async throws {
+        guard let url = URL(string: urlString) else { throw URLError(.badURL) }
+        try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
+            let s = ASWebAuthenticationSession(url: url, callbackURLScheme: scheme) { _, error in
+                if let error { cont.resume(throwing: error) }
+                else { cont.resume() }
             }
-        });
-        """
-        config.userContentController.addUserScript(
-            WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: false)
-        )
-        config.userContentController.add(context.coordinator, name: "plaid")
-
-        let web = WKWebView(frame: .zero, configuration: config)
-        web.navigationDelegate = context.coordinator
-
-        // Hosted Link page: receives the token via query param and emits postMessage events.
-        let urlStr = "https://cdn.plaid.com/link/v2/stable/link.html?token=\(linkToken)"
-        if let url = URL(string: urlStr) {
-            web.load(URLRequest(url: url))
+            s.presentationContextProvider = self
+            s.prefersEphemeralWebBrowserSession = false
+            self.session = s
+            s.start()
         }
-        return web
     }
 
-    func updateUIView(_ uiView: WKWebView, context: Context) {}
-
-    final class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
-        let onSuccess: (String, PlaidLinkMetadata) -> Void
-        let onExit:    () -> Void
-        private var delivered = false
-
-        init(onSuccess: @escaping (String, PlaidLinkMetadata) -> Void,
-             onExit:    @escaping () -> Void) {
-            self.onSuccess = onSuccess
-            self.onExit    = onExit
-        }
-
-        func webView(_ webView: WKWebView,
-                     decidePolicyFor action: WKNavigationAction,
-                     decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            if let url = action.request.url {
-                // Trace EVERY navigation to see what Plaid actually navigates to.
-                var t = UserDefaults.standard.stringArray(forKey: "fintrack.plaid.eventTrace") ?? []
-                t.append("NAV→ \(url.scheme ?? "?"): \(url.absoluteString.prefix(120))")
-                UserDefaults.standard.set(Array(t.suffix(25)), forKey: "fintrack.plaid.eventTrace")
-
-                if url.scheme == "plaidlink" {
-                    handleRedirect(url: url)
-                    decisionHandler(.cancel)
-                    return
-                }
-            }
-            decisionHandler(.allow)
-        }
-
-        private func handleRedirect(url: URL) {
-            guard let comps = URLComponents(url: url, resolvingAgainstBaseURL: false),
-                  let items = comps.queryItems else { return }
-            let params = Dictionary(items.compactMap { i in i.value.map { (i.name, $0) } },
-                                    uniquingKeysWith: { a, _ in a })
-            var trace = UserDefaults.standard.stringArray(forKey: "fintrack.plaid.eventTrace") ?? []
-            trace.append("NAV: \(url.absoluteString.prefix(120))")
-            UserDefaults.standard.set(Array(trace.suffix(20)), forKey: "fintrack.plaid.eventTrace")
-            // Reuse the same capture logic by faking a body dict.
-            tryCapture(from: ["webview_redirect_uri": url.absoluteString])
-        }
-
-        func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
-            AppLogger.persistence.error("Plaid WebView load FAILED: \(error.localizedDescription, privacy: .public)")
-        }
-
-        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            AppLogger.persistence.info("Plaid WebView finished loading")
-        }
-
-        func userContentController(_ ucc: WKUserContentController,
-                                   didReceive message: WKScriptMessage) {
-            guard let body = message.body as? [String: Any] else { return }
-
-            // Trace (OSLog isn't readable remotely on device).
-            var trace = UserDefaults.standard.stringArray(forKey: "fintrack.plaid.eventTrace") ?? []
-            trace.append(String(describing: body).prefix(600).description)
-            UserDefaults.standard.set(Array(trace.suffix(20)), forKey: "fintrack.plaid.eventTrace")
-
-            tryCapture(from: body)
-        }
-
-        /// Recursively search any nested dict/array/string for a public token.
-        private func findPublicToken(in value: Any) -> String? {
-            if let s = value as? String {
-                if s.hasPrefix("public-") { return s }
-                // Could be a plaidlink:// URL carrying public_token=…
-                if s.contains("public_token="),
-                   let comps = URLComponents(string: s),
-                   let t = comps.queryItems?.first(where: { $0.name == "public_token" })?.value,
-                   t.hasPrefix("public-") { return t }
-                return nil
-            }
-            if let dict = value as? [String: Any] {
-                if let t = dict["public_token"] as? String, t.hasPrefix("public-") { return t }
-                for (_, v) in dict { if let t = findPublicToken(in: v) { return t } }
-            }
-            if let arr = value as? [Any] {
-                for v in arr { if let t = findPublicToken(in: v) { return t } }
-            }
-            return nil
-        }
-
-        private func findString(_ key: String, in value: Any) -> String? {
-            if let dict = value as? [String: Any] {
-                if let s = dict[key] as? String, s != "<null>", !s.isEmpty { return s }
-                for (_, v) in dict { if let s = findString(key, in: v) { return s } }
-            }
-            if let arr = value as? [Any] {
-                for v in arr { if let s = findString(key, in: v) { return s } }
-            }
-            return nil
-        }
-
-        /// Single capture path: search the entire event payload recursively.
-        private func tryCapture(from body: [String: Any]) {
-            guard !delivered else { return }
-
-            if let token = findPublicToken(in: body) {
-                deliver(token: token,
-                        institutionName: findString("institution_name", in: body),
-                        institutionId:   findString("institution_id", in: body),
-                        sessionId:       findString("link_session_id", in: body))
-                return
-            }
-
-            // Explicit EXIT (only if no token found)
-            let key = (body["type"] as? String) ?? (body["eventName"] as? String) ?? ""
-            if key.uppercased() == "EXIT" { onExit() }
-        }
-
-        private func deliver(token: String, institutionName: String?,
-                             institutionId: String?, sessionId: String?) {
-            delivered = true
-            let metadata = PlaidLinkMetadata(
-                accounts: [],
-                institution: institutionName.map {
-                    PlaidLinkMetadata.Institution(id: institutionId ?? "", name: $0)
-                },
-                linkSessionId: sessionId ?? ""
-            )
-            onSuccess(token, metadata)
-        }
+    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        return scenes.first?.keyWindow ?? ASPresentationAnchor()
     }
 }
 

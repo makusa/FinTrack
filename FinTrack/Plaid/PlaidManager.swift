@@ -47,6 +47,16 @@ struct PlaidAccountMeta: Codable, Identifiable {
 
 // MARK: - API response models
 
+private struct HostedLinkResponse: Decodable {
+    let hosted_link_url: String
+    let link_token: String
+}
+
+private struct LinkResultResponse: Decodable {
+    let status: String?
+    let public_token: String?
+}
+
 private struct LinkTokenResponse: Decodable {
     let link_token: String
     let expiration: String
@@ -123,10 +133,12 @@ final class PlaidManager {
 
     // MARK: - Link token (step 1)
 
-    /// Fetches a link_token from the NAS backend.
-    /// The iOS SDK uses this token to open the Plaid Link UI.
-    func fetchLinkToken() async throws -> String {
-        let url = URL(string: "\(PlaidConfig.baseURL)/create_link_token")!
+    /// Creates a Hosted Link session. Returns the URL to open in
+    /// ASWebAuthenticationSession plus the link_token used to poll the result.
+    /// Hosted Link is required for webview apps: Plaid hosts the UI and the
+    /// public_token is retrieved server-side (no fragile postMessage parsing).
+    func createHostedLink() async throws -> (hostedURL: String, linkToken: String) {
+        let url = URL(string: "\(PlaidConfig.baseURL)/create_hosted_link")!
         var req = URLRequest(url: url, timeoutInterval: 15)
         req.httpMethod = "POST"
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -135,8 +147,24 @@ final class PlaidManager {
 
         let (data, response) = try await URLSession.shared.data(for: req)
         try validateResponse(response)
-        let decoded = try JSONDecoder().decode(LinkTokenResponse.self, from: data)
-        return decoded.link_token
+        let decoded = try JSONDecoder().decode(HostedLinkResponse.self, from: data)
+        return (decoded.hosted_link_url, decoded.link_token)
+    }
+
+    /// Polls /link/token/get until the hosted session yields a public_token.
+    /// Returns nil if the session isn't complete yet.
+    func fetchLinkResult(linkToken: String) async throws -> String? {
+        let url = URL(string: "\(PlaidConfig.baseURL)/get_link_result")!
+        var req = URLRequest(url: url, timeoutInterval: 15)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue(PlaidConfig.apiKey, forHTTPHeaderField: "X-API-Key")
+        req.httpBody = try? JSONSerialization.data(withJSONObject: ["link_token": linkToken])
+
+        let (data, response) = try await URLSession.shared.data(for: req)
+        try validateResponse(response)
+        let decoded = try JSONDecoder().decode(LinkResultResponse.self, from: data)
+        return decoded.public_token
     }
 
     // MARK: - Exchange token (step 2)
