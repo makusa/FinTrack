@@ -75,24 +75,7 @@ struct ConnectedAccountsView: View {
                 if showSyncSummary {
                     Section(lang["plaid.sync.summary"]) {
                         ForEach(syncResults, id: \.itemId) { result in
-                            let item = plaid.connectedItems.first { $0.id == result.itemId }
-                            HStack {
-                                Image(systemName: result.error == nil ? "checkmark.circle.fill" : "xmark.circle.fill")
-                                    .foregroundStyle(result.error == nil ? .green : .red)
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(item?.institutionName ?? result.itemId)
-                                        .font(.callout.weight(.medium))
-                                    if let err = result.error {
-                                        Text(err.localizedDescription)
-                                            .font(.caption)
-                                            .foregroundStyle(.red)
-                                    } else {
-                                        Text("+\(result.added) · ~\(result.modified) · -\(result.removed)")
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                }
-                            }
+                            syncResultRow(result)
                         }
                     }
                 }
@@ -128,7 +111,7 @@ struct ConnectedAccountsView: View {
                 }
             }
             .sheet(item: $itemToMap) { item in
-                AccountMappingView(item: item, fintrackAccounts: fintrackAccounts)
+                AccountMappingView(item: item)
             }
             .confirmationDialog(
                 lang["plaid.disconnect.prompt"],
@@ -277,6 +260,30 @@ struct ConnectedAccountsView: View {
         }
     }
 
+    @ViewBuilder
+    private func syncResultRow(_ result: PlaidSyncEngine.SyncResult) -> some View {
+        let inst = plaid.connectedItems.first { $0.id == result.itemId }?.institutionName ?? result.itemId
+        let ok = result.error == nil
+        let summary = "+\(result.added) · ~\(result.modified) · -\(result.removed)"
+        HStack {
+            Image(systemName: ok ? "checkmark.circle.fill" : "xmark.circle.fill")
+                .foregroundStyle(ok ? .green : .red)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(inst)
+                    .font(.callout.weight(.medium))
+                if let err = result.error {
+                    Text(err.localizedDescription)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                } else {
+                    Text(summary)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
     private func syncAll() async {
         isSyncing = true
         syncResults = await PlaidSyncEngine.shared.syncAll(context: context)
@@ -415,12 +422,18 @@ final class WebAuthController: NSObject, ASWebAuthenticationPresentationContextP
 
 struct AccountMappingView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
     @State private var plaid = PlaidManager.shared
-    @Environment(EntitlementManager.self) private var entitlements
+
+    // Reactive query so the list updates instantly when we create an account.
+    @Query(filter: #Predicate<Account> { !$0.isArchived }, sort: \Account.createdAt)
+    private var fintrackAccounts: [Account]
 
     var item: PlaidConnectedItem
-    let fintrackAccounts: [Account]
+
+    // Local mirror of the item so menu selections re-render immediately.
+    @State private var mappings: [String: String?] = [:]
 
     var body: some View {
         NavigationStack {
@@ -431,34 +444,9 @@ struct AccountMappingView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                ForEach(item.accounts) { plaidAcc in
-                    Section(plaidAcc.name + (plaidAcc.mask.map { " •••\($0)" } ?? "")) {
-                        // "Don't import" row
-                        mappingRow(
-                            title: lang["plaid.map.none"],
-                            systemImage: "nosign",
-                            tint: .secondary,
-                            isSelected: plaidAcc.fintrackAccountId == nil
-                        ) {
-                            plaid.clearAccountMapping(itemId: item.id, plaidAccountId: plaidAcc.id)
-                        }
-
-                        // One row per compatible FinTrack account
-                        ForEach(compatibleAccounts(for: plaidAcc)) { acc in
-                            mappingRow(
-                                title: acc.name,
-                                subtitle: acc.currency,
-                                systemImage: acc.iconSystemName,
-                                tint: Color(hex: acc.colorHex),
-                                isSelected: plaidAcc.fintrackAccountId == acc.uuid
-                            ) {
-                                plaid.updateAccountMapping(
-                                    itemId: item.id,
-                                    plaidAccountId: plaidAcc.id,
-                                    fintrackAccountId: acc.uuid
-                                )
-                            }
-                        }
+                Section {
+                    ForEach(item.accounts) { plaidAcc in
+                        accountRow(plaidAcc)
                     }
                 }
             }
@@ -470,40 +458,163 @@ struct AccountMappingView: View {
                         .fontWeight(.semibold)
                 }
             }
+            .onAppear(perform: loadMappings)
+        }
+    }
+
+    // MARK: - One compact row per Plaid account
+
+    @ViewBuilder
+    private func accountRow(_ plaidAcc: PlaidAccountMeta) -> some View {
+        let currentId = mappings[plaidAcc.id] ?? plaidAcc.fintrackAccountId
+        let linked = currentId.flatMap { id in fintrackAccounts.first { $0.uuid == id } }
+
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(plaidAcc.name)
+                    .font(.body)
+                    .lineLimit(1)
+                if let mask = plaidAcc.mask {
+                    Text("•••\(mask)")
+                        .font(.caption2)
+                        .foregroundStyle(.tertiary)
+                }
+            }
+            Spacer(minLength: 8)
+            destinationMenu(for: plaidAcc, linked: linked, isUnmapped: currentId == nil)
+        }
+    }
+
+    // MARK: - The dropdown (native Menu — fast, opens on tap only)
+
+    @ViewBuilder
+    private func destinationMenu(for plaidAcc: PlaidAccountMeta,
+                                 linked: Account?,
+                                 isUnmapped: Bool) -> some View {
+        Menu {
+            menuContent(for: plaidAcc)
+        } label: {
+            menuLabel(linked: linked, isUnmapped: isUnmapped)
         }
     }
 
     @ViewBuilder
-    private func mappingRow(title: String,
-                            subtitle: String? = nil,
-                            systemImage: String,
-                            tint: Color,
-                            isSelected: Bool,
-                            action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: 12) {
-                Image(systemName: systemImage)
-                    .foregroundStyle(tint)
-                    .frame(width: 24)
-                Text(title)
-                    .foregroundStyle(.primary)
-                if let subtitle {
-                    Text("(\(subtitle))").foregroundStyle(.secondary)
-                }
-                Spacer()
-                if isSelected {
-                    Image(systemName: "checkmark")
-                        .foregroundStyle(.tint)
-                        .fontWeight(.semibold)
-                }
-            }
-            .contentShape(Rectangle())
+    private func menuContent(for plaidAcc: PlaidAccountMeta) -> some View {
+        Button {
+            setMapping(plaidAcc, to: nil)
+        } label: {
+            Label(lang["plaid.map.none"], systemImage: "circle.slash")
         }
-        .buttonStyle(.plain)
+
+        Divider()
+
+        ForEach(compatibleAccounts(for: plaidAcc)) { acc in
+            Button {
+                setMapping(plaidAcc, to: acc.uuid)
+            } label: {
+                Label(acc.name, systemImage: acc.iconSystemName)
+            }
+        }
+
+        Divider()
+
+        Button {
+            createAndMap(plaidAcc)
+        } label: {
+            Label(lang["plaid.map.create"], systemImage: "plus.circle")
+        }
+    }
+
+    @ViewBuilder
+    private func menuLabel(linked: Account?, isUnmapped: Bool) -> some View {
+        HStack(spacing: 6) {
+            if let acc = linked {
+                Circle()
+                    .fill(Color(hex: acc.colorHex))
+                    .frame(width: 16, height: 16)
+                Text(acc.name)
+                    .font(.subheadline.weight(.medium))
+                    .lineLimit(1)
+            } else if isUnmapped {
+                Text(lang["plaid.map.none"])
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            } else {
+                Text(lang["plaid.map.choose"])
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.tint)
+            }
+            Image(systemName: "chevron.up.chevron.down")
+                .font(.caption2)
+                .foregroundStyle(.tertiary)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color(.tertiarySystemFill), in: Capsule())
+        .frame(maxWidth: 170, alignment: .trailing)
+    }
+
+    // MARK: - Actions
+
+    private func loadMappings() {
+        for acc in item.accounts {
+            mappings[acc.id] = acc.fintrackAccountId
+        }
+    }
+
+    private func setMapping(_ plaidAcc: PlaidAccountMeta, to uuid: String?) {
+        mappings[plaidAcc.id] = uuid
+        if let uuid {
+            plaid.updateAccountMapping(itemId: item.id,
+                                       plaidAccountId: plaidAcc.id,
+                                       fintrackAccountId: uuid)
+        } else {
+            plaid.clearAccountMapping(itemId: item.id, plaidAccountId: plaidAcc.id)
+        }
+    }
+
+    /// Instantly create a FinTrack account pre-filled from the Plaid account,
+    /// then map to it. No confirmation — user can edit later.
+    private func createAndMap(_ plaidAcc: PlaidAccountMeta) {
+        let type = accountType(for: plaidAcc)
+        // Pick a color deterministically from the palette based on existing count.
+        let palette = ColorPalette.accountColors
+        let color = palette[fintrackAccounts.count % palette.count]
+
+        let account = Account(
+            name: plaidAcc.name,
+            institution: item.institutionName,
+            type: type,
+            currency: plaidAcc.currencyCode ?? Currencies.default,
+            initialBalance: 0,
+            colorHex: color,
+            iconSystemName: type.defaultIconSystemName,
+            notes: nil
+        )
+        context.insert(account)
+        try? context.save()
+
+        // Map to the freshly created account (its uuid default is set on init).
+        setMapping(plaidAcc, to: account.uuid)
+    }
+
+    /// Maps a Plaid account type/subtype to a FinTrack AccountType.
+    private func accountType(for plaidAcc: PlaidAccountMeta) -> AccountType {
+        switch plaidAcc.type.lowercased() {
+        case "credit":      return .credit
+        case "loan":        return .other
+        case "investment":  return .investment
+        case "depository":
+            switch (plaidAcc.subtype ?? "").lowercased() {
+            case "savings", "cd", "money market": return .savings
+            default:                              return .checking
+            }
+        default:            return .other
+        }
     }
 
     private func compatibleAccounts(for plaidAcc: PlaidAccountMeta) -> [Account] {
-        // Filter by approximate type compatibility
         switch plaidAcc.type.lowercased() {
         case "credit": return fintrackAccounts.filter { $0.type == .credit }
         case "loan":   return fintrackAccounts.filter { $0.type == .investment || $0.type == .other }
