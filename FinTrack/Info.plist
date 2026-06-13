@@ -6,5 +6,20 @@
     <array>
         <string>remote-notification</string>
     </array>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>plaidlink</string>
+            </array>
+            <key>CFBundleURLName</key>
+            <string>ca.regis.fintrack.plaid</string>
+        </dict>
+    </array>
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+        <string>plaidlink</string>
+    </array>
 </dict>
 </plist>
