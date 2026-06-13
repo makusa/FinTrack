@@ -364,7 +364,7 @@ struct PlaidLinkView: View {
             let (hostedURL, linkToken) = try await PlaidManager.shared.createHostedLink()
 
             // Open the hosted flow. Plaid redirects to a plaidlink:// URL on finish.
-            try await controller.authenticate(urlString: hostedURL, scheme: "plaidlink")
+            try await controller.authenticate(urlString: hostedURL, scheme: "fintrack")
 
             // Session finished — poll for the public_token (Plaid needs a moment).
             status = lang["plaid.connecting"]
