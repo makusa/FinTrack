@@ -441,29 +441,15 @@ struct PlaidWebView: UIViewRepresentable {
         }
 
         private func handleRedirect(url: URL) {
-            guard !delivered,
-                  let comps = URLComponents(url: url, resolvingAgainstBaseURL: false),
+            guard let comps = URLComponents(url: url, resolvingAgainstBaseURL: false),
                   let items = comps.queryItems else { return }
             let params = Dictionary(items.compactMap { i in i.value.map { (i.name, $0) } },
                                     uniquingKeysWith: { a, _ in a })
-            // Persist trace
             var trace = UserDefaults.standard.stringArray(forKey: "fintrack.plaid.eventTrace") ?? []
-            trace.append("NAV plaidlink: \(url.absoluteString.prefix(200))")
+            trace.append("NAV: \(url.absoluteString.prefix(120))")
             UserDefaults.standard.set(Array(trace.suffix(20)), forKey: "fintrack.plaid.eventTrace")
-
-            if let token = params["public_token"], !token.isEmpty {
-                delivered = true
-                let metadata = PlaidLinkMetadata(
-                    accounts: [],
-                    institution: (params["institution_name"]).map {
-                        PlaidLinkMetadata.Institution(id: params["institution_id"] ?? "", name: $0)
-                    },
-                    linkSessionId: params["link_session_id"] ?? ""
-                )
-                onSuccess(token, metadata)
-            } else if params["event_name"]?.uppercased().contains("EXIT") == true {
-                onExit()
-            }
+            // Reuse the same capture logic by faking a body dict.
+            tryCapture(from: ["webview_redirect_uri": url.absoluteString])
         }
 
         func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
@@ -478,57 +464,64 @@ struct PlaidWebView: UIViewRepresentable {
                                    didReceive message: WKScriptMessage) {
             guard let body = message.body as? [String: Any] else { return }
 
-            // Log every event for diagnosis. OSLog isn't readable remotely on
-            // device, so ALSO append to UserDefaults (readable via devicectl).
-            AppLogger.persistence.info("Plaid event: \(String(describing: body), privacy: .public)")
+            // Trace (OSLog isn't readable remotely on device).
             var trace = UserDefaults.standard.stringArray(forKey: "fintrack.plaid.eventTrace") ?? []
-            trace.append(String(describing: body))
+            trace.append(String(describing: body).prefix(150).description)
             UserDefaults.standard.set(Array(trace.suffix(20)), forKey: "fintrack.plaid.eventTrace")
 
-            // Plaid emits various events; the terminal ones we care about:
-            //   { eventName: "HANDOFF" }              → user finished, token coming
-            //   { type: "SUCCESS", public_token: …}   → success payload
-            //   { type/eventName: "EXIT" }            → user cancelled
-            let type      = (body["type"] as? String) ?? ""
-            let eventName = (body["eventName"] as? String) ?? ""
-            let key       = type.isEmpty ? eventName : type
+            tryCapture(from: body)
+        }
 
-            // Plaid webview mode encodes the result in webview_redirect_uri =
-            // "plaidlink://...&public_token=...". Parse it first.
-            var tokenFromRedirect: String? = nil
-            var instFromRedirect: [String: String] = [:]
+        /// Single capture path: look for a public_token anywhere Plaid might
+        /// put it (top-level, metadata, or inside webview_redirect_uri).
+        private func tryCapture(from body: [String: Any]) {
+            guard !delivered else { return }
+
+            // 1. webview_redirect_uri = "plaidlink://connected?public_token=…"
             if let redirect = body["webview_redirect_uri"] as? String,
                let comps = URLComponents(string: redirect),
                let items = comps.queryItems {
-                let params = Dictionary(items.compactMap { i in i.value.map { (i.name, $0) } },
-                                        uniquingKeysWith: { a, _ in a })
-                tokenFromRedirect = params["public_token"]
-                instFromRedirect = params
+                let p = Dictionary(items.compactMap { i in i.value.map { (i.name, $0) } },
+                                   uniquingKeysWith: { a, _ in a })
+                if let token = p["public_token"], !token.isEmpty {
+                    deliver(token: token,
+                            institutionName: p["institution_name"],
+                            institutionId:   p["institution_id"],
+                            sessionId:       p["link_session_id"])
+                    return
+                }
+                if p["event_name"]?.uppercased().contains("EXIT") == true { onExit(); return }
             }
 
-            if let publicToken = tokenFromRedirect
-                              ?? (body["public_token"] as? String)
-                              ?? ((body["metadata"] as? [String: Any])?["public_token"] as? String) {
-                guard !delivered else { return }
-                delivered = true
+            // 2. Direct public_token (top-level or in metadata)
+            if let token = (body["public_token"] as? String)
+                        ?? ((body["metadata"] as? [String: Any])?["public_token"] as? String),
+               !token.isEmpty {
                 let inst = (body["institution"] as? [String: Any])
                         ?? ((body["metadata"] as? [String: Any])?["institution"] as? [String: Any])
-                let metadata = PlaidLinkMetadata(
-                    accounts: [],
-                    institution: inst.flatMap { i in
-                        (i["name"] as? String).map {
-                            PlaidLinkMetadata.Institution(id: (i["institution_id"] as? String) ?? "", name: $0)
-                        }
-                    },
-                    linkSessionId: (body["link_session_id"] as? String) ?? ""
-                )
-                onSuccess(publicToken, metadata)
+                deliver(token: token,
+                        institutionName: inst?["name"] as? String,
+                        institutionId:   inst?["institution_id"] as? String,
+                        sessionId:       body["link_session_id"] as? String)
                 return
             }
 
-            if key.uppercased() == "EXIT" {
-                onExit()
-            }
+            // 3. Explicit EXIT
+            let key = (body["type"] as? String) ?? (body["eventName"] as? String) ?? ""
+            if key.uppercased() == "EXIT" { onExit() }
+        }
+
+        private func deliver(token: String, institutionName: String?,
+                             institutionId: String?, sessionId: String?) {
+            delivered = true
+            let metadata = PlaidLinkMetadata(
+                accounts: [],
+                institution: institutionName.map {
+                    PlaidLinkMetadata.Institution(id: institutionId ?? "", name: $0)
+                },
+                linkSessionId: sessionId ?? ""
+            )
+            onSuccess(token, metadata)
         }
     }
 }
