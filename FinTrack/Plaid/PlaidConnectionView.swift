@@ -372,7 +372,12 @@ struct PlaidLinkView: View {
 // MARK: - PlaidWebView
 
 /// WKWebView that loads Plaid Link via the hosted redirect flow.
-/// When Plaid calls plaidlink://handoff?public_token=..., we capture it.
+/// Plaid Link (CDN/hosted) communicates via window.postMessage, NOT via
+/// navigation to a custom scheme. We inject a script that forwards every
+/// Plaid event to native code through a WKScriptMessageHandler.
+///
+/// Plaid events: https://plaid.com/docs/link/web/#onevent
+///   - eventName "HANDOFF" / type "SUCCESS" carries public_token
 struct PlaidWebView: UIViewRepresentable {
     let linkToken: String
     let onSuccess: (String, PlaidLinkMetadata) -> Void
@@ -382,12 +387,29 @@ struct PlaidWebView: UIViewRepresentable {
 
     func makeUIView(context: Context) -> WKWebView {
         let config = WKWebViewConfiguration()
-        let web    = WKWebView(frame: .zero, configuration: config)
+
+        // Forward Plaid's postMessage events to native.
+        let script = """
+        function fintrackPost(d){ window.webkit.messageHandlers.plaid.postMessage(d); }
+        window.addEventListener('message', function(e){
+            try {
+                var data = (typeof e.data === 'string') ? JSON.parse(e.data) : e.data;
+                fintrackPost(data);
+            } catch(err) {
+                fintrackPost({ raw: String(e.data) });
+            }
+        });
+        """
+        config.userContentController.addUserScript(
+            WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: false)
+        )
+        config.userContentController.add(context.coordinator, name: "plaid")
+
+        let web = WKWebView(frame: .zero, configuration: config)
         web.navigationDelegate = context.coordinator
 
-        // Build Plaid Link redirect URL
-        // Plaid's redirect-based Link: https://cdn.plaid.com/link/v2/stable/link.html
-        let urlStr = "https://cdn.plaid.com/link/v2/stable/link.html?token=\(linkToken)"
+        // Hosted Link page: receives the token via query param and emits postMessage events.
+        let urlStr = "https://cdn.plaid.com/link/v2/stable/link.html?isWebview=true&token=\(linkToken)"
         if let url = URL(string: urlStr) {
             web.load(URLRequest(url: url))
         }
@@ -396,9 +418,10 @@ struct PlaidWebView: UIViewRepresentable {
 
     func updateUIView(_ uiView: WKWebView, context: Context) {}
 
-    final class Coordinator: NSObject, WKNavigationDelegate {
+    final class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
         let onSuccess: (String, PlaidLinkMetadata) -> Void
         let onExit:    () -> Void
+        private var delivered = false
 
         init(onSuccess: @escaping (String, PlaidLinkMetadata) -> Void,
              onExit:    @escaping () -> Void) {
@@ -406,44 +429,41 @@ struct PlaidWebView: UIViewRepresentable {
             self.onExit    = onExit
         }
 
-        func webView(_ webView: WKWebView,
-                     decidePolicyFor action: WKNavigationAction,
-                     decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            guard let url = action.request.url else {
-                decisionHandler(.allow); return
-            }
+        func userContentController(_ ucc: WKUserContentController,
+                                   didReceive message: WKScriptMessage) {
+            guard let body = message.body as? [String: Any] else { return }
 
-            // Plaid signals success via a plaidlink:// URL scheme
-            if url.scheme == "plaidlink" {
-                handlePlaidCallback(url: url)
-                decisionHandler(.cancel)
-                return
-            }
-            decisionHandler(.allow)
-        }
+            // Log every event for diagnosis (visible in Console / device logs).
+            AppLogger.persistence.info("Plaid event: \(String(describing: body), privacy: .public)")
 
-        private func handlePlaidCallback(url: URL) {
-            guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
-                  let queryItems = components.queryItems else { onExit(); return }
+            // Plaid emits various events; the terminal ones we care about:
+            //   { eventName: "HANDOFF" }              → user finished, token coming
+            //   { type: "SUCCESS", public_token: …}   → success payload
+            //   { type/eventName: "EXIT" }            → user cancelled
+            let type      = (body["type"] as? String) ?? ""
+            let eventName = (body["eventName"] as? String) ?? ""
+            let key       = type.isEmpty ? eventName : type
 
-            let params = Dictionary(uniqueKeysWithValues: queryItems.compactMap { item in
-                item.value.map { (item.name, $0) }
-            })
-
-            if url.host == "handoff" || components.path.contains("handoff") {
-                guard let publicToken = params["public_token"] else { onExit(); return }
-
-                // Build metadata from URL params (simplified)
+            if let publicToken = (body["public_token"] as? String)
+                              ?? ((body["metadata"] as? [String: Any])?["public_token"] as? String) {
+                guard !delivered else { return }
+                delivered = true
+                let inst = (body["institution"] as? [String: Any])
+                        ?? ((body["metadata"] as? [String: Any])?["institution"] as? [String: Any])
                 let metadata = PlaidLinkMetadata(
-                    accounts:      [],  // populated from item after exchange
-                    institution:   params["institution_name"].map {
-                        PlaidLinkMetadata.Institution(id: params["institution_id"] ?? "", name: $0)
+                    accounts: [],
+                    institution: inst.flatMap { i in
+                        (i["name"] as? String).map {
+                            PlaidLinkMetadata.Institution(id: (i["institution_id"] as? String) ?? "", name: $0)
+                        }
                     },
-                    linkSessionId: params["link_session_id"] ?? ""
+                    linkSessionId: (body["link_session_id"] as? String) ?? ""
                 )
                 onSuccess(publicToken, metadata)
-            } else {
-                // User exited
+                return
+            }
+
+            if key.uppercased() == "EXIT" {
                 onExit()
             }
         }
