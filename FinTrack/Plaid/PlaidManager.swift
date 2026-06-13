@@ -191,11 +191,19 @@ final class PlaidManager {
         // Store access_token in Keychain (never in UserDefaults or SwiftData)
         KeychainHelper.set(decoded.access_token, forKey: "plaid_token_\(decoded.item_id)")
 
+        // With Hosted Link the frontend doesn't provide the account list, so
+        // fetch it from Plaid now via /get_balances. (When accounts are passed
+        // in — legacy SDK path — we keep them.)
+        var resolvedAccounts = accounts
+        if resolvedAccounts.isEmpty {
+            resolvedAccounts = (try? await fetchAccountsForToken(decoded.access_token)) ?? []
+        }
+
         let item = PlaidConnectedItem(
             id:              decoded.item_id,
             accessToken:     decoded.access_token,
             institutionName: institutionName,
-            accounts:        accounts,
+            accounts:        resolvedAccounts,
             connectedAt:     .now,
             lastSyncCursor:  nil,
             lastSyncDate:    nil
@@ -203,6 +211,33 @@ final class PlaidManager {
         await MainActor.run {
             connectedItems.append(item)
             saveItems()
+        }
+    }
+
+    /// Fetches the account list for a freshly linked item via /get_balances.
+    /// Used by Hosted Link where accounts aren't returned to the frontend.
+    private func fetchAccountsForToken(_ accessToken: String) async throws -> [PlaidAccountMeta] {
+        let url = URL(string: "\(PlaidConfig.baseURL)/get_balances")!
+        var req = URLRequest(url: url, timeoutInterval: 15)
+        req.httpMethod = "POST"
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        req.setValue(PlaidConfig.apiKey, forHTTPHeaderField: "X-API-Key")
+        req.httpBody = try JSONSerialization.data(withJSONObject: ["access_token": accessToken])
+
+        let (data, response) = try await URLSession.shared.data(for: req)
+        try validateResponse(response)
+        let decoded = try JSONDecoder().decode(PlaidBalancesResponse.self, from: data)
+        return decoded.accounts.map { acc in
+            PlaidAccountMeta(
+                id:                acc.account_id,
+                name:              acc.name,
+                officialName:      acc.official_name,
+                type:              acc.type,
+                subtype:           acc.subtype,
+                mask:              acc.mask,
+                currencyCode:      acc.balances.iso_currency_code,
+                fintrackAccountId: nil
+            )
         }
     }
 
