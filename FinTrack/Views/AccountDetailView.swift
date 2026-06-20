@@ -31,6 +31,7 @@ struct AccountDetailView: View {
     @State private var showAddTransfer = false
     @State private var confirmArchive = false
     @State private var showRoomPlan = false
+    @State private var showAddEntry = false
 
     @Query private var allPlans: [RegisteredRoomPlan]
     @Query private var allAccounts: [Account]
@@ -93,6 +94,7 @@ struct AccountDetailView: View {
 
             if let regType = account.registeredProfile?.registeredType {
                 registeredRoomSection(regType)
+                registeredEntriesSection()
             }
 
             Section("\(lang["tx.title"]) (\(sortedTransactions.count))") {
@@ -165,6 +167,9 @@ struct AccountDetailView: View {
                 RegisteredRoomPlanView(type: type, existing: registeredPlan)
             }
         }
+        .sheet(isPresented: $showAddEntry) {
+            AddRegisteredEntryView(account: account)
+        }
         .confirmationDialog(
             account.isArchived ? lang["account.unarchivePrompt"] : lang["account.archivePrompt"],
             isPresented: $confirmArchive,
@@ -213,11 +218,49 @@ struct AccountDetailView: View {
                     Label(lang["reg.room.configure"], systemImage: "slider.horizontal.3")
                 }
             }
+            Button {
+                showAddEntry = true
+            } label: {
+                Label(lang["reg.entry.add"], systemImage: "plus.circle")
+            }
         } header: {
             Text("\(lang["reg.room.section"]) · \(type.label)")
         } footer: {
             Text(lang["reg.room.sharedFooter"])
         }
+    }
+
+    private var sortedRegisteredEntries: [RegisteredEntry] {
+        (account.registeredEntries ?? []).sorted { $0.date > $1.date }
+    }
+
+    @ViewBuilder
+    private func registeredEntriesSection() -> some View {
+        let entries = sortedRegisteredEntries
+        if !entries.isEmpty {
+            Section("\(lang["reg.entry.listTitle"]) (\(entries.count))") {
+                ForEach(entries) { e in
+                    HStack(spacing: 12) {
+                        Image(systemName: e.kind == .contribution ? "arrow.down.circle.fill" : "arrow.up.circle.fill")
+                            .foregroundStyle(e.kind == .contribution ? Color.green : Color.orange)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(e.kind.label)
+                            Text(e.date.formatted(.dateTime.day().month().year()))
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Text(e.amount.formatted(asCurrency: account.currency)).fontWeight(.medium)
+                    }
+                }
+                .onDelete(perform: deleteRegisteredEntries)
+            }
+        }
+    }
+
+    private func deleteRegisteredEntries(at offsets: IndexSet) {
+        let entries = sortedRegisteredEntries
+        for i in offsets { context.delete(entries[i]) }
+        try? context.save()
     }
 
     private func deleteTransactions(at offsets: IndexSet) {
