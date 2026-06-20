@@ -61,6 +61,18 @@ struct AddEditTransactionView: View {
         return false
     }
 
+    /// Status shown in the editor: live date-derived for a new entry, or the
+    /// actual stored status when editing.
+    private var effectiveStatus: TransactionStatus {
+        if case .edit(let tx) = mode { return tx.status }
+        return TransactionStatus.defaultForManual(date: date)
+    }
+
+    private var editingNeedsReview: Bool {
+        if case .edit(let tx) = mode { return tx.needsReview }
+        return false
+    }
+
     private var currencyCode: String {
         selectedAccount?.currency ?? Currencies.default
     }
@@ -94,6 +106,7 @@ struct AddEditTransactionView: View {
             accountSection
             categorySection
             detailsSection
+            statusSection
             notificationSection
 
             if case .edit = mode {
@@ -227,6 +240,16 @@ struct AddEditTransactionView: View {
                 }
             }
             .buttonStyle(.plain)
+        }
+    }
+
+    private var statusSection: some View {
+        Section {
+            HStack {
+                Text(lang["tx.status.label"])
+                Spacer()
+                TransactionStatusBadge(status: effectiveStatus, needsReview: editingNeedsReview)
+            }
         }
     }
 

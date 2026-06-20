@@ -69,10 +69,8 @@ struct TransactionRow: View {
     /// Show a status badge only for states that need attention; the common
     /// cleared / reconciled cases stay unbadged in lists to avoid noise.
     private var showsBadge: Bool {
-        transaction.needsReview
-            || transaction.status == .scheduled
-            || transaction.status == .pending
-            || transaction.status == .skipped
+        // Show a badge for every state except the plain "cleared" baseline.
+        transaction.needsReview || transaction.status != .cleared
     }
 
     var body: some View {
@@ -98,7 +96,8 @@ struct TransactionRow: View {
                 }
                 if showsBadge {
                     TransactionStatusBadge(status: transaction.status,
-                                           needsReview: transaction.needsReview)
+                                           needsReview: transaction.needsReview,
+                                           compact: true)
                         .padding(.top, 1)
                 }
             }

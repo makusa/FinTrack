@@ -13,6 +13,7 @@ struct TransactionStatusBadge: View {
 
     let status: TransactionStatus
     var needsReview: Bool = false
+    var compact: Bool = false
 
     private var color: Color {
         if needsReview { return .orange }
@@ -33,16 +34,28 @@ struct TransactionStatusBadge: View {
         needsReview ? lang["tx.badge.duplicate"] : status.label
     }
 
+    /// In compact mode (lists), the common "reconciled" state renders as a bare
+    /// seal icon to stay quiet; every other state keeps the labeled pill.
+    private var iconOnly: Bool {
+        compact && !needsReview && status == .reconciled
+    }
+
     var body: some View {
-        HStack(spacing: 3) {
+        if iconOnly {
             Image(systemName: icon)
-                .font(.system(size: 9, weight: .semibold))
-            Text(text)
-                .font(.system(size: 10, weight: .semibold))
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(color)
+        } else {
+            HStack(spacing: 3) {
+                Image(systemName: icon)
+                    .font(.system(size: 9, weight: .semibold))
+                Text(text)
+                    .font(.system(size: 10, weight: .semibold))
+            }
+            .foregroundStyle(color)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(color.opacity(0.12), in: Capsule())
         }
-        .foregroundStyle(color)
-        .padding(.horizontal, 6)
-        .padding(.vertical, 2)
-        .background(color.opacity(0.12), in: Capsule())
     }
 }

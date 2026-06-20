@@ -212,6 +212,7 @@ enum LocalizedStrings {
         "tx.status.cleared":    ["fr": "Réalisé",    "en": "Cleared",    "es": "Realizado",  "pt": "Realizado"],
         "tx.status.reconciled": ["fr": "Réconcilié", "en": "Reconciled", "es": "Conciliado", "pt": "Conciliado"],
         "tx.status.skipped":    ["fr": "Ignoré",     "en": "Skipped",    "es": "Omitido",    "pt": "Ignorado"],
+        "tx.status.label":      ["fr": "Statut", "en": "Status", "es": "Estado", "pt": "Estado"],
         "tx.badge.duplicate":   ["fr": "Doublon potentiel", "en": "Possible duplicate", "es": "Posible duplicado", "pt": "Possível duplicata"],
         "review.title":         ["fr": "Doublons potentiels", "en": "Possible duplicates", "es": "Posibles duplicados", "pt": "Possíveis duplicatas"],
         "review.banner.title":  ["fr": "Doublons potentiels", "en": "Possible duplicates", "es": "Posibles duplicados", "pt": "Possíveis duplicatas"],
