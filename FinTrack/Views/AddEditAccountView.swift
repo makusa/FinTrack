@@ -65,7 +65,18 @@ struct AddEditAccountView: View {
     }
     /// Free tier may tag at most freeMaxRegisteredAccounts registered accounts.
     private var registeredLockedForFree: Bool {
-        !entitlements.hasPaidTier && otherRegisteredCount >= FinTrackLimit.freeMaxRegisteredAccounts
+        !entitlements.hasPaidTier
+            && !editedAccountAlreadyRegistered
+            && otherRegisteredCount >= FinTrackLimit.freeMaxRegisteredAccounts
+    }
+
+    /// True if the account being edited is already a registered account in the
+    /// store. Re-tagging it never increases the total, so it must never be gated
+    /// (this also prevents a spurious paywall on open if a downgraded user holds
+    /// more registered accounts than the free cap).
+    private var editedAccountAlreadyRegistered: Bool {
+        if case .edit(let a) = mode { return a.registeredProfile?.registeredType != nil }
+        return false
     }
 
     private var isEditing: Bool {
