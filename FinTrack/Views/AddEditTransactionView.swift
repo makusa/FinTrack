@@ -56,6 +56,11 @@ struct AddEditTransactionView: View {
         isEditing ? lang["tx.edit"] : lang["tx.create"]
     }
 
+    private var editingReconciled: Bool {
+        if case .edit(let tx) = mode { return tx.status == .reconciled }
+        return false
+    }
+
     private var currencyCode: String {
         selectedAccount?.currency ?? Currencies.default
     }
@@ -72,6 +77,18 @@ struct AddEditTransactionView: View {
     var body: some View {
         // No internal NavigationStack: callers wrap as needed (sheet vs push).
         Form {
+            if editingReconciled {
+                Section {
+                    Label {
+                        Text(lang["tx.reconciled.lockWarning"])
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } icon: {
+                        Image(systemName: "checkmark.seal.fill")
+                            .foregroundStyle(.green)
+                    }
+                }
+            }
             amountSection
             typeSection
             accountSection

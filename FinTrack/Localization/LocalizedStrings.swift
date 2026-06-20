@@ -225,6 +225,7 @@ enum LocalizedStrings {
         "review.noMatch":       ["fr": "Aucune correspondance trouvée.", "en": "No match found.", "es": "No se encontró coincidencia.", "pt": "Nenhuma correspondência encontrada."],
         "review.empty.title":   ["fr": "Aucun doublon", "en": "No duplicates", "es": "Sin duplicados", "pt": "Sem duplicatas"],
         "review.empty.sub":     ["fr": "Aucune transaction à vérifier pour le moment.", "en": "Nothing to review right now.", "es": "Nada que revisar por ahora.", "pt": "Nada para revisar agora."],
+        "tx.reconciled.lockWarning": ["fr": "Cette transaction est réconciliée avec votre banque. La modifier peut désynchroniser le solde affiché.", "en": "This transaction is reconciled with your bank. Editing it may desync the displayed balance.", "es": "Esta transacción está conciliada con tu banco. Editarla puede desincronizar el saldo mostrado.", "pt": "Esta transação está conciliada com seu banco. Editá-la pode dessincronizar o saldo exibido."],
 
         // MARK: - Recurring
         "recurring.free.cap.title":   ["fr": "Limite atteinte (5/5)",                         "en": "Limit reached (5/5)",                          "es": "Límite alcanzado (5/5)",                       "pt": "Limite atingido (5/5)"],
