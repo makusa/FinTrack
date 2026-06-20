@@ -43,6 +43,7 @@
 		64D3CB28CEAC3B1F014AA483 /* PlaidManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D1F885CE490AC47AB21A204 /* PlaidManager.swift */; };
 		67F8D13B1F8F3FF40DFB6143 /* SecuritySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11560DDA34E50EFE06CF757A /* SecuritySettingsView.swift */; };
 		69378E4AEA6481AB62DCEC00 /* NetWorthWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8149EFC3235A7CEB256AC31 /* NetWorthWidget.swift */; };
+		69FB5ECFAC1B849CB1EEAA7A /* TransactionStatusManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7912B21D6B269E72FF16FF3 /* TransactionStatusManager.swift */; };
 		6AAE1E39F450F4105E684CE3 /* Budget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01D518134BA3B7424747887A /* Budget.swift */; };
 		6D2913EF9D1E6FC93EDD4478 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56B856841A3233981584E382 /* KeychainHelper.swift */; };
 		6E037B33C990E82581CD6827 /* RecurringTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FB73684BE58709BA98D84D2 /* RecurringTransaction.swift */; };
@@ -221,6 +222,7 @@
 		DABA356B051CEFE3BBDC6F0B /* CreditLine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditLine.swift; sourceTree = "<group>"; };
 		DCFCF5BA20BC3356F1283EF3 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		E5F08A934D637542054E94B7 /* ExchangeRateWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeRateWidget.swift; sourceTree = "<group>"; };
+		E7912B21D6B269E72FF16FF3 /* TransactionStatusManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionStatusManager.swift; sourceTree = "<group>"; };
 		EA9DB9D6C2528C42A23DC965 /* RegisteredRoomPlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisteredRoomPlanView.swift; sourceTree = "<group>"; };
 		EF0E60F4AEBB656CE3C74BA5 /* PlaidConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaidConnectionView.swift; sourceTree = "<group>"; };
 		F053C63C61980B18AA6263E4 /* Category.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Category.swift; sourceTree = "<group>"; };
@@ -257,6 +259,7 @@
 				DCFCF5BA20BC3356F1283EF3 /* NotificationManager.swift */,
 				4078E37334EE1AD6990E5630 /* RecurringTransactionManager.swift */,
 				407761AC420D582595A7D633 /* SeedData.swift */,
+				E7912B21D6B269E72FF16FF3 /* TransactionStatusManager.swift */,
 				AC429D562A281124F93A2B8C /* WidgetDataWriter.swift */,
 			);
 			path = Utilities;
@@ -642,6 +645,7 @@
 				762FF16D61FD6F647D8B3FA8 /* SubscriptionView.swift in Sources */,
 				F4ECF44923BC9CF1C85E7CD2 /* Transaction.swift in Sources */,
 				82765C0497359E218868B01F /* TransactionRow.swift in Sources */,
+				69FB5ECFAC1B849CB1EEAA7A /* TransactionStatusManager.swift in Sources */,
 				F31CDDC34A84E1E74C645DFF /* TransactionsCalendarView.swift in Sources */,
 				06C2E07EE5FBAE507ACB0421 /* TransactionsView.swift in Sources */,
 				41FB72C571163C59D66A1D19 /* UpcomingTransfersWidget.swift in Sources */,

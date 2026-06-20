@@ -31,6 +31,56 @@ enum TransactionType: String, CaseIterable, Identifiable {
     }
 }
 
+/// Lifecycle + reconciliation status of a transaction, ordered by confidence.
+/// One badge per transaction. The possible-duplicate flag is kept separate
+/// (see `needsReview`) so this stays a clean monotonic progression.
+enum TransactionStatus: String, CaseIterable, Identifiable {
+    case scheduled    // Planifié — future, pas encore survenue
+    case pending      // En attente — autorisé mais non réglé (réservé : Flinks ne l'expose pas encore)
+    case cleared      // Réalisé — survenue et enregistrée, non confirmée par la banque
+    case reconciled   // Réconcilié — adossée aux données bancaires (synchro ou appariement)
+    case skipped      // Ignoré — occurrence récurrente sautée
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .scheduled:  return LanguageManager.shared["tx.status.scheduled"]
+        case .pending:    return LanguageManager.shared["tx.status.pending"]
+        case .cleared:    return LanguageManager.shared["tx.status.cleared"]
+        case .reconciled: return LanguageManager.shared["tx.status.reconciled"]
+        case .skipped:    return LanguageManager.shared["tx.status.skipped"]
+        }
+    }
+
+    /// SF Symbol for the status badge (colors are applied in the view layer).
+    var iconSystemName: String {
+        switch self {
+        case .scheduled:  return "calendar"
+        case .pending:    return "clock"
+        case .cleared:    return "checkmark.circle"
+        case .reconciled: return "checkmark.seal.fill"
+        case .skipped:    return "minus.circle"
+        }
+    }
+
+    /// Whether a transaction in this status contributes to the real (cleared)
+    /// balance. Future (scheduled) and skipped entries are excluded — they feed
+    /// projections only, never the current balance.
+    var countsTowardBalance: Bool {
+        switch self {
+        case .cleared, .reconciled, .pending: return true
+        case .scheduled, .skipped:            return false
+        }
+    }
+
+    /// Default status for a freshly entered *manual* transaction with this date:
+    /// future-dated → scheduled, otherwise → cleared.
+    static func defaultForManual(date: Date, now: Date = .now) -> TransactionStatus {
+        date > now ? .scheduled : .cleared
+    }
+}
+
 @Model
 final class Transaction {
     var amount: Decimal = 0          // always positive
@@ -52,12 +102,26 @@ final class Transaction {
     var transferPairId: UUID? = nil   // links the two legs of a transfer
     var externalId: String? = nil  // Bank-sync deduplication ID (Flinks Transaction.Id)
 
+    /// Lifecycle + reconciliation status (see TransactionStatus). Defaults to
+    /// .cleared; the launch sweep keeps it in sync (bank-backed → reconciled,
+    /// manual scheduled/cleared reclassified by date).
+    var statusRaw: String = TransactionStatus.cleared.rawValue
+    /// Raw bank/Flinks description, preserved when a synced row adopts a manual one.
+    var bankDescription: String? = nil
+    /// Option C: flagged as a possible duplicate of a manual entry, pending user review.
+    var needsReview: Bool = false
+
     var account: Account?
     var category: Category?
 
     var type: TransactionType {
         get { TransactionType(rawValue: typeRaw) ?? .expense }
         set { typeRaw = newValue.rawValue }
+    }
+
+    var status: TransactionStatus {
+        get { TransactionStatus(rawValue: statusRaw) ?? .cleared }
+        set { statusRaw = newValue.rawValue }
     }
 
     /// Positive for income, negative for expense.
@@ -74,7 +138,8 @@ final class Transaction {
         note: String = "",
         payee: String? = nil,
         ownerId: UUID = AppConstants.soloOwnerId,
-        sourceRecurringId: Int? = nil
+        sourceRecurringId: Int? = nil,
+        status: TransactionStatus? = nil
     ) {
         self.amount = amount
         self.typeRaw = type.rawValue
@@ -84,6 +149,7 @@ final class Transaction {
         self.createdAt = .now
         self.ownerId = ownerId
         self.sourceRecurringId = sourceRecurringId
+        self.statusRaw = (status ?? TransactionStatus.defaultForManual(date: date)).rawValue
         self.account = account
         self.category = category
     }

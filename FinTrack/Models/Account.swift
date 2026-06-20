@@ -98,7 +98,11 @@ final class Account {
     /// Full recomputation from scratch. Call after any write that touches
     /// this account's transactions or initialBalance.
     func recalculateBalance() {
-        cachedBalance = (transactions ?? []).reduce(initialBalance) { $0 + $1.signedAmount }
+        // Only occurred entries count toward the real balance; scheduled (future)
+        // and skipped entries are excluded — they feed projections only.
+        cachedBalance = (transactions ?? [])
+            .filter { $0.status.countsTowardBalance }
+            .reduce(initialBalance) { $0 + $1.signedAmount }
     }
 
     init(

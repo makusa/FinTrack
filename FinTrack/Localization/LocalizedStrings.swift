@@ -207,6 +207,11 @@ enum LocalizedStrings {
         "tx.noCategory":      ["fr": "Aucune catégorie",   "en": "No Category",      "es": "Sin categoría",   "pt": "Sem categoria"],
         "tx.type.income":     ["fr": "Revenu",             "en": "Income",           "es": "Ingreso",         "pt": "Receita"],
         "tx.type.expense":    ["fr": "Dépense",            "en": "Expense",          "es": "Gasto",           "pt": "Despesa"],
+        "tx.status.scheduled":  ["fr": "Planifié",   "en": "Scheduled",  "es": "Programado", "pt": "Agendado"],
+        "tx.status.pending":    ["fr": "En attente", "en": "Pending",    "es": "Pendiente",  "pt": "Pendente"],
+        "tx.status.cleared":    ["fr": "Réalisé",    "en": "Cleared",    "es": "Realizado",  "pt": "Realizado"],
+        "tx.status.reconciled": ["fr": "Réconcilié", "en": "Reconciled", "es": "Conciliado", "pt": "Conciliado"],
+        "tx.status.skipped":    ["fr": "Ignoré",     "en": "Skipped",    "es": "Omitido",    "pt": "Ignorado"],
 
         // MARK: - Recurring
         "recurring.free.cap.title":   ["fr": "Limite atteinte (5/5)",                         "en": "Limit reached (5/5)",                          "es": "Límite alcanzado (5/5)",                       "pt": "Limite atingido (5/5)"],

@@ -294,6 +294,10 @@ struct AddEditTransactionView: View {
             tx.amount = amount
             tx.type = type
             tx.date = date
+            // Manual lifecycle follows the date; bank-backed/special statuses stay intact.
+            if tx.status == .scheduled || tx.status == .cleared {
+                tx.status = TransactionStatus.defaultForManual(date: date)
+            }
             tx.account = account
             tx.category = selectedCategory
             tx.note = trimmedNote

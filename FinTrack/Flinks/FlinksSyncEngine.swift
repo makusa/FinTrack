@@ -80,6 +80,8 @@ final class FlinksSyncEngine {
                         payee: ftx.description
                     )
                     tx.externalId = ftx.id
+                    tx.bankDescription = ftx.description
+                    tx.status = .reconciled
                     context.insert(tx)
                     knownIds.insert(ftx.id)
                     affectedAccounts.insert(target.persistentModelID)

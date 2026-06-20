@@ -136,6 +136,10 @@ struct FinTrackApp: App {
         // Seed default categories on the main context.
         SeedData.seedIfNeeded(context: modelContainer.mainContext)
 
+        // Maintain transaction statuses (idempotent): bank-backed rows -> reconciled,
+        // and the manual scheduled/cleared lifecycle is reclassified by date.
+        TransactionStatusManager.sweep(context: modelContainer.mainContext)
+
         // Request notification permission and schedule all upcoming reminders
         Task { @MainActor in
             await NotificationManager.shared.requestPermission()
