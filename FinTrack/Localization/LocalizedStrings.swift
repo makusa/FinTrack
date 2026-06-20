@@ -212,6 +212,7 @@ enum LocalizedStrings {
         "tx.status.cleared":    ["fr": "Réalisé",    "en": "Cleared",    "es": "Realizado",  "pt": "Realizado"],
         "tx.status.reconciled": ["fr": "Réconcilié", "en": "Reconciled", "es": "Conciliado", "pt": "Conciliado"],
         "tx.status.skipped":    ["fr": "Ignoré",     "en": "Skipped",    "es": "Omitido",    "pt": "Ignorado"],
+        "tx.badge.duplicate":   ["fr": "Doublon potentiel", "en": "Possible duplicate", "es": "Posible duplicado", "pt": "Possível duplicata"],
 
         // MARK: - Recurring
         "recurring.free.cap.title":   ["fr": "Limite atteinte (5/5)",                         "en": "Limit reached (5/5)",                          "es": "Límite alcanzado (5/5)",                       "pt": "Limite atingido (5/5)"],

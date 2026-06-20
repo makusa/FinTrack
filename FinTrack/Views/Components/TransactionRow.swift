@@ -66,6 +66,15 @@ struct TransactionRow: View {
         transaction.type == .income ? .green : .primary
     }
 
+    /// Show a status badge only for states that need attention; the common
+    /// cleared / reconciled cases stay unbadged in lists to avoid noise.
+    private var showsBadge: Bool {
+        transaction.needsReview
+            || transaction.status == .scheduled
+            || transaction.status == .pending
+            || transaction.status == .skipped
+    }
+
     var body: some View {
         HStack(spacing: 12) {
             ZStack {
@@ -86,6 +95,11 @@ struct TransactionRow: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
+                }
+                if showsBadge {
+                    TransactionStatusBadge(status: transaction.status,
+                                           needsReview: transaction.needsReview)
+                        .padding(.top, 1)
                 }
             }
 
