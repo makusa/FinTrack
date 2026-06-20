@@ -77,6 +77,7 @@
 		BB89AD9A789084492F6B6461 /* AddTransferView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A3F91C820A6B4C7BB454D1 /* AddTransferView.swift */; };
 		BC170E5903A1EED10F891F85 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FF689CB36E8CEEFF2657D413 /* Assets.xcassets */; };
 		BDDA758C9D4C28BFA7174B8A /* FinTrackApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA75C9EEFB489048F50342E4 /* FinTrackApp.swift */; };
+		C13532604A5362A787718FA8 /* TransactionMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73C10D445BE46633E1240E2C /* TransactionMatcher.swift */; };
 		C2349629094CB6027A915595 /* CreditCardProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C6EE3A2D897F6EDFD45CDD /* CreditCardProfile.swift */; };
 		C75375BB13EBA078B944DBF3 /* BankDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DC35CBE438FBE81673CB46 /* BankDirectory.swift */; };
 		CC550BDDDA2B91B2D3B6EE8F /* FinTrackWidgetEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17B5A8A48F6F1A2A395FA28D /* FinTrackWidgetEntry.swift */; };
@@ -187,6 +188,7 @@
 		67FAEBACAD08ED3AFEEB2279 /* AccountsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsView.swift; sourceTree = "<group>"; };
 		6F23A31B9998AF6F386FD367 /* FinTrackBalanceWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinTrackBalanceWidget.swift; sourceTree = "<group>"; };
 		711637AA9958C8B7BF0A014B /* PINPadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PINPadView.swift; sourceTree = "<group>"; };
+		73C10D445BE46633E1240E2C /* TransactionMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionMatcher.swift; sourceTree = "<group>"; };
 		73D14C95CDD0E974493F20BB /* TransactionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsView.swift; sourceTree = "<group>"; };
 		744E9158B684ECD95A1401FD /* Loan.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Loan.swift; sourceTree = "<group>"; };
 		78FF01C3CFA990DA9570432D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -259,6 +261,7 @@
 				DCFCF5BA20BC3356F1283EF3 /* NotificationManager.swift */,
 				4078E37334EE1AD6990E5630 /* RecurringTransactionManager.swift */,
 				407761AC420D582595A7D633 /* SeedData.swift */,
+				73C10D445BE46633E1240E2C /* TransactionMatcher.swift */,
 				E7912B21D6B269E72FF16FF3 /* TransactionStatusManager.swift */,
 				AC429D562A281124F93A2B8C /* WidgetDataWriter.swift */,
 			);
@@ -644,6 +647,7 @@
 				E8DC7985307BC889062955E0 /* SetupAccountView.swift in Sources */,
 				762FF16D61FD6F647D8B3FA8 /* SubscriptionView.swift in Sources */,
 				F4ECF44923BC9CF1C85E7CD2 /* Transaction.swift in Sources */,
+				C13532604A5362A787718FA8 /* TransactionMatcher.swift in Sources */,
 				82765C0497359E218868B01F /* TransactionRow.swift in Sources */,
 				69FB5ECFAC1B849CB1EEAA7A /* TransactionStatusManager.swift in Sources */,
 				F31CDDC34A84E1E74C645DFF /* TransactionsCalendarView.swift in Sources */,
