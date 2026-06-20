@@ -71,6 +71,7 @@ struct AddRegisteredEntryView: View {
             anchorYear: plan.anchorYear,
             anchorAmount: plan.anchorAmount,
             lifetimeContributedAtAnchor: plan.lifetimeContributedAtAnchor,
+            reerAnnualRoom: plan.annualRoomEstimate,
             existingEntries: RegisteredRoomService.entries(forType: type, in: allAccounts),
             newContribution: amount,
             on: date
@@ -122,6 +123,8 @@ struct AddRegisteredEntryView: View {
                         } footer: {
                             if kind == .withdrawal && type == .celi {
                                 Text(lang["reg.entry.withdrawNote"])
+                            } else if kind == .withdrawal && type == .reer {
+                                Text(lang["reg.entry.reerWithdrawNote"])
                             }
                         }
                     } else {

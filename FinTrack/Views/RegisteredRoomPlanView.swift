@@ -21,6 +21,7 @@ struct RegisteredRoomPlanView: View {
     @State private var anchorYear: Int
     @State private var anchorAmountText: String
     @State private var lifetimeContributedText: String
+    @State private var annualRoomEstimateText: String
 
     init(type: RegisteredType, existing: RegisteredRoomPlan?) {
         self.type = type
@@ -31,6 +32,8 @@ struct RegisteredRoomPlanView: View {
         _anchorAmountText = State(initialValue: amt == 0 ? "" : amt.appFormattedForInput)
         let life = existing?.lifetimeContributedAtAnchor ?? 0
         _lifetimeContributedText = State(initialValue: life == 0 ? "" : life.appFormattedForInput)
+        let est = existing?.annualRoomEstimate ?? 0
+        _annualRoomEstimateText = State(initialValue: est == 0 ? "" : est.appFormattedForInput)
     }
 
     private var currentYear: Int { Calendar.current.component(.year, from: .now) }
@@ -50,7 +53,7 @@ struct RegisteredRoomPlanView: View {
                         }
                     }
                     HStack {
-                        Text(lang["reg.anchor.amount"])
+                        Text(lang[type == .reer ? "reg.anchor.amount.reer" : "reg.anchor.amount"])
                         Spacer()
                         TextField("0", text: $anchorAmountText)
                             .keyboardType(.numbersAndPunctuation)
@@ -61,7 +64,7 @@ struct RegisteredRoomPlanView: View {
                 } header: {
                     Text(lang["reg.anchor.section"])
                 } footer: {
-                    Text(lang["reg.anchor.footer"])
+                    Text(lang[type == .reer ? "reg.anchor.footer.reer" : "reg.anchor.footer"])
                 }
 
                 if type == .celiapp {
@@ -77,6 +80,22 @@ struct RegisteredRoomPlanView: View {
                         }
                     } footer: {
                         Text(lang["reg.anchor.lifetimeFooter"])
+                    }
+                }
+
+                if type == .reer {
+                    Section {
+                        HStack {
+                            Text(lang["reg.anchor.annualRoom"])
+                            Spacer()
+                            TextField("0", text: $annualRoomEstimateText)
+                                .keyboardType(.numbersAndPunctuation)
+                                .multilineTextAlignment(.trailing)
+                                .frame(maxWidth: 140)
+                            Text(Currencies.info(for: "CAD").symbol).foregroundStyle(.secondary)
+                        }
+                    } footer: {
+                        Text(lang["reg.anchor.annualRoomFooter"])
                     }
                 }
 
@@ -104,10 +123,12 @@ struct RegisteredRoomPlanView: View {
     private func save() {
         let amount = parseDecimal(anchorAmountText) ?? 0
         let lifetime = type == .celiapp ? (parseDecimal(lifetimeContributedText) ?? 0) : 0
+        let annualRoom = type == .reer ? (parseDecimal(annualRoomEstimateText) ?? 0) : 0
         if let plan = existing {
             plan.anchorYear = anchorYear
             plan.anchorAmount = amount
             plan.lifetimeContributedAtAnchor = lifetime
+            plan.annualRoomEstimate = annualRoom
             plan.anchorSetInLagWindow = isLagWindow
         } else {
             let plan = RegisteredRoomPlan(
@@ -115,6 +136,7 @@ struct RegisteredRoomPlanView: View {
                 anchorYear: anchorYear,
                 anchorAmount: amount,
                 lifetimeContributedAtAnchor: lifetime,
+                annualRoomEstimate: annualRoom,
                 anchorSetInLagWindow: isLagWindow
             )
             context.insert(plan)

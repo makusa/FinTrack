@@ -82,6 +82,9 @@ final class RegisteredRoomPlan {
     var anchorAmount: Decimal = 0
     /// CELIAPP only — lifetime contributions already made as of the anchor (0 for CELI).
     var lifetimeContributedAtAnchor: Decimal = 0
+    /// REER only — estimated new contribution room accrued each year after the
+    /// anchor (≈ 18% of earned income − pension adjustment). 0 = no projection.
+    var annualRoomEstimate: Decimal = 0
     /// True if the anchor was entered Jan–Apr, when the CRA figure may be stale.
     var anchorSetInLagWindow: Bool = false
     var createdAt: Date = Date.now
@@ -95,11 +98,13 @@ final class RegisteredRoomPlan {
          anchorYear: Int,
          anchorAmount: Decimal,
          lifetimeContributedAtAnchor: Decimal = 0,
+         annualRoomEstimate: Decimal = 0,
          anchorSetInLagWindow: Bool = false) {
         self.registeredTypeRaw = registeredType.rawValue
         self.anchorYear = anchorYear
         self.anchorAmount = anchorAmount
         self.lifetimeContributedAtAnchor = lifetimeContributedAtAnchor
+        self.annualRoomEstimate = annualRoomEstimate
         self.anchorSetInLagWindow = anchorSetInLagWindow
         self.createdAt = .now
     }
@@ -165,6 +170,7 @@ enum RegisteredRoomService {
             anchorYear: plan.anchorYear,
             anchorAmount: plan.anchorAmount,
             lifetimeContributedAtAnchor: plan.lifetimeContributedAtAnchor,
+            reerAnnualRoom: plan.annualRoomEstimate,
             entries: entries(forType: type, in: accounts),
             asOf: asOf
         )

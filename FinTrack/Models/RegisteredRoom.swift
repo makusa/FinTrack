@@ -109,6 +109,7 @@ enum RegisteredRoomCalculator {
         anchorYear: Int,
         anchorAmount: Decimal,
         lifetimeContributedAtAnchor: Decimal = 0,
+        reerAnnualRoom: Decimal = 0,
         entries: [RegisteredEntryData],
         asOf: Date = .now
     ) -> RoomResult {
@@ -140,9 +141,13 @@ enum RegisteredRoomCalculator {
 
             let nextAnnual = RegisteredLimits.annualLimit(type, year: y + 1)
             switch type {
-            case .celi, .reer:
+            case .celi:
                 // Keep remaining room, add new entitlement, restore this year's withdrawals.
                 room = room + nextAnnual + withdrawalsThisYear
+            case .reer:
+                // Income-based: add the user's estimated annual new room (0 if unknown).
+                // RRSP withdrawals do NOT restore room, so withdrawalsThisYear is ignored.
+                room = room + reerAnnualRoom
             case .celiapp:
                 // No restoration. Unused room carries forward capped at maxCarryforward.
                 let cap = type.maxCarryforwardPerYear ?? room
@@ -169,6 +174,7 @@ enum RegisteredRoomCalculator {
         anchorYear: Int,
         anchorAmount: Decimal,
         lifetimeContributedAtAnchor: Decimal = 0,
+        reerAnnualRoom: Decimal = 0,
         existingEntries: [RegisteredEntryData],
         newContribution amount: Decimal,
         on date: Date
@@ -176,10 +182,14 @@ enum RegisteredRoomCalculator {
         let before = availableRoom(
             type: type, anchorYear: anchorYear, anchorAmount: anchorAmount,
             lifetimeContributedAtAnchor: lifetimeContributedAtAnchor,
+            reerAnnualRoom: reerAnnualRoom,
             entries: existingEntries, asOf: date
         ).availableRoom
-        let excess = amount - before
-        return (excess > 0, max(0, excess), before)
+        // RRSP allows a $2,000 lifetime over-contribution cushion before penalty.
+        let rawExcess = amount - before
+        let cushion: Decimal = (type == .reer) ? 2_000 : 0
+        let penaltyExcess = rawExcess - cushion
+        return (penaltyExcess > 0, max(0, penaltyExcess), before)
     }
 
     /// Estimated penalty for one month on an over-contribution: 1% of the excess.

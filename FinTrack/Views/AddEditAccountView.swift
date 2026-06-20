@@ -352,7 +352,7 @@ struct AddEditAccountView: View {
         Section {
             Picker(lang["reg.account.type"], selection: $registeredType) {
                 Text(lang["reg.account.none"]).tag(RegisteredType?.none)
-                ForEach([RegisteredType.celi, .celiapp]) { t in
+                ForEach([RegisteredType.celi, .celiapp, .reer]) { t in
                     Text(t.label).tag(Optional(t))
                 }
             }

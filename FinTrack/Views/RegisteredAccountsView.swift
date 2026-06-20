@@ -20,7 +20,7 @@ struct RegisteredAccountsView: View {
     @State private var editingType: RegisteredType?
 
     /// Types the user can manage here (REER pending its income-based calc).
-    private let types: [RegisteredType] = [.celi, .celiapp]
+    private let types: [RegisteredType] = [.celi, .celiapp, .reer]
 
     private func plan(for type: RegisteredType) -> RegisteredRoomPlan? {
         allPlans.first { $0.registeredType == type }
