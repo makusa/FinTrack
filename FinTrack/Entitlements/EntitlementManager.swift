@@ -66,6 +66,8 @@ enum FinTrackLimit {
     static let freeMaxSavingsProjects = 2
     /// Maximum active budgets in the free tier. Archived budgets don't count.
     static let freeMaxBudgets = 3
+    /// Maximum registered accounts (CELI/CELIAPP/REER) in the free tier.
+    static let freeMaxRegisteredAccounts = 2
 }
 
 // MARK: - EntitlementManager

@@ -19,6 +19,8 @@ struct AddEditAccountView: View {
 
     let mode: AccountEditorMode
 
+    @Query private var allAccounts: [Account]
+
     @State private var name: String = ""
     @State private var institution: String = ""
     @State private var type: AccountType = .checking
@@ -41,11 +43,29 @@ struct AddEditAccountView: View {
 
     // Registered account (CELI/CELIAPP)
     @State private var registeredType: RegisteredType? = nil
+    @State private var showRegisteredPaywall = false
 
     /// CAD + USD for free tier; all currencies for Pro.
     private var availableCurrencies: [CurrencyInfo] {
         if entitlements.hasPaidTier { return Currencies.all }
         return Currencies.all.filter { ["CAD", "USD"].contains($0.code) }
+    }
+
+    /// Other (non-archived) registered accounts, excluding the one being edited.
+    private var otherRegisteredCount: Int {
+        let editingID: PersistentIdentifier? = {
+            if case .edit(let a) = mode { return a.persistentModelID }
+            return nil
+        }()
+        return allAccounts.filter {
+            !$0.isArchived
+            && $0.registeredProfile?.registeredType != nil
+            && $0.persistentModelID != editingID
+        }.count
+    }
+    /// Free tier may tag at most freeMaxRegisteredAccounts registered accounts.
+    private var registeredLockedForFree: Bool {
+        !entitlements.hasPaidTier && otherRegisteredCount >= FinTrackLimit.freeMaxRegisteredAccounts
     }
 
     private var isEditing: Bool {
@@ -157,6 +177,12 @@ struct AddEditAccountView: View {
                 }
             }
             .navigationTitle(navTitle)
+            .sheet(isPresented: $showRegisteredPaywall) {
+                NavigationStack {
+                    ProGateView(feature: .registered)
+                        .environment(entitlements)
+                }
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -356,10 +382,16 @@ struct AddEditAccountView: View {
                     Text(t.label).tag(Optional(t))
                 }
             }
+            .onChange(of: registeredType) { _, newValue in
+                if newValue != nil && registeredLockedForFree {
+                    registeredType = nil
+                    showRegisteredPaywall = true
+                }
+            }
         } header: {
             Text(lang["reg.account.section"])
         } footer: {
-            Text(lang["reg.account.footer"])
+            Text(registeredLockedForFree ? lang["reg.account.freeCap"] : lang["reg.account.footer"])
         }
     }
 

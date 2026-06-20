@@ -151,6 +151,7 @@ enum LocalizedStrings {
         "reg.account.type":          ["fr": "Type de régime", "en": "Plan Type", "es": "Tipo de plan", "pt": "Tipo de plano"],
         "reg.account.none":          ["fr": "Aucun", "en": "None", "es": "Ninguno", "pt": "Nenhum"],
         "reg.account.footer":        ["fr": "Marque ce compte comme abri fiscal. Le suivi du droit de cotisation se configure ensuite.", "en": "Marks this account as a tax shelter. Contribution-room tracking is set up next.", "es": "Marca esta cuenta como refugio fiscal. El seguimiento del derecho se configura luego.", "pt": "Marca esta conta como abrigo fiscal. O acompanhamento do direito é configurado a seguir."],
+        "reg.account.freeCap":       ["fr": "Version gratuite limitée à 2 comptes enregistrés. Passez à la version payante pour en suivre davantage.", "en": "The free tier is limited to 2 registered accounts. Upgrade to track more.", "es": "La versión gratuita está limitada a 2 cuentas registradas. Mejora para seguir más.", "pt": "A versão gratuita é limitada a 2 contas registradas. Faça upgrade para acompanhar mais."],
         "reg.anchor.section":        ["fr": "Point d'ancrage", "en": "Anchor Point", "es": "Punto de anclaje", "pt": "Ponto de ancoragem"],
         "reg.anchor.year":           ["fr": "Année de référence", "en": "Reference Year", "es": "Año de referencia", "pt": "Ano de referência"],
         "reg.anchor.amount":         ["fr": "Droit au 1er janvier", "en": "Room on January 1", "es": "Derecho al 1 de enero", "pt": "Direito em 1º de janeiro"],

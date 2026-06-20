@@ -25,6 +25,7 @@ enum GatedFeature {
     case dashboardCustom
     case csvExport
     case unlimitedAccounts
+    case registered
 
     // Bank sync feature (Flinks ou Plaid — même gate)
     case bankSync
@@ -45,6 +46,7 @@ enum GatedFeature {
         case .dashboardCustom:   return lang["library.title"]
         case .csvExport:         return lang["settings.export"]
         case .unlimitedAccounts: return lang["entitlement.unlimited.accounts"]
+        case .registered:        return lang["reg.hub.title"]
         case .bankSync:          return lang["flinks.title"]
         }
     }
@@ -63,6 +65,7 @@ enum GatedFeature {
         case .dashboardCustom:   return "square.grid.2x2"
         case .csvExport:         return "square.and.arrow.up"
         case .unlimitedAccounts: return "building.columns.fill"
+        case .registered:        return "leaf.fill"
         case .bankSync:          return "building.columns.badge.plus"
         }
     }
@@ -164,6 +167,7 @@ struct ProGateView: View {
         ("banknote.fill",            "Gestion des prêts"),
         ("creditcard.fill",          "Marges de crédit"),
         ("star.fill",                "Projets d'épargne"),
+        ("leaf.fill",                "Comptes enregistrés CELI/REER"),
         ("arrow.clockwise",          "Transactions récurrentes"),
         ("arrow.left.arrow.right",   "Virements entre comptes"),
         ("chart.pie.fill",           "Analytiques & graphiques"),
