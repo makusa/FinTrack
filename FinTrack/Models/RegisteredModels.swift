@@ -115,6 +115,10 @@ final class RegisteredEntry {
     var note: String = ""
     var createdAt: Date = Date.now
 
+    /// Links the cash transfer (Transaction.transferPairId) this entry created,
+    /// if the user chose to also move the money. nil = room-only entry.
+    var transferPairId: UUID? = nil
+
     // inverse + cascade declared on Account.registeredEntries.
     var account: Account?
 

@@ -205,9 +205,10 @@ struct AddRegisteredEntryView: View {
         entry.account = account
         context.insert(entry)
 
-        // 2) Optionally move the actual cash as a linked transfer (drives balances).
+        // 2) Optionally move the actual cash as a linked transfer (drives balances),
+        //    and remember its pair id so deleting this entry can undo the transfer.
         if movesCash, let other = counterparty {
-            makeTransfer(with: other)
+            entry.transferPairId = makeTransfer(with: other)
         }
 
         try? context.save()
@@ -217,7 +218,7 @@ struct AddRegisteredEntryView: View {
     /// Creates a debit + credit Transaction pair (linked by transferPairId) so the
     /// account balances reflect the contribution/withdrawal. Mirrors AddTransferView.
     /// Contribution: money flows other -> registered account. Withdrawal: the reverse.
-    private func makeTransfer(with other: Account) {
+    private func makeTransfer(with other: Account) -> UUID {
         let pairId = UUID()
         let trimmedNote = note.trimmingCharacters(in: .whitespaces)
 
@@ -253,6 +254,7 @@ struct AddRegisteredEntryView: View {
         context.insert(credit)
         src.recalculateBalance()
         dst.recalculateBalance()
+        return pairId
     }
 
     private func accountPickerLabel(_ acc: Account) -> some View {

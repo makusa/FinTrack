@@ -250,8 +250,27 @@ struct AccountDetailView: View {
 
     private func deleteRegisteredEntries(at offsets: IndexSet) {
         let entries = sortedRegisteredEntries
-        for i in offsets { context.delete(entries[i]) }
+        for i in offsets {
+            let entry = entries[i]
+            if let pairId = entry.transferPairId {
+                deleteLinkedTransfer(pairId)
+            }
+            context.delete(entry)
+        }
         try? context.save()
+    }
+
+    /// Deletes the cash transfer (both legs sharing `pairId`) that a registered
+    /// entry created via the "also move the money" option, and refreshes the
+    /// affected account balances.
+    private func deleteLinkedTransfer(_ pairId: UUID) {
+        let descriptor = FetchDescriptor<Transaction>(
+            predicate: #Predicate<Transaction> { $0.transferPairId == pairId }
+        )
+        let legs = (try? context.fetch(descriptor)) ?? []
+        let affected = Set(legs.compactMap { $0.account })
+        for leg in legs { context.delete(leg) }
+        for acc in affected { acc.recalculateBalance() }
     }
 
     private func deleteTransactions(at offsets: IndexSet) {
