@@ -125,6 +125,29 @@ enum LocalizedStrings {
         "card.network.amex":       ["fr": "American Express", "en": "American Express", "es": "American Express", "pt": "American Express"],
         "card.network.other":      ["fr": "Autre", "en": "Other", "es": "Otro", "pt": "Outro"],
 
+        // MARK: - Credit card budget fields
+        "card.section":                 ["fr": "Carte de crédit", "en": "Credit Card", "es": "Tarjeta de crédito", "pt": "Cartão de crédito"],
+        "card.currentOwed":             ["fr": "Solde actuel dû", "en": "Current Balance Owed", "es": "Saldo actual adeudado", "pt": "Saldo atual devido"],
+        "card.limit":                   ["fr": "Limite de crédit", "en": "Credit Limit", "es": "Límite de crédito", "pt": "Limite de crédito"],
+        "card.network":                 ["fr": "Réseau", "en": "Network", "es": "Red", "pt": "Rede"],
+        "card.lastFour":                ["fr": "4 derniers chiffres", "en": "Last 4 Digits", "es": "Últimos 4 dígitos", "pt": "Últimos 4 dígitos"],
+        "card.cycle.section":           ["fr": "Cycle de facturation", "en": "Billing Cycle", "es": "Ciclo de facturación", "pt": "Ciclo de faturamento"],
+        "card.statementDay":            ["fr": "Jour de clôture du relevé", "en": "Statement Closing Day", "es": "Día de cierre", "pt": "Dia de fechamento"],
+        "card.dueDay":                  ["fr": "Jour d'échéance du paiement", "en": "Payment Due Day", "es": "Día de vencimiento", "pt": "Dia de vencimento"],
+        "card.apr":                     ["fr": "Taux d'intérêt annuel (TAEG)", "en": "Annual Interest Rate (APR)", "es": "Tasa de interés anual (TAE)", "pt": "Taxa de juros anual (CET)"],
+        "card.minPayment":              ["fr": "Type de paiement minimum", "en": "Minimum Payment Type", "es": "Tipo de pago mínimo", "pt": "Tipo de pagamento mínimo"],
+        "card.minPayment.percentLabel": ["fr": "Pourcentage du solde", "en": "Percent of Balance", "es": "Porcentaje del saldo", "pt": "Percentual do saldo"],
+        "card.minPayment.fixedLabel":   ["fr": "Montant fixe", "en": "Fixed Amount", "es": "Monto fijo", "pt": "Valor fixo"],
+        "card.interest.section":        ["fr": "Intérêts et paiement minimum", "en": "Interest & Minimum Payment", "es": "Intereses y pago mínimo", "pt": "Juros e pagamento mínimo"],
+        "card.estimate.footer":         ["fr": "Les intérêts et le paiement minimum sont des estimations.", "en": "Interest and minimum payment are estimates.", "es": "Los intereses y el pago mínimo son estimaciones.", "pt": "Os juros e o pagamento mínimo são estimativas."],
+
+        // MARK: - Registered accounts (CELI / CELIAPP / REER)
+        "reg.type.celi":             ["fr": "CELI", "en": "TFSA", "es": "TFSA", "pt": "TFSA"],
+        "reg.type.celiapp":          ["fr": "CELIAPP", "en": "FHSA", "es": "FHSA", "pt": "FHSA"],
+        "reg.type.reer":             ["fr": "REER", "en": "RRSP", "es": "RRSP", "pt": "RRSP"],
+        "reg.entry.contribution":    ["fr": "Cotisation", "en": "Contribution", "es": "Aportación", "pt": "Contribuição"],
+        "reg.entry.withdrawal":      ["fr": "Retrait", "en": "Withdrawal", "es": "Retiro", "pt": "Retirada"],
+
         // MARK: - Transactions
         "tx.title":           ["fr": "Transactions",      "en": "Transactions",      "es": "Transacciones",   "pt": "Transações"],
         "tx.allAccounts":     ["fr": "Tous les comptes",  "en": "All Accounts",      "es": "Todas las cuentas","pt": "Todas as contas"],

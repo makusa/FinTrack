@@ -65,6 +65,13 @@ final class Account {
     @Relationship(deleteRule: .cascade, inverse: \CreditCardProfile.account)
     var creditCardProfile: CreditCardProfile? = nil
 
+    // Registered-account (CELI/CELIAPP/REER) metadata + contribution/withdrawal log.
+    @Relationship(deleteRule: .cascade, inverse: \RegisteredAccountProfile.account)
+    var registeredProfile: RegisteredAccountProfile? = nil
+
+    @Relationship(deleteRule: .cascade, inverse: \RegisteredEntry.account)
+    var registeredEntries: [RegisteredEntry]? = []
+
     // CloudKit inverse back-references. Declared here without @Relationship
     // so SwiftData infers them from the child-side @Relationship(inverse:).
     var loans:               [Loan]?               = []

@@ -38,7 +38,8 @@ struct FinTrackApp: App {
                                  RecurringTransaction.self, Loan.self, LoanPrepayment.self,
                                  CreditLine.self, CreditLineEntry.self,
                                  SavingsProject.self, Budget.self,
-                                 CreditCardProfile.self])
+                                 CreditCardProfile.self,
+                                 RegisteredAccountProfile.self, RegisteredRoomPlan.self, RegisteredEntry.self])
 
         let cloudSyncEnabled = UserDefaults.standard.bool(forKey: "fintrack.cloudSyncEnabled")
 
