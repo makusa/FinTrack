@@ -636,6 +636,8 @@ enum LocalizedStrings {
         "flinks.connected.ok": ["fr": "Banque connectée. Associez vos comptes puis synchronisez.", "en": "Bank connected. Map your accounts, then sync.", "es": "Banco conectado. Asocia tus cuentas y sincroniza.", "pt": "Banco conectado. Associe as suas contas e sincronize."],
         "flinks.connected.error": ["fr": "Échec de la connexion. Réessayez.", "en": "Connection failed. Try again.", "es": "Error de conexión. Inténtalo de nuevo.", "pt": "Falha na conexão. Tente novamente."],
         "flinks.sync.done": ["fr": "Synchronisation terminée. Transactions ajoutées :", "en": "Sync complete. Transactions added:", "es": "Sincronización completa. Transacciones añadidas:", "pt": "Sincronização concluída. Transações adicionadas:"],
+        "flinks.sync.reconciled": ["fr": "réconciliées", "en": "reconciled", "es": "conciliadas", "pt": "conciliadas"],
+        "flinks.sync.review":     ["fr": "à vérifier",   "en": "to review",  "es": "por revisar", "pt": "para revisar"],
         "calendar.today": ["fr": "Aujourd'hui", "en": "Today", "es": "Hoy", "pt": "Hoje"],
         "calendar.planned": ["fr": "Prévu", "en": "Planned", "es": "Previsto", "pt": "Previsto"],
         "calendar.source": ["fr": "Source", "en": "Source", "es": "Fuente", "pt": "Fonte"],

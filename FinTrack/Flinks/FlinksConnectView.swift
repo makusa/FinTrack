@@ -168,7 +168,12 @@ struct BankSyncView: View {
         defer { manager.isSyncing = false }
         let results = await FlinksSyncEngine.shared.syncAll(context: context)
         let added = results.reduce(0) { $0 + $1.added }
-        syncMessage = "\(lang["flinks.sync.done"]) \(added)"
+        let reconciled = results.reduce(0) { $0 + $1.reconciled }
+        let flagged = results.reduce(0) { $0 + $1.flagged }
+        var msg = "\(lang["flinks.sync.done"]) \(added)"
+        if reconciled > 0 { msg += " · \(reconciled) \(lang["flinks.sync.reconciled"])" }
+        if flagged > 0 { msg += " · \(flagged) \(lang["flinks.sync.review"])" }
+        syncMessage = msg
     }
 }
 

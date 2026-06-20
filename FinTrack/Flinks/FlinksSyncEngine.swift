@@ -2,10 +2,10 @@
 //  FlinksSyncEngine.swift
 //  FinTrack
 //
-//  Converts Flinks transactions into FinTrack Transaction records.
-//  Dedup key: Flinks Transaction.Id, stored in Transaction.externalId.
-//  Flinks has no incremental cursor — we fetch recent activity and
-//  deduplicate by external ID.
+//  Flinks adapter: fetches Flinks activity, maps it to the provider-neutral
+//  IncomingBankTransaction, and hands it to TransactionReconciler. All dedup,
+//  Option-C matching, status stamping and balance recomputation live in the
+//  shared reconciler — no Flinks type leaks past the mapping below.
 //
 
 import Foundation
@@ -21,10 +21,12 @@ final class FlinksSyncEngine {
     private init() {}
 
     struct SyncResult {
-        let loginId: String
-        let added:   Int
-        let skipped: Int
-        let error:   Error?
+        let loginId:    String
+        let added:      Int   // new synced rows with no manual match
+        let reconciled: Int   // manual rows auto-linked to a synced row (Option C)
+        let flagged:    Int   // synced rows flagged as possible duplicates (needs review)
+        let skipped:    Int
+        let error:      Error?
     }
 
     // MARK: - Sync all connected logins
@@ -42,20 +44,18 @@ final class FlinksSyncEngine {
             let requestId = try await FlinksManager.shared.authorize(loginId: login.id)
             let detail = try await FlinksManager.shared.getAccountsDetail(requestId: requestId)
 
-            // Existing external IDs — one fetch, O(1) lookups (N1 lesson).
-            let existing = (try? context.fetch(FetchDescriptor<Transaction>())) ?? []
-            var knownIds = Set(existing.compactMap { $0.externalId })
-
             let allAccounts = (try? context.fetch(FetchDescriptor<Account>())) ?? []
-            var affectedAccounts: Set<PersistentIdentifier> = []
 
-            var added = 0, skipped = 0
             let df = DateFormatter()
             df.dateFormat = "yyyy-MM-dd"
             df.timeZone = TimeZone(identifier: "America/Toronto")
 
+            // ── Anti-corruption layer: Flinks DTO → neutral incoming rows ──
+            var incoming: [IncomingBankTransaction] = []
+            var preSkipped = 0   // dropped before reconciliation (bad date / non-positive amount)
+
             for flinksAccount in detail.accounts {
-                // Resolve mapping FlinksAccount → FinTrack Account
+                // Resolve mapping FlinksAccount → FinTrack Account (provider-specific).
                 guard let meta = login.accounts.first(where: { $0.id == flinksAccount.id }),
                       let mappedId = meta.fintrackAccountId,
                       let target = allAccounts.first(where: { "\($0.persistentModelID.hashValue)" == mappedId
@@ -63,36 +63,26 @@ final class FlinksSyncEngine {
                 else { continue }   // unmapped accounts are skipped silently
 
                 for ftx in flinksAccount.transactions ?? [] {
-                    guard !knownIds.contains(ftx.id) else { skipped += 1; continue }
-                    guard let date = df.date(from: ftx.date) else { skipped += 1; continue }
-
+                    guard let date = df.date(from: ftx.date) else { preSkipped += 1; continue }
                     let isCredit = (ftx.credit ?? 0) > 0
                     let amount = Decimal(isCredit ? (ftx.credit ?? 0) : (ftx.debit ?? 0))
-                    guard amount > 0 else { skipped += 1; continue }
+                    guard amount > 0 else { preSkipped += 1; continue }
 
-                    let tx = Transaction(
+                    incoming.append(IncomingBankTransaction(
+                        externalId: ftx.id,
+                        accountKey: target.uuid,
+                        isIncome: isCredit,
                         amount: amount,
-                        type: isCredit ? .income : .expense,
                         date: date,
-                        account: target,
-                        category: nil,
+                        payee: ftx.description,
                         note: "",
-                        payee: ftx.description
-                    )
-                    tx.externalId = ftx.id
-                    tx.bankDescription = ftx.description
-                    tx.status = .reconciled
-                    context.insert(tx)
-                    knownIds.insert(ftx.id)
-                    affectedAccounts.insert(target.persistentModelID)
-                    added += 1
+                        bankDescription: ftx.description
+                    ))
                 }
             }
 
-            // C1 — denormalised balances must be recalculated after writes.
-            allAccounts.filter { affectedAccounts.contains($0.persistentModelID) }
-                       .forEach { $0.recalculateBalance() }
-            try? context.save()
+            // ── Provider-neutral reconciliation ──
+            let outcome = TransactionReconciler.reconcile(incoming, context: context)
 
             // Update lastSyncDate
             if var updated = FlinksManager.shared.connectedLogins.first(where: { $0.id == login.id }) {
@@ -100,11 +90,14 @@ final class FlinksSyncEngine {
                 FlinksManager.shared.addLogin(updated)
             }
 
-            syncLog.info("Flinks sync: \(added) added, \(skipped) skipped")
-            return SyncResult(loginId: login.id, added: added, skipped: skipped, error: nil)
+            let skipped = outcome.skipped + preSkipped
+            syncLog.info("Flinks sync: \(outcome.added) added, \(outcome.reconciled) reconciled, \(outcome.flagged) flagged, \(skipped) skipped")
+            return SyncResult(loginId: login.id, added: outcome.added, reconciled: outcome.reconciled,
+                              flagged: outcome.flagged, skipped: skipped, error: nil)
         } catch {
             syncLog.error("Flinks sync failed: \(error, privacy: .private)")
-            return SyncResult(loginId: login.id, added: 0, skipped: 0, error: error)
+            return SyncResult(loginId: login.id, added: 0, reconciled: 0,
+                              flagged: 0, skipped: 0, error: error)
         }
     }
 }
