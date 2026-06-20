@@ -119,6 +119,12 @@ enum LocalizedStrings {
         "account.type.investment": ["fr": "Placement",             "en": "Investment",           "es": "Inversión",            "pt": "Investimento"],
         "account.type.other":      ["fr": "Autre",                 "en": "Other",                "es": "Otro",                 "pt": "Outro"],
 
+        // MARK: - Credit card networks
+        "card.network.visa":       ["fr": "Visa", "en": "Visa", "es": "Visa", "pt": "Visa"],
+        "card.network.mastercard": ["fr": "Mastercard", "en": "Mastercard", "es": "Mastercard", "pt": "Mastercard"],
+        "card.network.amex":       ["fr": "American Express", "en": "American Express", "es": "American Express", "pt": "American Express"],
+        "card.network.other":      ["fr": "Autre", "en": "Other", "es": "Otro", "pt": "Outro"],
+
         // MARK: - Transactions
         "tx.title":           ["fr": "Transactions",      "en": "Transactions",      "es": "Transacciones",   "pt": "Transações"],
         "tx.allAccounts":     ["fr": "Tous les comptes",  "en": "All Accounts",      "es": "Todas las cuentas","pt": "Todas as contas"],

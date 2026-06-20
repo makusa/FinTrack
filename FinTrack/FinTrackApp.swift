@@ -37,7 +37,8 @@ struct FinTrackApp: App {
         let baseSchema = Schema([Account.self, Transaction.self, Category.self,
                                  RecurringTransaction.self, Loan.self, LoanPrepayment.self,
                                  CreditLine.self, CreditLineEntry.self,
-                                 SavingsProject.self, Budget.self])
+                                 SavingsProject.self, Budget.self,
+                                 CreditCardProfile.self])
 
         let cloudSyncEnabled = UserDefaults.standard.bool(forKey: "fintrack.cloudSyncEnabled")
 

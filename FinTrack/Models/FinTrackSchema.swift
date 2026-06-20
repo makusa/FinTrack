@@ -11,7 +11,7 @@
 import Foundation
 import SwiftData
 
-// MARK: - V1 — current schema (all 9 models)
+// MARK: - V1 — current schema (all 11 models)
 
 enum FinTrackSchemaV1: VersionedSchema {
     static var versionIdentifier = Schema.Version(1, 0, 0)
@@ -26,7 +26,8 @@ enum FinTrackSchemaV1: VersionedSchema {
          CreditLine.self,
          CreditLineEntry.self,
          SavingsProject.self,
-         Budget.self]
+         Budget.self,
+         CreditCardProfile.self]
     }
 }
 

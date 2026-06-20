@@ -60,6 +60,11 @@ final class Account {
     @Relationship(deleteRule: .cascade, inverse: \Transaction.account)
     var transactions: [Transaction]? = []
 
+    // 1:1 credit-card metadata (statement cycle, limit, APR). Cascade: deleting
+    // the account also deletes its card profile. nil for non-credit accounts.
+    @Relationship(deleteRule: .cascade, inverse: \CreditCardProfile.account)
+    var creditCardProfile: CreditCardProfile? = nil
+
     // CloudKit inverse back-references. Declared here without @Relationship
     // so SwiftData infers them from the child-side @Relationship(inverse:).
     var loans:               [Loan]?               = []
