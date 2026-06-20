@@ -30,7 +30,6 @@ struct AccountDetailView: View {
     @State private var showAddTransaction = false
     @State private var showAddTransfer = false
     @State private var confirmArchive = false
-    @State private var showRoomPlan = false
     @State private var showAddEntry = false
 
     @Query private var allPlans: [RegisteredRoomPlan]
@@ -162,11 +161,6 @@ struct AccountDetailView: View {
         .sheet(isPresented: $showAddTransfer) {
             AddTransferView(preselectedSource: account)
         }
-        .sheet(isPresented: $showRoomPlan) {
-            if let type = account.registeredProfile?.registeredType {
-                RegisteredRoomPlanView(type: type, existing: registeredPlan)
-            }
-        }
         .sheet(isPresented: $showAddEntry) {
             AddRegisteredEntryView(account: account)
         }
@@ -210,13 +204,10 @@ struct AccountDetailView: View {
                 LabeledContent(lang["reg.anchor.label"]) {
                     Text("\(plan.anchorAmount.formatted(asCurrency: account.currency)) · \(String(plan.anchorYear))")
                 }
-                Button(lang["reg.anchor.edit"]) { showRoomPlan = true }
             } else {
-                Button {
-                    showRoomPlan = true
-                } label: {
-                    Label(lang["reg.room.configure"], systemImage: "slider.horizontal.3")
-                }
+                Text(lang["reg.room.noAnchor"])
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
             }
             Button {
                 showAddEntry = true
@@ -226,7 +217,7 @@ struct AccountDetailView: View {
         } header: {
             Text("\(lang["reg.room.section"]) · \(type.label)")
         } footer: {
-            Text(lang["reg.room.sharedFooter"])
+            Text(lang["reg.room.accountFooter"])
         }
     }
 

@@ -262,6 +262,12 @@ struct SettingsView: View {
             }
 
             NavigationLink {
+                RegisteredAccountsView()
+            } label: {
+                Label(lang["reg.hub.title"], systemImage: "leaf.fill")
+            }
+
+            NavigationLink {
                 RecurrencesView()
             } label: {
                 Label(lang["recurring.title"], systemImage: "arrow.2.squarepath")

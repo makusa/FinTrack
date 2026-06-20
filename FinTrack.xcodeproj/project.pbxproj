@@ -32,6 +32,8 @@
 		41FB72C571163C59D66A1D19 /* UpcomingTransfersWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4220ADE1CE0B8E4A3C09D5 /* UpcomingTransfersWidget.swift */; };
 		435481DA3242E1DF4920732E /* LockScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 488CC86C4B8E1591EEA99D01 /* LockScreenView.swift */; };
 		471D6F4D3E42D9DB98175919 /* BudgetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 207EA31CC288268AF7C04C87 /* BudgetDetailView.swift */; };
+		49ADF077E7F8CC48F81428EC /* RegisteredRoom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F99E8950A3172F5EC30E943 /* RegisteredRoom.swift */; };
+		4DBF7F232677DDEB93186976 /* AddRegisteredEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2CEAC94077AAF3058B1ED00 /* AddRegisteredEntryView.swift */; };
 		4E799AAC5FE4E53DE66E999A /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = F053C63C61980B18AA6263E4 /* Category.swift */; };
 		525B67FBACF1E15DF25D1A61 /* DashboardLibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D2E444EDB081F1937056613 /* DashboardLibraryView.swift */; };
 		552850B5EC610AD21FD28F95 /* Currency.swift in Sources */ = {isa = PBXBuildFile; fileRef = A343B877C383A2628511AF5E /* Currency.swift */; };
@@ -49,6 +51,7 @@
 		6F557C03EC16CE672E209ECF /* RecurrencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79879028C8F8BC32BD5A8523 /* RecurrencesView.swift */; };
 		708A7E841F0FE54C408D2E08 /* AccountDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D76D2AF0CE6FEC33302AB61E /* AccountDetailView.swift */; };
 		762FF16D61FD6F647D8B3FA8 /* SubscriptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD3CF16E621A3AE8D61CC443 /* SubscriptionView.swift */; };
+		769BDEE13F10B73677B671AE /* RegisteredRoomPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA9DB9D6C2528C42A23DC965 /* RegisteredRoomPlanView.swift */; };
 		7E38E29A5B5FBC0047FAEC02 /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A5665A30F1D56650390EE /* AppLogger.swift */; };
 		809F8A2DA7BC4ECEA9A0A764 /* FinTrackAccessoryWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C9983576B0236C6721841FA /* FinTrackAccessoryWidget.swift */; };
 		818CAA57F850B119D1838F06 /* PINPadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 711637AA9958C8B7BF0A014B /* PINPadView.swift */; };
@@ -62,6 +65,7 @@
 		90010DED4A1BD6D4DBAA5BC1 /* PlaidConnectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0E60F4AEBB656CE3C74BA5 /* PlaidConnectionView.swift */; };
 		902B6089DC4E186A5BF64220 /* CloudSyncSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A10CB34B5539A6C9478649 /* CloudSyncSettingsView.swift */; };
 		9513353237D375CA51C9E598 /* ExchangeRateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF6B9AA36AC85C390D2C87D4 /* ExchangeRateManager.swift */; };
+		9A281142653F3C4833C8792C /* RegisteredAccountsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7FDFD2AE95DDEA5E20C5539 /* RegisteredAccountsView.swift */; };
 		9CFCDC8334BB2628623BFD6D /* AddEditAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AA91C436EA64527214D120E /* AddEditAccountView.swift */; };
 		9E7BA0CD12BED53BC9288C35 /* LoanDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4466ADA3E562726D19C50E11 /* LoanDetailView.swift */; };
 		AA7DFD7A9F8BAD11D29FC5F7 /* AddCreditLineEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EB0D66462A9846880A3D4C /* AddCreditLineEntryView.swift */; };
@@ -72,6 +76,7 @@
 		BB89AD9A789084492F6B6461 /* AddTransferView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A3F91C820A6B4C7BB454D1 /* AddTransferView.swift */; };
 		BC170E5903A1EED10F891F85 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FF689CB36E8CEEFF2657D413 /* Assets.xcassets */; };
 		BDDA758C9D4C28BFA7174B8A /* FinTrackApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA75C9EEFB489048F50342E4 /* FinTrackApp.swift */; };
+		C2349629094CB6027A915595 /* CreditCardProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09C6EE3A2D897F6EDFD45CDD /* CreditCardProfile.swift */; };
 		C75375BB13EBA078B944DBF3 /* BankDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83DC35CBE438FBE81673CB46 /* BankDirectory.swift */; };
 		CC550BDDDA2B91B2D3B6EE8F /* FinTrackWidgetEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17B5A8A48F6F1A2A395FA28D /* FinTrackWidgetEntry.swift */; };
 		D253B19DD2EA070A567791C4 /* CashFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50DA8D0E2D302C76AD711D5E /* CashFlowView.swift */; };
@@ -94,6 +99,7 @@
 		F1F79896855354F2AE090AA5 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F69296D8AA5AFFC56CE2664 /* Account.swift */; };
 		F319207472302EF0C448CEAD /* SavingsProjectsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B028732F7CF6E7904296926 /* SavingsProjectsView.swift */; };
 		F31CDDC34A84E1E74C645DFF /* TransactionsCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8463E58D5B6EAB692A4930E1 /* TransactionsCalendarView.swift */; };
+		F3968CE5EF149DAA849D69D7 /* RegisteredModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 606C137CA61A6F18BD8DE634 /* RegisteredModels.swift */; };
 		F4ECF44923BC9CF1C85E7CD2 /* Transaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1829FFD6EB0076039DC19BA /* Transaction.swift */; };
 		F9C35FD4F8C3847B83FAA59B /* WidgetDataWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC429D562A281124F93A2B8C /* WidgetDataWriter.swift */; };
 		FD07D43882ACAA37D423BE96 /* DashboardConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1576E72DD76DAD0C99318B64 /* DashboardConfigManager.swift */; };
@@ -128,6 +134,7 @@
 		00A10CB34B5539A6C9478649 /* CloudSyncSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudSyncSettingsView.swift; sourceTree = "<group>"; };
 		01BA68E205C88505F80FF7A0 /* FormatterHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FormatterHelpers.swift; sourceTree = "<group>"; };
 		01D518134BA3B7424747887A /* Budget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Budget.swift; sourceTree = "<group>"; };
+		09C6EE3A2D897F6EDFD45CDD /* CreditCardProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditCardProfile.swift; sourceTree = "<group>"; };
 		0C082A0C923A6D3A07BE3D85 /* FinTrack.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = FinTrack.entitlements; sourceTree = "<group>"; };
 		0E30611F5C70AADC2D5758AE /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
 		0E5A5665A30F1D56650390EE /* AppLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLogger.swift; sourceTree = "<group>"; };
@@ -174,6 +181,7 @@
 		5AA91C436EA64527214D120E /* AddEditAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditAccountView.swift; sourceTree = "<group>"; };
 		5B8833492251E28C1FC5943F /* AddEditBudgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditBudgetView.swift; sourceTree = "<group>"; };
 		5DDEB27E84C04561F15A5C58 /* CreditLineDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditLineDetailView.swift; sourceTree = "<group>"; };
+		606C137CA61A6F18BD8DE634 /* RegisteredModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisteredModels.swift; sourceTree = "<group>"; };
 		630EC9B7CC2F26B3FB2ADDD2 /* FlinksManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlinksManager.swift; sourceTree = "<group>"; };
 		67FAEBACAD08ED3AFEEB2279 /* AccountsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsView.swift; sourceTree = "<group>"; };
 		6F23A31B9998AF6F386FD367 /* FinTrackBalanceWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinTrackBalanceWidget.swift; sourceTree = "<group>"; };
@@ -188,8 +196,10 @@
 		83DC35CBE438FBE81673CB46 /* BankDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankDirectory.swift; sourceTree = "<group>"; };
 		8463E58D5B6EAB692A4930E1 /* TransactionsCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionsCalendarView.swift; sourceTree = "<group>"; };
 		88B08DD594C51395758C470E /* CreditLineInterestManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditLineInterestManager.swift; sourceTree = "<group>"; };
+		8F99E8950A3172F5EC30E943 /* RegisteredRoom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisteredRoom.swift; sourceTree = "<group>"; };
 		9B028732F7CF6E7904296926 /* SavingsProjectsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsProjectsView.swift; sourceTree = "<group>"; };
 		9DB77B9957C1DA199B7DA46B /* AnalyticsDashboardSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsDashboardSection.swift; sourceTree = "<group>"; };
+		A2CEAC94077AAF3058B1ED00 /* AddRegisteredEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRegisteredEntryView.swift; sourceTree = "<group>"; };
 		A343B877C383A2628511AF5E /* Currency.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Currency.swift; sourceTree = "<group>"; };
 		A8149EFC3235A7CEB256AC31 /* NetWorthWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetWorthWidget.swift; sourceTree = "<group>"; };
 		A85E6C13F1FA6E8EA17F750A /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -207,9 +217,11 @@
 		D2A3F91C820A6B4C7BB454D1 /* AddTransferView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTransferView.swift; sourceTree = "<group>"; };
 		D34E6F10D5FEAE7E5D0BD329 /* ColorPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPalette.swift; sourceTree = "<group>"; };
 		D76D2AF0CE6FEC33302AB61E /* AccountDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountDetailView.swift; sourceTree = "<group>"; };
+		D7FDFD2AE95DDEA5E20C5539 /* RegisteredAccountsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisteredAccountsView.swift; sourceTree = "<group>"; };
 		DABA356B051CEFE3BBDC6F0B /* CreditLine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditLine.swift; sourceTree = "<group>"; };
 		DCFCF5BA20BC3356F1283EF3 /* NotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationManager.swift; sourceTree = "<group>"; };
 		E5F08A934D637542054E94B7 /* ExchangeRateWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeRateWidget.swift; sourceTree = "<group>"; };
+		EA9DB9D6C2528C42A23DC965 /* RegisteredRoomPlanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisteredRoomPlanView.swift; sourceTree = "<group>"; };
 		EF0E60F4AEBB656CE3C74BA5 /* PlaidConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaidConnectionView.swift; sourceTree = "<group>"; };
 		F053C63C61980B18AA6263E4 /* Category.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Category.swift; sourceTree = "<group>"; };
 		F1829FFD6EB0076039DC19BA /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
@@ -277,6 +289,7 @@
 				1BE6768DEBB253905FF1575E /* AddEditRecurringTransactionView.swift */,
 				540F38D8FDDAE86D3FB26390 /* AddEditSavingsProjectView.swift */,
 				D0A00CBB4D610338F0B810C6 /* AddEditTransactionView.swift */,
+				A2CEAC94077AAF3058B1ED00 /* AddRegisteredEntryView.swift */,
 				D2A3F91C820A6B4C7BB454D1 /* AddTransferView.swift */,
 				9DB77B9957C1DA199B7DA46B /* AnalyticsDashboardSection.swift */,
 				19AD119703063332E899FA3A /* BudgetDashboardSection.swift */,
@@ -291,6 +304,8 @@
 				4C6C088621B9474C790DD73E /* LoansView.swift */,
 				36FF1DDB2D01FAA6B01A0A05 /* NotificationSettingsView.swift */,
 				79879028C8F8BC32BD5A8523 /* RecurrencesView.swift */,
+				D7FDFD2AE95DDEA5E20C5539 /* RegisteredAccountsView.swift */,
+				EA9DB9D6C2528C42A23DC965 /* RegisteredRoomPlanView.swift */,
 				A85E6C13F1FA6E8EA17F750A /* RootView.swift */,
 				9B028732F7CF6E7904296926 /* SavingsProjectsView.swift */,
 				5A597BF7A45068D64338863D /* SettingsView.swift */,
@@ -385,12 +400,15 @@
 				7F69296D8AA5AFFC56CE2664 /* Account.swift */,
 				01D518134BA3B7424747887A /* Budget.swift */,
 				F053C63C61980B18AA6263E4 /* Category.swift */,
+				09C6EE3A2D897F6EDFD45CDD /* CreditCardProfile.swift */,
 				DABA356B051CEFE3BBDC6F0B /* CreditLine.swift */,
 				A343B877C383A2628511AF5E /* Currency.swift */,
 				148949877907760B7E338297 /* FinTrackSchema.swift */,
 				744E9158B684ECD95A1401FD /* Loan.swift */,
 				B74500B771A1359075449229 /* LoanPrepayment.swift */,
 				2FB73684BE58709BA98D84D2 /* RecurringTransaction.swift */,
+				606C137CA61A6F18BD8DE634 /* RegisteredModels.swift */,
+				8F99E8950A3172F5EC30E943 /* RegisteredRoom.swift */,
 				50BCF26C04654FA3682ABD16 /* SavingsProject.swift */,
 				F1829FFD6EB0076039DC19BA /* Transaction.swift */,
 				B6BA1F3423053EC109D1554A /* WidgetData.swift */,
@@ -552,6 +570,7 @@
 				369033F55CF3B80CE8206E08 /* AddEditRecurringTransactionView.swift in Sources */,
 				10EAF1229CCD09A58535D853 /* AddEditSavingsProjectView.swift in Sources */,
 				5FDC9958AC1B5F7B003A4C73 /* AddEditTransactionView.swift in Sources */,
+				4DBF7F232677DDEB93186976 /* AddRegisteredEntryView.swift in Sources */,
 				BB89AD9A789084492F6B6461 /* AddTransferView.swift in Sources */,
 				823C8A5B06F5F888090233F7 /* AnalyticsDashboardSection.swift in Sources */,
 				EC36CC2E241DA757D690C24D /* AppLockManager.swift in Sources */,
@@ -569,6 +588,7 @@
 				4E799AAC5FE4E53DE66E999A /* Category.swift in Sources */,
 				902B6089DC4E186A5BF64220 /* CloudSyncSettingsView.swift in Sources */,
 				E84D84543E5267B1FE8DC415 /* ColorPalette.swift in Sources */,
+				C2349629094CB6027A915595 /* CreditCardProfile.swift in Sources */,
 				B57ED9EA697F76839E8FEC45 /* CreditLine.swift in Sources */,
 				F1909440B5958C7E10BBB2E6 /* CreditLineDetailView.swift in Sources */,
 				B5698674F042DF35DAEBEF3D /* CreditLineInterestManager.swift in Sources */,
@@ -608,6 +628,10 @@
 				6F557C03EC16CE672E209ECF /* RecurrencesView.swift in Sources */,
 				6E037B33C990E82581CD6827 /* RecurringTransaction.swift in Sources */,
 				22BB8A042D4078FF582B4766 /* RecurringTransactionManager.swift in Sources */,
+				9A281142653F3C4833C8792C /* RegisteredAccountsView.swift in Sources */,
+				F3968CE5EF149DAA849D69D7 /* RegisteredModels.swift in Sources */,
+				49ADF077E7F8CC48F81428EC /* RegisteredRoom.swift in Sources */,
+				769BDEE13F10B73677B671AE /* RegisteredRoomPlanView.swift in Sources */,
 				167DD8D94BD2C94A5D09FCC6 /* RootView.swift in Sources */,
 				D3EC06B348E99E3B3CD9F705 /* SavingsProject.swift in Sources */,
 				F319207472302EF0C448CEAD /* SavingsProjectsView.swift in Sources */,
