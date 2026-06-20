@@ -147,6 +147,10 @@ enum LocalizedStrings {
         "reg.type.reer":             ["fr": "REER", "en": "RRSP", "es": "RRSP", "pt": "RRSP"],
         "reg.entry.contribution":    ["fr": "Cotisation", "en": "Contribution", "es": "Aportación", "pt": "Contribuição"],
         "reg.entry.withdrawal":      ["fr": "Retrait", "en": "Withdrawal", "es": "Retiro", "pt": "Retirada"],
+        "reg.account.section":       ["fr": "Compte enregistré", "en": "Registered Account", "es": "Cuenta registrada", "pt": "Conta registrada"],
+        "reg.account.type":          ["fr": "Type de régime", "en": "Plan Type", "es": "Tipo de plan", "pt": "Tipo de plano"],
+        "reg.account.none":          ["fr": "Aucun", "en": "None", "es": "Ninguno", "pt": "Nenhum"],
+        "reg.account.footer":        ["fr": "Marque ce compte comme abri fiscal. Le suivi du droit de cotisation se configure ensuite.", "en": "Marks this account as a tax shelter. Contribution-room tracking is set up next.", "es": "Marca esta cuenta como refugio fiscal. El seguimiento del derecho se configura luego.", "pt": "Marca esta conta como abrigo fiscal. O acompanhamento do direito é configurado a seguir."],
 
         // MARK: - Transactions
         "tx.title":           ["fr": "Transactions",      "en": "Transactions",      "es": "Transacciones",   "pt": "Transações"],

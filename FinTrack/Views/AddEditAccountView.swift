@@ -29,6 +29,19 @@ struct AddEditAccountView: View {
     @State private var notes: String = ""
     @State private var bankDomain: String? = nil   // domain for logo; set on institution selection
 
+    // Credit-card fields (used only when type == .credit)
+    @State private var ccLimitText: String = ""
+    @State private var ccStatementDay: Int = 1
+    @State private var ccDueDay: Int = 21
+    @State private var ccAPRText: String = ""
+    @State private var ccNetwork: CardNetwork = .other
+    @State private var ccLastFour: String = ""
+    @State private var ccMinType: MinimumPaymentType = .percentBalance
+    @State private var ccMinValueText: String = ""
+
+    // Registered account (CELI/CELIAPP)
+    @State private var registeredType: RegisteredType? = nil
+
     /// CAD + USD for free tier; all currencies for Pro.
     private var availableCurrencies: [CurrencyInfo] {
         if entitlements.hasPaidTier { return Currencies.all }
@@ -102,7 +115,7 @@ struct AddEditAccountView: View {
                             .foregroundStyle(.secondary)
                     }
                     HStack {
-                        Text(lang["account.initialBalance"])
+                        Text(type == .credit ? lang["card.currentOwed"] : lang["account.initialBalance"])
                         Spacer()
                         TextField("0", text: $initialBalanceText)
                             .keyboardType(.numbersAndPunctuation)
@@ -111,6 +124,14 @@ struct AddEditAccountView: View {
                         Text(Currencies.info(for: currency).symbol)
                             .foregroundStyle(.secondary)
                     }
+                }
+
+                if type == .credit {
+                    creditCardSection
+                }
+
+                if type == .savings || type == .investment {
+                    registeredSection
                 }
 
                 Section(lang["label.appearance"]) {
@@ -250,6 +271,98 @@ struct AddEditAccountView: View {
         }
     }
 
+    // MARK: - Credit-card section
+
+    @ViewBuilder
+    private var creditCardSection: some View {
+        Section(lang["card.section"]) {
+            HStack {
+                Text(lang["card.limit"])
+                Spacer()
+                TextField("0", text: $ccLimitText)
+                    .keyboardType(.numbersAndPunctuation)
+                    .multilineTextAlignment(.trailing)
+                    .frame(maxWidth: 140)
+                Text(Currencies.info(for: currency).symbol).foregroundStyle(.secondary)
+            }
+            Picker(lang["card.network"], selection: $ccNetwork) {
+                ForEach(CardNetwork.allCases) { n in Text(n.label).tag(n) }
+            }
+            HStack {
+                Text(lang["card.lastFour"])
+                Spacer()
+                TextField("0000", text: $ccLastFour)
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.trailing)
+                    .frame(maxWidth: 90)
+                    .onChange(of: ccLastFour) { _, v in
+                        ccLastFour = String(v.filter(\.isNumber).prefix(4))
+                    }
+            }
+        }
+
+        Section(lang["card.cycle.section"]) {
+            Picker(lang["card.statementDay"], selection: $ccStatementDay) {
+                ForEach(1...31, id: \.self) { d in Text("\(d)").tag(d) }
+            }
+            Picker(lang["card.dueDay"], selection: $ccDueDay) {
+                ForEach(1...31, id: \.self) { d in Text("\(d)").tag(d) }
+            }
+        }
+
+        Section {
+            HStack {
+                Text(lang["card.apr"])
+                Spacer()
+                TextField("0", text: $ccAPRText)
+                    .keyboardType(.numbersAndPunctuation)
+                    .multilineTextAlignment(.trailing)
+                    .frame(maxWidth: 100)
+                Text("%").foregroundStyle(.secondary)
+            }
+            Picker(lang["card.minPayment"], selection: $ccMinType) {
+                ForEach(MinimumPaymentType.allCases) { mp in Text(mp.label).tag(mp) }
+            }
+            if ccMinType != .interestOnly {
+                HStack {
+                    Text(ccMinType == .percentBalance
+                         ? lang["card.minPayment.percentLabel"]
+                         : lang["card.minPayment.fixedLabel"])
+                    Spacer()
+                    TextField("0", text: $ccMinValueText)
+                        .keyboardType(.numbersAndPunctuation)
+                        .multilineTextAlignment(.trailing)
+                        .frame(maxWidth: 100)
+                    Text(ccMinType == .percentBalance
+                         ? "%" : Currencies.info(for: currency).symbol)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        } header: {
+            Text(lang["card.interest.section"])
+        } footer: {
+            Text(lang["card.estimate.footer"])
+        }
+    }
+
+    // MARK: - Registered-account section
+
+    @ViewBuilder
+    private var registeredSection: some View {
+        Section {
+            Picker(lang["reg.account.type"], selection: $registeredType) {
+                Text(lang["reg.account.none"]).tag(RegisteredType?.none)
+                ForEach([RegisteredType.celi, .celiapp]) { t in
+                    Text(t.label).tag(Optional(t))
+                }
+            }
+        } header: {
+            Text(lang["reg.account.section"])
+        } footer: {
+            Text(lang["reg.account.footer"])
+        }
+    }
+
     // MARK: - Logic
 
     /// Maps a known bank to a brand-appropriate color from the palette.
@@ -271,22 +384,39 @@ struct AddEditAccountView: View {
         institution = account.institution
         type = account.type
         currency = account.currency
-        initialBalanceText = decimalToText(account.initialBalance)
+        // Credit cards store initialBalance negative (liability); show owed as positive.
+        initialBalanceText = decimalToText(account.type == .credit ? -account.initialBalance : account.initialBalance)
         colorHex = account.colorHex
         iconSystemName = account.iconSystemName
         bankDomain = account.bankDomain
         notes = account.notes ?? ""
+
+        if let cc = account.creditCardProfile {
+            ccLimitText = cc.creditLimit == 0 ? "" : decimalToText(cc.creditLimit)
+            ccStatementDay = cc.statementDayOfMonth
+            ccDueDay = cc.paymentDueDayOfMonth
+            ccAPRText = cc.purchaseAPR == 0 ? "" : decimalToText(cc.purchaseAPR)
+            ccNetwork = cc.cardNetwork
+            ccLastFour = cc.lastFour ?? ""
+            ccMinType = cc.minimumPaymentType
+            ccMinValueText = cc.minimumPaymentValue == 0 ? "" : decimalToText(cc.minimumPaymentValue)
+        }
+
+        registeredType = account.registeredProfile?.registeredType
     }
 
     private func save() {
         let trimmedName = name.trimmingCharacters(in: .whitespaces)
         let trimmedInst = institution.trimmingCharacters(in: .whitespaces)
         let trimmedNotes = notes.trimmingCharacters(in: .whitespaces)
-        let initial = parseDecimal(initialBalanceText) ?? 0
+        let entered = parseDecimal(initialBalanceText) ?? 0
+        // Credit cards are liabilities: store the entered "amount owed" as negative.
+        let initial = (type == .credit) ? -abs(entered) : entered
 
+        let account: Account
         switch mode {
         case .create:
-            let account = Account(
+            let newAccount = Account(
                 name: trimmedName,
                 institution: trimmedInst,
                 type: type,
@@ -296,26 +426,80 @@ struct AddEditAccountView: View {
                 iconSystemName: iconSystemName,
                 notes: trimmedNotes.isEmpty ? nil : trimmedNotes
             )
-            account.bankDomain = bankDomain
-            context.insert(account)
-        case .edit(let account):
-            account.name = trimmedName
-            account.institution = trimmedInst
-            account.type = type
-            account.currency = currency
-            account.initialBalance = initial
-            account.colorHex = colorHex
-            account.iconSystemName = iconSystemName
-            account.bankDomain = bankDomain
-            account.notes = trimmedNotes.isEmpty ? nil : trimmedNotes
-            account.recalculateBalance()  // initialBalance may have changed
+            newAccount.bankDomain = bankDomain
+            context.insert(newAccount)
+            account = newAccount
+        case .edit(let existing):
+            existing.name = trimmedName
+            existing.institution = trimmedInst
+            existing.type = type
+            existing.currency = currency
+            existing.initialBalance = initial
+            existing.colorHex = colorHex
+            existing.iconSystemName = iconSystemName
+            existing.bankDomain = bankDomain
+            existing.notes = trimmedNotes.isEmpty ? nil : trimmedNotes
+            account = existing
         }
+
+        syncCreditCardProfile(on: account)
+        syncRegisteredProfile(on: account)
+        account.recalculateBalance()  // initialBalance may have changed
 
         do {
             try context.save()
             dismiss()
         } catch {
             AppLogger.persistence.error("AddEditAccountView save failed: \(error, privacy: .private)")
+        }
+    }
+
+    /// Creates, updates, or removes the 1:1 CreditCardProfile so it matches the
+    /// account type and the card fields entered in the form.
+    private func syncCreditCardProfile(on account: Account) {
+        guard type == .credit else {
+            if let existing = account.creditCardProfile {
+                context.delete(existing)          // type changed away from credit
+                account.creditCardProfile = nil
+            }
+            return
+        }
+        let profile: CreditCardProfile
+        if let existing = account.creditCardProfile {
+            profile = existing
+        } else {
+            profile = CreditCardProfile(creditLimit: 0)
+            context.insert(profile)
+            account.creditCardProfile = profile
+        }
+        profile.creditLimit = parseDecimal(ccLimitText) ?? 0
+        profile.statementDayOfMonth = ccStatementDay
+        profile.paymentDueDayOfMonth = ccDueDay
+        profile.purchaseAPR = parseDecimal(ccAPRText) ?? 0
+        profile.cardNetwork = ccNetwork
+        let four = ccLastFour.trimmingCharacters(in: .whitespaces)
+        profile.lastFour = four.isEmpty ? nil : four
+        profile.minimumPaymentType = ccMinType
+        profile.minimumPaymentValue = parseDecimal(ccMinValueText) ?? 0
+    }
+
+    /// Creates, updates, or removes the 1:1 RegisteredAccountProfile based on the
+    /// selected registered type (only for savings/investment accounts).
+    private func syncRegisteredProfile(on account: Account) {
+        let registerable = (type == .savings || type == .investment)
+        guard registerable, let regType = registeredType else {
+            if let existing = account.registeredProfile {
+                context.delete(existing)
+                account.registeredProfile = nil
+            }
+            return
+        }
+        if let existing = account.registeredProfile {
+            existing.registeredType = regType
+        } else {
+            let p = RegisteredAccountProfile(registeredType: regType)
+            context.insert(p)
+            account.registeredProfile = p
         }
     }
 
