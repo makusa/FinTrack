@@ -136,3 +136,33 @@ final class RegisteredEntry {
         self.createdAt = .now
     }
 }
+
+// MARK: - Aggregation service (bridges @Model data to the pure calculator)
+
+enum RegisteredRoomService {
+    /// All contribution/withdrawal entries across accounts of a given type
+    /// (room is per person per type — archived accounts still count historically).
+    static func entries(forType type: RegisteredType, in accounts: [Account]) -> [RegisteredEntryData] {
+        accounts
+            .filter { $0.registeredProfile?.registeredType == type }
+            .flatMap { $0.registeredEntries ?? [] }
+            .map { $0.asData }
+    }
+
+    /// Available room for `type` given its plan + all accounts, as of `asOf`.
+    /// Returns nil when no anchor plan has been set up yet.
+    static func availableRoom(type: RegisteredType,
+                              plan: RegisteredRoomPlan?,
+                              accounts: [Account],
+                              asOf: Date = .now) -> RoomResult? {
+        guard let plan else { return nil }
+        return RegisteredRoomCalculator.availableRoom(
+            type: type,
+            anchorYear: plan.anchorYear,
+            anchorAmount: plan.anchorAmount,
+            lifetimeContributedAtAnchor: plan.lifetimeContributedAtAnchor,
+            entries: entries(forType: type, in: accounts),
+            asOf: asOf
+        )
+    }
+}
