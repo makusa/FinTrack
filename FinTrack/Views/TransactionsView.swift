@@ -17,6 +17,10 @@ struct TransactionsView: View {
            sort: \Account.createdAt, order: .forward)
     private var accounts: [Account]
 
+    @Query(filter: #Predicate<Transaction> { $0.needsReview },
+           sort: \Transaction.date, order: .reverse)
+    private var reviewTransactions: [Transaction]
+
     @State private var filterType: TypeFilter = .all
     @State private var filterAccount: Account? = nil
     @State private var searchText: String = ""
@@ -24,6 +28,7 @@ struct TransactionsView: View {
     @State private var debounceTask: Task<Void, Error>? = nil
     @State private var viewMode: ViewMode = .list
     @State private var showAddTransaction = false
+    @State private var showReview = false
 
     enum ViewMode { case list, calendar }
     @State private var showAddTransfer = false
@@ -141,11 +146,21 @@ struct TransactionsView: View {
             .sheet(isPresented: $showAddTransfer) {
                 AddTransferView()
             }
+            .sheet(isPresented: $showReview) {
+                DuplicateReviewView()
+            }
         }
     }
 
     private var list: some View {
         List {
+            if !reviewTransactions.isEmpty {
+                Section {
+                    Button { showReview = true } label: { reviewBanner }
+                        .buttonStyle(.plain)
+                }
+                .listRowBackground(Color.orange.opacity(0.08))
+            }
             ForEach(groupedTransactions, id: \.date) { group in
                 Section(header: Text(headerLabel(for: group.date))) {
                     ForEach(group.items) { tx in
@@ -166,6 +181,25 @@ struct TransactionsView: View {
             if filteredTransactions.isEmpty && !allTransactions.isEmpty {
                 ContentUnavailableView.search
             }
+        }
+    }
+
+    private var reviewBanner: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(lang["review.banner.title"])
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+                Text("\(reviewTransactions.count) \(lang["review.banner.sub"])")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.tertiary)
         }
     }
 

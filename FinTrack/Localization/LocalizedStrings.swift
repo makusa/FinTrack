@@ -213,6 +213,18 @@ enum LocalizedStrings {
         "tx.status.reconciled": ["fr": "Réconcilié", "en": "Reconciled", "es": "Conciliado", "pt": "Conciliado"],
         "tx.status.skipped":    ["fr": "Ignoré",     "en": "Skipped",    "es": "Omitido",    "pt": "Ignorado"],
         "tx.badge.duplicate":   ["fr": "Doublon potentiel", "en": "Possible duplicate", "es": "Posible duplicado", "pt": "Possível duplicata"],
+        "review.title":         ["fr": "Doublons potentiels", "en": "Possible duplicates", "es": "Posibles duplicados", "pt": "Possíveis duplicatas"],
+        "review.banner.title":  ["fr": "Doublons potentiels", "en": "Possible duplicates", "es": "Posibles duplicados", "pt": "Possíveis duplicatas"],
+        "review.banner.sub":    ["fr": "à vérifier", "en": "to review", "es": "por revisar", "pt": "para revisar"],
+        "review.explain":       ["fr": "Ces transactions bancaires ressemblent à des saisies manuelles. Fusionnez s'il s'agit du même achat, ou gardez les deux si ce sont des transactions distinctes.", "en": "These bank transactions look like manual entries. Merge if it's the same purchase, or keep both if they're separate.", "es": "Estas transacciones bancarias se parecen a entradas manuales. Combina si es la misma compra, o conserva ambas si son distintas.", "pt": "Estas transações bancárias parecem lançamentos manuais. Mescle se for a mesma compra, ou mantenha ambas se forem distintas."],
+        "review.bankRow":       ["fr": "Transaction bancaire", "en": "Bank transaction", "es": "Transacción bancaria", "pt": "Transação bancária"],
+        "review.yourEntry":     ["fr": "Votre saisie", "en": "Your entry", "es": "Tu entrada", "pt": "Seu lançamento"],
+        "review.merge":         ["fr": "Fusionner", "en": "Merge", "es": "Combinar", "pt": "Mesclar"],
+        "review.keepBoth":      ["fr": "Garder les deux", "en": "Keep both", "es": "Conservar ambas", "pt": "Manter ambas"],
+        "review.keep":          ["fr": "Garder", "en": "Keep", "es": "Conservar", "pt": "Manter"],
+        "review.noMatch":       ["fr": "Aucune correspondance trouvée.", "en": "No match found.", "es": "No se encontró coincidencia.", "pt": "Nenhuma correspondência encontrada."],
+        "review.empty.title":   ["fr": "Aucun doublon", "en": "No duplicates", "es": "Sin duplicados", "pt": "Sem duplicatas"],
+        "review.empty.sub":     ["fr": "Aucune transaction à vérifier pour le moment.", "en": "Nothing to review right now.", "es": "Nada que revisar por ahora.", "pt": "Nada para revisar agora."],
 
         // MARK: - Recurring
         "recurring.free.cap.title":   ["fr": "Limite atteinte (5/5)",                         "en": "Limit reached (5/5)",                          "es": "Límite alcanzado (5/5)",                       "pt": "Limite atingido (5/5)"],
