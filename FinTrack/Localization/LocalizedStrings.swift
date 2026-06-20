@@ -182,6 +182,11 @@ enum LocalizedStrings {
         "reg.entry.noAnchor":        ["fr": "Configurez l'ancrage pour suivre le droit de cotisation.", "en": "Set up the anchor to track contribution room.", "es": "Configura el anclaje para seguir el derecho.", "pt": "Configure a ancoragem para acompanhar o direito."],
         "reg.entry.overConfirmTitle":["fr": "Confirmer la sur-cotisation ?", "en": "Confirm over-contribution?", "es": "¿Confirmar el exceso?", "pt": "Confirmar o excesso?"],
         "reg.entry.saveAnyway":      ["fr": "Enregistrer quand même", "en": "Save Anyway", "es": "Guardar de todos modos", "pt": "Salvar mesmo assim"],
+        "reg.entry.moveCash":        ["fr": "Déplacer aussi l'argent", "en": "Also move the money", "es": "Mover también el dinero", "pt": "Mover também o dinheiro"],
+        "reg.entry.fromAccount":     ["fr": "Depuis le compte", "en": "From account", "es": "Desde la cuenta", "pt": "Da conta"],
+        "reg.entry.toAccount":       ["fr": "Vers le compte", "en": "To account", "es": "Hacia la cuenta", "pt": "Para a conta"],
+        "reg.entry.chooseAccount":   ["fr": "Choisir un compte…", "en": "Choose an account…", "es": "Elegir una cuenta…", "pt": "Escolher uma conta…"],
+        "reg.entry.moveCashFooter":  ["fr": "Crée un transfert lié entre ce compte et le compte choisi, pour que les soldes reflètent l'opération. Désactivez si ce compte est déjà synchronisé avec votre banque (sinon l'opération serait comptée deux fois).", "en": "Creates a linked transfer between this account and the chosen one so balances reflect the operation. Turn off if this account is already synced with your bank (otherwise it would be counted twice).", "es": "Crea una transferencia vinculada entre esta cuenta y la elegida para que los saldos reflejen la operación. Desactívalo si esta cuenta ya está sincronizada con tu banco (de lo contrario se contaría dos veces).", "pt": "Cria uma transferência vinculada entre esta conta e a escolhida para que os saldos reflitam a operação. Desative se esta conta já estiver sincronizada com o seu banco (caso contrário seria contada duas vezes)."],
 
         // MARK: - Transactions
         "tx.title":           ["fr": "Transactions",      "en": "Transactions",      "es": "Transacciones",   "pt": "Transações"],
