@@ -17,7 +17,7 @@ enum OFXImportMapper {
     static func map(statement: OFXStatement, accountUuid: String) -> [IncomingBankTransaction] {
         statement.transactions.map { t in
             IncomingBankTransaction(
-                externalId: "ofx:\(accountUuid):\(t.fitid)",
+                externalId: "\(statement.source):\(accountUuid):\(t.fitid)",
                 accountKey: accountUuid,
                 isIncome: t.amount > 0,
                 amount: abs(t.amount),

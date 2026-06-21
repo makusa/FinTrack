@@ -28,6 +28,7 @@ struct OFXStatement: Equatable {
     var accountId: String?    // <ACCTID> (informational; never stored in clear)
     var accountType: String?  // <ACCTTYPE> (CHECKING/SAVINGS/CREDITLINE/…)
     var transactions: [OFXTransaction]
+    var source: String = "ofx"   // "ofx" | "csv" — namespace d externalId
 }
 
 enum OFXParseError: Error, Equatable {
