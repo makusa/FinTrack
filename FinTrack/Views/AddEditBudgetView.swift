@@ -44,7 +44,7 @@ struct AddEditBudgetView: View {
     @State private var limitText: String = ""
     @State private var currency: String = Currencies.default
     @State private var period: BudgetPeriod = .monthly
-    @State private var selectedCategory: Category? = nil   // nil = global
+    @State private var selectedCategoryID: PersistentIdentifier? = nil   // nil = global (toutes catégories)
     @State private var colorHex: String = ColorPalette.accountColors.first ?? "#3478F6"
     @State private var iconSystemName: String = "cart.fill"
     @State private var notes: String = ""
@@ -107,15 +107,18 @@ struct AddEditBudgetView: View {
 
                 // MARK: Category
                 Section {
-                    Picker(lang["label.category"], selection: $selectedCategory) {
-                        Text(lang["budget.category.all"]).tag(Category?.none)
+                    // Sélection liée à l'identifiant stable (PersistentIdentifier),
+                    // pas à l'objet @Model: un Picker lié à une référence @Model ne met
+                    // pas à jour la sélection de façon fiable (surtout pré-remplie en édition).
+                    Picker(lang["label.category"], selection: $selectedCategoryID) {
+                        Text(lang["budget.category.all"]).tag(PersistentIdentifier?.none)
                         ForEach(expenseCategories) { cat in
                             HStack {
                                 Image(systemName: cat.iconSystemName)
                                     .foregroundStyle(Color(hex: cat.colorHex))
                                 Text(cat.localizedName)
                             }
-                            .tag(Optional(cat))
+                            .tag(Optional(cat.persistentModelID))
                         }
                     }
                     .pickerStyle(.navigationLink)
@@ -227,7 +230,7 @@ struct AddEditBudgetView: View {
         limitText        = decimalToText(b.limitAmount)
         currency         = b.currency
         period           = b.period
-        selectedCategory = b.category
+        selectedCategoryID = b.category?.persistentModelID
         colorHex         = b.colorHex
         iconSystemName   = b.iconSystemName
         notes            = b.notes ?? ""
@@ -237,6 +240,7 @@ struct AddEditBudgetView: View {
         guard let amt = limit, amt > 0 else { return }
         let trimmedName  = name.trimmingCharacters(in: .whitespaces)
         let trimmedNotes = notes.trimmingCharacters(in: .whitespaces)
+        let chosenCategory = expenseCategories.first { $0.persistentModelID == selectedCategoryID }
 
         switch mode {
         case .create:
@@ -247,7 +251,7 @@ struct AddEditBudgetView: View {
                 period: period,
                 colorHex: colorHex,
                 iconSystemName: iconSystemName,
-                category: selectedCategory,
+                category: chosenCategory,
                 notes: trimmedNotes.isEmpty ? nil : trimmedNotes
             )
             context.insert(b)
@@ -258,7 +262,7 @@ struct AddEditBudgetView: View {
             b.period         = period
             b.colorHex       = colorHex
             b.iconSystemName = iconSystemName
-            b.category       = selectedCategory
+            b.category       = chosenCategory
             b.notes          = trimmedNotes.isEmpty ? nil : trimmedNotes
         }
         try? context.save()
