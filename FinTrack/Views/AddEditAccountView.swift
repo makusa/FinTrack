@@ -41,9 +41,13 @@ struct AddEditAccountView: View {
     @State private var ccMinType: MinimumPaymentType = .percentBalance
     @State private var ccMinValueText: String = ""
 
-    // Registered account (CELI/CELIAPP)
-    @State private var registeredType: RegisteredType? = nil
+    // Registered account (CELI/CELIAPP/REER) + REEE/RESP
+    @State private var regKind: RegKind = .none
     @State private var showRegisteredPaywall = false
+    // REEE/RESP beneficiary (Option A: 1:1)
+    @State private var respBeneficiaryName: String = ""
+    @State private var respBirthYear: Int = Calendar.current.component(.year, from: .now)
+    @State private var respQuebec: Bool = true
 
     /// CAD + USD for free tier; all currencies for Pro.
     private var availableCurrencies: [CurrencyInfo] {
@@ -59,7 +63,7 @@ struct AddEditAccountView: View {
         }()
         return allAccounts.filter {
             !$0.isArchived
-            && $0.registeredProfile?.registeredType != nil
+            && ($0.registeredProfile?.registeredType != nil || $0.respProfile != nil)
             && $0.persistentModelID != editingID
         }.count
     }
@@ -75,7 +79,7 @@ struct AddEditAccountView: View {
     /// (this also prevents a spurious paywall on open if a downgraded user holds
     /// more registered accounts than the free cap).
     private var editedAccountAlreadyRegistered: Bool {
-        if case .edit(let a) = mode { return a.registeredProfile?.registeredType != nil }
+        if case .edit(let a) = mode { return a.registeredProfile?.registeredType != nil || a.respProfile != nil }
         return false
     }
 
@@ -163,6 +167,7 @@ struct AddEditAccountView: View {
 
                 if type == .savings || type == .investment {
                     registeredSection
+                    if regKind.isRESP { respBeneficiarySection }
                 }
 
                 Section(lang["label.appearance"]) {
@@ -387,15 +392,16 @@ struct AddEditAccountView: View {
     @ViewBuilder
     private var registeredSection: some View {
         Section {
-            Picker(lang["reg.account.type"], selection: $registeredType) {
-                Text(lang["reg.account.none"]).tag(RegisteredType?.none)
-                ForEach([RegisteredType.celi, .celiapp, .reer]) { t in
-                    Text(t.label).tag(Optional(t))
-                }
+            Picker(lang["reg.account.type"], selection: $regKind) {
+                Text(lang["reg.account.none"]).tag(RegKind.none)
+                Text(RegisteredType.celi.label).tag(RegKind.celi)
+                Text(RegisteredType.celiapp.label).tag(RegKind.celiapp)
+                Text(RegisteredType.reer.label).tag(RegKind.reer)
+                Text(lang["reg.account.reee"]).tag(RegKind.reee)
             }
-            .onChange(of: registeredType) { _, newValue in
-                if newValue != nil && registeredLockedForFree {
-                    registeredType = nil
+            .onChange(of: regKind) { _, newValue in
+                if newValue != .none && registeredLockedForFree {
+                    regKind = .none
                     showRegisteredPaywall = true
                 }
             }
@@ -403,6 +409,48 @@ struct AddEditAccountView: View {
             Text(lang["reg.account.section"])
         } footer: {
             Text(registeredLockedForFree ? lang["reg.account.freeCap"] : lang["reg.account.footer"])
+        }
+    }
+
+    @ViewBuilder
+    private var respBeneficiarySection: some View {
+        Section {
+            TextField(lang["resp.beneficiary.name"], text: $respBeneficiaryName)
+            Picker(lang["resp.beneficiary.birthYear"], selection: $respBirthYear) {
+                let yr = Calendar.current.component(.year, from: .now)
+                ForEach((yr - 25...yr).reversed(), id: \.self) { y in
+                    Text(String(y)).tag(y)
+                }
+            }
+            Toggle(lang["resp.beneficiary.quebec"], isOn: $respQuebec)
+        } header: {
+            Text(lang["resp.beneficiary.section"])
+        } footer: {
+            Text(lang["resp.beneficiary.footer"])
+        }
+    }
+
+    /// Account-editor picker kind: the 3 room-based registered types plus REEE/RESP.
+    private enum RegKind: Hashable {
+        case none, celi, celiapp, reer, reee
+
+        var registeredType: RegisteredType? {
+            switch self {
+            case .celi:    return .celi
+            case .celiapp: return .celiapp
+            case .reer:    return .reer
+            case .none, .reee: return nil
+            }
+        }
+        var isRESP: Bool { self == .reee }
+
+        init(registeredType: RegisteredType?) {
+            switch registeredType {
+            case .celi:    self = .celi
+            case .celiapp: self = .celiapp
+            case .reer:    self = .reer
+            case .none:    self = .none
+            }
         }
     }
 
@@ -445,7 +493,14 @@ struct AddEditAccountView: View {
             ccMinValueText = cc.minimumPaymentValue == 0 ? "" : decimalToText(cc.minimumPaymentValue)
         }
 
-        registeredType = account.registeredProfile?.registeredType
+        if let resp = account.respProfile {
+            regKind = .reee
+            respBeneficiaryName = resp.beneficiaryName
+            respBirthYear = resp.birthYear
+            respQuebec = resp.quebecResident
+        } else {
+            regKind = RegKind(registeredType: account.registeredProfile?.registeredType)
+        }
     }
 
     private func save() {
@@ -487,6 +542,7 @@ struct AddEditAccountView: View {
 
         syncCreditCardProfile(on: account)
         syncRegisteredProfile(on: account)
+        syncRESPProfile(on: account)
         account.recalculateBalance()  // initialBalance may have changed
 
         do {
@@ -530,7 +586,7 @@ struct AddEditAccountView: View {
     /// selected registered type (only for savings/investment accounts).
     private func syncRegisteredProfile(on account: Account) {
         let registerable = (type == .savings || type == .investment)
-        guard registerable, let regType = registeredType else {
+        guard registerable, let regType = regKind.registeredType else {
             if let existing = account.registeredProfile {
                 context.delete(existing)
                 account.registeredProfile = nil
@@ -543,6 +599,29 @@ struct AddEditAccountView: View {
             let p = RegisteredAccountProfile(registeredType: regType)
             context.insert(p)
             account.registeredProfile = p
+        }
+    }
+
+    /// Creates, updates, or removes the 1:1 RESPProfile (REEE) for savings/
+    /// investment accounts, based on the picker selection.
+    private func syncRESPProfile(on account: Account) {
+        let registerable = (type == .savings || type == .investment)
+        guard registerable, regKind.isRESP else {
+            if let existing = account.respProfile {
+                context.delete(existing)
+                account.respProfile = nil
+            }
+            return
+        }
+        let beneficiary = respBeneficiaryName.trimmingCharacters(in: .whitespaces)
+        if let existing = account.respProfile {
+            existing.beneficiaryName = beneficiary
+            existing.birthYear = respBirthYear
+            existing.quebecResident = respQuebec
+        } else {
+            let p = RESPProfile(beneficiaryName: beneficiary, birthYear: respBirthYear, quebecResident: respQuebec)
+            context.insert(p)
+            account.respProfile = p
         }
     }
 
