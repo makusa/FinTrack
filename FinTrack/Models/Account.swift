@@ -72,6 +72,13 @@ final class Account {
     @Relationship(deleteRule: .cascade, inverse: \RegisteredEntry.account)
     var registeredEntries: [RegisteredEntry]? = []
 
+    // REEE/RESP (Option A): 1:1 beneficiary profile + grant-eligible contributions.
+    @Relationship(deleteRule: .cascade, inverse: \RESPProfile.account)
+    var respProfile: RESPProfile? = nil
+
+    @Relationship(deleteRule: .cascade, inverse: \RESPContribution.account)
+    var respContributions: [RESPContribution]? = []
+
     // CloudKit inverse back-references. Declared here without @Relationship
     // so SwiftData infers them from the child-side @Relationship(inverse:).
     var loans:               [Loan]?               = []
