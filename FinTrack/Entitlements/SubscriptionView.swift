@@ -223,21 +223,28 @@ struct SubscriptionView: View {
             .padding(.horizontal, 2)
             .padding(.vertical, 8)
 
-            Divider()
-
             ForEach(Array(features.enumerated()), id: \.offset) { _, row in
-                HStack(alignment: .top) {
-                    Text(row.name)
-                        .font(.callout)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    checkmark(row.free, color: .gray).frame(width: 44)
-                    checkmark(row.pro,  color: .orange).frame(width: 44)
-                    checkmark(row.plaid, color: .teal).frame(width: 44)
+                VStack(spacing: 0) {
+                    // Séparateur explicite au-dessus de chaque ligne: rendu garanti.
+                    // (Divider() en tuple dans un ForEach sautait pour certaines lignes
+                    //  -> séparateurs manquants entre analytics / devises / export.)
+                    Rectangle()
+                        .fill(Color(uiColor: .separator))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 0.5)
+
+                    HStack(alignment: .top) {
+                        Text(row.name)
+                            .font(.callout)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        checkmark(row.free, color: .gray).frame(width: 44)
+                        checkmark(row.pro,  color: .orange).frame(width: 44)
+                        checkmark(row.plaid, color: .teal).frame(width: 44)
+                    }
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 2)
                 }
-                .padding(.vertical, 8)
-                .padding(.horizontal, 2)
-                Divider()
             }
         }
     }
