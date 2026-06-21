@@ -21,7 +21,7 @@ struct OFXImportView: View {
            sort: \Account.createdAt, order: .forward)
     private var accounts: [Account]
 
-    private enum Phase { case pick, preview, done }
+    private enum Phase { case pick, mapping, preview, done }
     @State private var phase: Phase = .pick
     @State private var showImporter = false
     @State private var parseError: String?
@@ -31,6 +31,7 @@ struct OFXImportView: View {
     @State private var selectedUuid: String?
     @State private var confidence: AccountSuggestion.Confidence = .none
     @State private var outcome: TransactionReconciler.Outcome?
+    @State private var csvResult: CSVParseResult?
 
     struct DraftRow: Identifiable {
         let id = UUID()
@@ -38,12 +39,14 @@ struct OFXImportView: View {
         var include: Bool = true
     }
 
-    /// .qfx / .ofx by extension; .data as a permissive fallback (the parser
-    /// validates content and rejects non-OFX with a clear message).
+    /// .qfx / .ofx / .csv by extension; .data as a permissive fallback. The
+    /// picked file is routed to the OFX or CSV path by extension + content sniff;
+    /// each parser validates and rejects unsupported content with a clear message.
     private static let acceptedTypes: [UTType] = {
         var t: [UTType] = []
         if let q = UTType(filenameExtension: "qfx") { t.append(q) }
         if let o = UTType(filenameExtension: "ofx") { t.append(o) }
+        t.append(.commaSeparatedText)
         t.append(.data)
         return t
     }()
@@ -52,6 +55,7 @@ struct OFXImportView: View {
         Group {
             switch phase {
             case .pick:    pickPhase
+            case .mapping: mappingPhase
             case .preview: previewPhase
             case .done:    donePhase
             }
@@ -268,19 +272,62 @@ struct OFXImportView: View {
             defer { if scoped { url.stopAccessingSecurityScopedResource() } }
             do {
                 let data = try Data(contentsOf: url)
-                let st = try OFXParser.parse(data)
-                let suggestion = OFXImportService.suggestAccount(for: st, among: accounts)
-                statement = st
-                rows = st.transactions.map { DraftRow(txn: $0) }
-                selectedUuid = suggestion.accountUuid ?? accounts.first?.uuid
-                confidence = suggestion.confidence
+                if isCSVFile(url: url, data: data) {
+                    try handleCSV(data)
+                } else {
+                    try handleOFX(data)
+                }
                 parseError = nil
-                phase = .preview
             } catch let e as OFXParseError {
-                parseError = friendly(e)
+                parseError = friendlyOFX(e)
+            } catch let e as CSVImportError {
+                parseError = friendlyCSV(e)
             } catch {
                 parseError = error.localizedDescription
             }
+        }
+    }
+
+    private func handleOFX(_ data: Data) throws {
+        presentStatement(try OFXParser.parse(data))
+    }
+
+    private func handleCSV(_ data: Data) throws {
+        let result = try CSVImporter.parse(data)
+        csvResult = result
+        let colCount = (result.header?.count) ?? (result.rows.map { $0.count }.max() ?? 0)
+        if let remembered = CSVMappingStore.remembered(forHeader: result.header, columnCount: colCount),
+           remembered.dateIndex != nil, remembered.hasAmount {
+            presentStatement(CSVImporter.buildStatement(rows: result.rows, mapping: remembered, source: "csv"))
+        } else {
+            phase = .mapping
+        }
+    }
+
+    private func applyCSVMapping(_ mapping: CSVColumnMapping) {
+        guard let result = csvResult else { return }
+        let colCount = (result.header?.count) ?? (result.rows.map { $0.count }.max() ?? 0)
+        CSVMappingStore.remember(mapping, forHeader: result.header, columnCount: colCount)
+        presentStatement(CSVImporter.buildStatement(rows: result.rows, mapping: mapping, source: "csv"))
+    }
+
+    /// Shared entry into the review screen for both OFX and post-mapping CSV.
+    private func presentStatement(_ st: OFXStatement) {
+        let suggestion = OFXImportService.suggestAccount(for: st, among: accounts)
+        statement = st
+        rows = st.transactions.map { DraftRow(txn: $0) }
+        selectedUuid = suggestion.accountUuid ?? accounts.first?.uuid
+        confidence = suggestion.confidence
+        phase = .preview
+    }
+
+    private func isCSVFile(url: URL, data: Data) -> Bool {
+        switch url.pathExtension.lowercased() {
+        case "qfx", "ofx": return false
+        case "csv", "tsv", "txt": return true
+        default:
+            let head = String(decoding: data.prefix(512), as: UTF8.self).uppercased()
+            return !head.contains("<OFX")
         }
     }
 
@@ -294,11 +341,30 @@ struct OFXImportView: View {
         phase = .done
     }
 
-    private func friendly(_ e: OFXParseError) -> String {
+    private func friendlyOFX(_ e: OFXParseError) -> String {
         switch e {
         case .notOFX:         return lang["import.ofx.error.notOFX"]
         case .noTransactions: return lang["import.ofx.error.empty"]
         case .undecodable:    return lang["import.ofx.error.undecodable"]
+        }
+    }
+
+    private func friendlyCSV(_ e: CSVImportError) -> String {
+        switch e {
+        case .empty:          return lang["import.csv.error.empty"]
+        case .noDateColumn:   return lang["import.csv.error.noDate"]
+        case .noAmountColumn: return lang["import.csv.error.noAmount"]
+        case .undecodable:    return lang["import.ofx.error.undecodable"]
+        }
+    }
+
+    // MARK: - Mapping (CSV)
+
+    @ViewBuilder private var mappingPhase: some View {
+        if let result = csvResult {
+            CSVMappingView(result: result) { mapping in applyCSVMapping(mapping) }
+        } else {
+            pickPhase
         }
     }
 

@@ -14,7 +14,7 @@ import Foundation
 
 // MARK: - Column mapping
 
-struct CSVColumnMapping: Equatable {
+struct CSVColumnMapping: Equatable, Codable {
     var dateIndex: Int?
     var amountIndex: Int?            // a single signed amount column …
     var debitIndex: Int?            // … OR a debit/credit pair (positive magnitudes)
@@ -26,7 +26,7 @@ struct CSVColumnMapping: Equatable {
     var hasAmount: Bool { amountIndex != nil || debitIndex != nil || creditIndex != nil }
 }
 
-enum CSVDateFormat: Equatable {
+enum CSVDateFormat: String, Codable, Equatable {
     case iso          // yyyy-MM-dd / yyyy/MM/dd
     case dayFirst     // dd/MM/yyyy
     case monthFirst   // MM/dd/yyyy
