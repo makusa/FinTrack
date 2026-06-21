@@ -226,9 +226,10 @@ struct SubscriptionView: View {
             Divider()
 
             ForEach(Array(features.enumerated()), id: \.offset) { _, row in
-                HStack {
+                HStack(alignment: .top) {
                     Text(row.name)
                         .font(.callout)
+                        .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
                     checkmark(row.free, color: .gray).frame(width: 44)
                     checkmark(row.pro,  color: .orange).frame(width: 44)
