@@ -75,6 +75,7 @@
 		87D30D171A2A9325F689B0F5 /* DeveloperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A17F1735465B3B6FCADFBB4 /* DeveloperView.swift */; };
 		897362AFE98C4966D8BB1D5C /* FlinksSyncEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = C949FFE8FA0EE096AC5BF92F /* FlinksSyncEngine.swift */; };
 		8A7D25C6B0F713B980B95688 /* LanguageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A4247053E5A1859F5B6D186 /* LanguageManager.swift */; };
+		8BB04EB7462090D56AF9C306 /* EmbeddingMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50F65BFD1E5599AEC3EF4D82 /* EmbeddingMatcher.swift */; };
 		8BCC0C54459D389ACDBE360B /* FlinksConnectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A4703B38DA8CA7B8E66F02 /* FlinksConnectView.swift */; };
 		8CA05281D4BED4A671F90656 /* RESPModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AD7A61816C6AF8058D65405 /* RESPModels.swift */; };
 		8E9EAF6833016B6619AA0B70 /* LoanPrepaymentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2617BEC0D63E06412E487D79 /* LoanPrepaymentManager.swift */; };
@@ -111,6 +112,7 @@
 		D7A3145152B9F43C7199EAA8 /* EntitlementManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5327B512B006990271C7E90E /* EntitlementManager.swift */; };
 		DA44D0AC1737508E99E48780 /* FinTrackBalanceWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F23A31B9998AF6F386FD367 /* FinTrackBalanceWidget.swift */; };
 		DF8266892C9471D8ADD35252 /* TransactionStatusBadge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28271E0A0DAF81DC2E2D70CB /* TransactionStatusBadge.swift */; };
+		E17019D7418D598A0C10B77E /* SemanticCategorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BB21A2850D63AE563F131B9 /* SemanticCategorizer.swift */; };
 		E247EC2FC86F59D086BC19D0 /* FinTrackWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = C596428BD35BF3E6E1C9A821 /* FinTrackWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		E52A94E232681D1D5BFCFBFB /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCFCF5BA20BC3356F1283EF3 /* NotificationManager.swift */; };
 		E6979FF6D154A0B6E9A76A9D /* AccountsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67FAEBACAD08ED3AFEEB2279 /* AccountsView.swift */; };
@@ -172,6 +174,7 @@
 		19AD119703063332E899FA3A /* BudgetDashboardSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BudgetDashboardSection.swift; sourceTree = "<group>"; };
 		1A4247053E5A1859F5B6D186 /* LanguageManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageManager.swift; sourceTree = "<group>"; };
 		1AFCA16ED8DB8009BB829594 /* FinTrack.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FinTrack.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1BB21A2850D63AE563F131B9 /* SemanticCategorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SemanticCategorizer.swift; sourceTree = "<group>"; };
 		1BE6768DEBB253905FF1575E /* AddEditRecurringTransactionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditRecurringTransactionView.swift; sourceTree = "<group>"; };
 		1CF8D38D87648C662CD5F789 /* BankPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankPicker.swift; sourceTree = "<group>"; };
 		1D2E444EDB081F1937056613 /* DashboardLibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardLibraryView.swift; sourceTree = "<group>"; };
@@ -205,6 +208,7 @@
 		4F42BEA31DA050F765C11D84 /* ProGateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProGateView.swift; sourceTree = "<group>"; };
 		50BCF26C04654FA3682ABD16 /* SavingsProject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsProject.swift; sourceTree = "<group>"; };
 		50DA8D0E2D302C76AD711D5E /* CashFlowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CashFlowView.swift; sourceTree = "<group>"; };
+		50F65BFD1E5599AEC3EF4D82 /* EmbeddingMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbeddingMatcher.swift; sourceTree = "<group>"; };
 		5327B512B006990271C7E90E /* EntitlementManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementManager.swift; sourceTree = "<group>"; };
 		540F38D8FDDAE86D3FB26390 /* AddEditSavingsProjectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditSavingsProjectView.swift; sourceTree = "<group>"; };
 		56B856841A3233981584E382 /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
@@ -415,9 +419,11 @@
 			isa = PBXGroup;
 			children = (
 				7EE844C1880ACC18E9872E8E /* CategorizationCore.swift */,
+				50F65BFD1E5599AEC3EF4D82 /* EmbeddingMatcher.swift */,
 				8F9EEB8322D0CB6A3B15999A /* MerchantDictionary.swift */,
 				358963A25A21DF87772DE07B /* PayeeMemory.swift */,
 				D292EEB384674D4170C76DE7 /* PayeeNormalizer.swift */,
+				1BB21A2850D63AE563F131B9 /* SemanticCategorizer.swift */,
 				FD5048F4E0AFEB0C4636E3A3 /* TransactionCategorizer.swift */,
 			);
 			path = Categorization;
@@ -703,6 +709,7 @@
 				E7B5241364228F8D57A97DE6 /* DashboardView.swift in Sources */,
 				87D30D171A2A9325F689B0F5 /* DeveloperView.swift in Sources */,
 				217A7D592278AF5FBD0388B4 /* DuplicateReviewView.swift in Sources */,
+				8BB04EB7462090D56AF9C306 /* EmbeddingMatcher.swift in Sources */,
 				D7A3145152B9F43C7199EAA8 /* EntitlementManager.swift in Sources */,
 				9513353237D375CA51C9E598 /* ExchangeRateManager.swift in Sources */,
 				2DAD357BA0A08278B5026DCA /* ExchangeRateSettingsView.swift in Sources */,
@@ -756,6 +763,7 @@
 				F319207472302EF0C448CEAD /* SavingsProjectsView.swift in Sources */,
 				67F8D13B1F8F3FF40DFB6143 /* SecuritySettingsView.swift in Sources */,
 				17D35A490B812757B7DA1041 /* SeedData.swift in Sources */,
+				E17019D7418D598A0C10B77E /* SemanticCategorizer.swift in Sources */,
 				FEBFF9935E3B84CAFF02F78B /* SettingsView.swift in Sources */,
 				E8DC7985307BC889062955E0 /* SetupAccountView.swift in Sources */,
 				762FF16D61FD6F647D8B3FA8 /* SubscriptionView.swift in Sources */,

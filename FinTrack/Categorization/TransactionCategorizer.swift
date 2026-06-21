@@ -15,6 +15,8 @@ struct TransactionCategorizer {
     private let categoriesByName: [String: Category]
     private let eligibleIncome: Set<String>
     private let eligibleExpense: Set<String>
+    private let semanticIndex: SemanticIndex
+    private static let minSimilarity = 0.82   // conservateur (à ajuster sur appareil)
 
     init(categories: [Category], history: [Transaction]) {
         categoriesByName = Dictionary(categories.map { ($0.name, $0) },
@@ -27,14 +29,20 @@ struct TransactionCategorizer {
             return (payee, category.name, tx.type == .income)
         }
         memory = PayeeMemory(history: entries)
+        semanticIndex = SemanticIndex(history: entries)
     }
 
     /// Suggested category for an incoming transaction, or nil to leave it blank.
     func suggest(name: String?, memo: String = "", type: TransactionType) -> Category? {
         let eligible = (type == .income) ? eligibleIncome : eligibleExpense
+        let index = semanticIndex
+        let minSim = Self.minSimilarity
+        let semantic: (String, Bool, Set<String>) -> String? = { n, inc, elig in
+            index.suggestion(name: n, isIncome: inc, eligible: elig, minSimilarity: minSim)
+        }
         guard let chosen = CategorizationCore.decideCategoryName(
             name: name ?? "", memo: memo, isIncome: type == .income,
-            memory: memory, eligibleCategoryNames: eligible) else { return nil }
+            memory: memory, eligibleCategoryNames: eligible, semantic: semantic) else { return nil }
         return categoriesByName[chosen]
     }
 }
