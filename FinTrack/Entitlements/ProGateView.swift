@@ -26,6 +26,7 @@ enum GatedFeature {
     case csvExport
     case unlimitedAccounts
     case registered
+    case fileImport
 
     // Bank sync feature (Flinks ou Plaid — même gate)
     case bankSync
@@ -47,6 +48,7 @@ enum GatedFeature {
         case .csvExport:         return lang["settings.export"]
         case .unlimitedAccounts: return lang["entitlement.unlimited.accounts"]
         case .registered:        return lang["reg.hub.title"]
+        case .fileImport:        return lang["import.ofx.title"]
         case .bankSync:          return lang["flinks.title"]
         }
     }
@@ -66,6 +68,7 @@ enum GatedFeature {
         case .csvExport:         return "square.and.arrow.up"
         case .unlimitedAccounts: return "building.columns.fill"
         case .registered:        return "leaf.fill"
+        case .fileImport:        return "arrow.down.doc"
         case .bankSync:          return "building.columns.badge.plus"
         }
     }

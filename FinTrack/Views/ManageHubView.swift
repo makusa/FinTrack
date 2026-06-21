@@ -65,6 +65,13 @@ struct ManageHubView: View {
                     } label: {
                         Label(lang["category.manage"], systemImage: "tag")
                     }
+                    NavigationLink {
+                        ProGated(feature: .fileImport) {
+                            OFXImportView()
+                        }
+                    } label: {
+                        Label(lang["import.ofx.title"], systemImage: "arrow.down.doc")
+                    }
                     Button {
                         prepareExport()
                     } label: {
