@@ -282,7 +282,7 @@ struct SettingsView: View {
             label = "Pro"
             color = .orange
         case .placement:
-            label = "Pro+"
+            label = "Max"
             color = .teal
         }
         return Text(label)
