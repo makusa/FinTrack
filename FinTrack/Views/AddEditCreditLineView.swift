@@ -114,7 +114,7 @@ struct AddEditCreditLineView: View {
             TextField(lang["cl.namePlaceholder"], text: $name)
             InstitutionPickerField(text: $lenderName, placeholder: lang["loan.lenderPlaceholder"])
             Picker(lang["label.currency"], selection: $currency) {
-                ForEach(pickerCurrencies) { c in Text("\(c.code) — \(c.nameFR)").tag(c.code) }
+                ForEach(pickerCurrencies) { c in Text("\(c.code) — \(c.name)").tag(c.code) }
             }
         }
     }

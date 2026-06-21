@@ -363,7 +363,7 @@ struct DashboardView: View {
                 Divider()
                 ForEach(totalsByCurrency, id: \.currency) { row in
                     HStack {
-                        Text(Currencies.info(for: row.currency).nameFR)
+                        Text(Currencies.info(for: row.currency).name)
                             .font(.subheadline).foregroundStyle(.secondary)
                         Spacer()
                         VStack(alignment: .trailing, spacing: 1) {

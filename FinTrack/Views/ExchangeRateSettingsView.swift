@@ -35,7 +35,7 @@ struct ExchangeRateSettingsView: View {
                         Text(c.symbol)
                             .frame(width: 44, alignment: .leading)
                             .foregroundStyle(.secondary)
-                        Text(c.code + " — " + c.nameFR)
+                        Text(c.code + " — " + c.name)
                         Spacer()
                         if c.code == ExchangeRateManager.pinnedCurrency {
                             Image(systemName: "pin.fill")
@@ -66,7 +66,7 @@ struct ExchangeRateSettingsView: View {
                             Text(c.symbol)
                                 .frame(width: 40, alignment: .leading)
                                 .foregroundStyle(.secondary)
-                            Text(c.code + " — " + c.nameFR)
+                            Text(c.code + " — " + c.name)
                         }
                         .tag(c.code)
                     }
@@ -188,7 +188,7 @@ private struct AddCurrencySheet: View {
             !rates.activeCurrencies.contains(c.code)
                 && (q.isEmpty
                     || c.code.lowercased().contains(q)
-                    || c.nameFR.lowercased().contains(q))
+                    || c.name.lowercased().contains(q))
         }
     }
 
@@ -203,7 +203,7 @@ private struct AddCurrencySheet: View {
                         Text(c.symbol)
                             .frame(width: 44, alignment: .leading)
                             .foregroundStyle(.secondary)
-                        Text(c.code + " — " + c.nameFR)
+                        Text(c.code + " — " + c.name)
                             .foregroundStyle(.primary)
                         Spacer()
                         Image(systemName: "plus.circle")

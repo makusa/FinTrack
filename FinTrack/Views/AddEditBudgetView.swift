@@ -88,7 +88,7 @@ struct AddEditBudgetView: View {
                     .padding(.vertical, 8)
                     Picker(lang["label.currency"], selection: $currency) {
                         ForEach(pickerCurrencies) { c in
-                            Text("\(c.code) — \(c.nameFR)").tag(c.code)
+                            Text("\(c.code) — \(c.name)").tag(c.code)
                         }
                     }
                 } header: {

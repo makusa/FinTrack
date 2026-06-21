@@ -120,7 +120,7 @@ struct ExchangeRateWidget: View {
                         .font(.caption2).foregroundStyle(.secondary)
                     Text(to).font(.callout.weight(.bold))
                 }
-                Text(fromInfo.nameFR.prefix(20) + "")
+                Text(fromInfo.name.prefix(20) + "")
                     .font(.caption2).foregroundStyle(.secondary)
             }
 

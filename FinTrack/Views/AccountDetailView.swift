@@ -80,7 +80,7 @@ struct AccountDetailView: View {
                     Spacer()
                 }
                 LabeledContent(lang["label.currency"]) {
-                    Text("\(account.currency) — \(Currencies.info(for: account.currency).nameFR)")
+                    Text("\(account.currency) — \(Currencies.info(for: account.currency).name)")
                 }
                 LabeledContent(lang["account.initialBalance"]) {
                     Text(account.initialBalance.formatted(asCurrency: account.currency))

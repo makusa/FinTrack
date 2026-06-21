@@ -147,7 +147,7 @@ struct AddEditAccountView: View {
                 Section(lang["label.currency"]) {
                     Picker(lang["label.currency"], selection: $currency) {
                         ForEach(pickerCurrencies) { cur in
-                            Text("\(cur.code) — \(cur.nameFR)").tag(cur.code)
+                            Text("\(cur.code) — \(cur.name)").tag(cur.code)
                         }
                     }
                     if !entitlements.hasPaidTier {

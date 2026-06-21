@@ -23,6 +23,14 @@ struct CurrencyInfo: Identifiable, Hashable {
 
     var id: String { code }
 
+    /// Localized display name (FR/EN/ES/PT) via LocalizedStrings ("currency.<CODE>"),
+    /// falling back to the French literal for codes without a localized entry.
+    var name: String {
+        let key = "currency.\(code)"
+        let resolved = LanguageManager.shared[key]
+        return resolved == key ? nameFR : resolved
+    }
+
     // MARK: - Formatter cache
     // NumberFormatter initialization is expensive (locale resolution, encodings).
     // We keep one formatter per (currency code, locale) and reuse it across calls.
