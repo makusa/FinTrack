@@ -119,7 +119,7 @@ struct SecuritySettingsView: View {
                 Button(role: .destructive) {
                     confirmReset = true
                 } label: {
-                    Label(lang["security.reset"], systemImage: "person.badge.minus")
+                    Label(lang["security.reset"], systemImage: "lock.rotation")
                 }
             } footer: {
                 Text(lang["security.reset.footer"])
@@ -151,6 +151,7 @@ struct SecuritySettingsView: View {
         .confirmationDialog(lang["security.reset"], isPresented: $confirmReset, titleVisibility: .visible) {
             Button(lang["security.reset"], role: .destructive) {
                 lockManager.resetAccount()
+                FlinksManager.shared.disconnectAll() // purge des jetons de connexion bancaire (iCloud Keychain)
             }
             Button(lang["action.cancel"], role: .cancel) {}
         } message: {

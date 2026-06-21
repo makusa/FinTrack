@@ -168,6 +168,16 @@ final class FlinksManager {
         saveConnectedLogins()
     }
 
+    /// Removes ALL bank connections: clears in-memory logins and deletes the
+    /// Keychain entry. The synced item is removed from iCloud Keychain, so this
+    /// affects every device on the same iCloud account. Also drops any legacy
+    /// device-only copy. Used by the security reset.
+    func disconnectAll() {
+        connectedLogins.removeAll()
+        _ = KeychainHelper.delete(forKey: keychainKey, synchronizable: true)
+        _ = KeychainHelper.delete(forKey: keychainKey) // legacy device-only copy, if any
+    }
+
     // MARK: API calls (via proxy)
 
     private func request(_ path: String, method: String = "GET", body: [String: Any]? = nil) async throws -> Data {
