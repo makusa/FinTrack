@@ -47,6 +47,7 @@ struct OFXImportView: View {
         if let q = UTType(filenameExtension: "qfx") { t.append(q) }
         if let o = UTType(filenameExtension: "ofx") { t.append(o) }
         t.append(.commaSeparatedText)
+        t.append(.pdf)
         t.append(.data)
         return t
     }()
@@ -177,9 +178,19 @@ struct OFXImportView: View {
                 Text(rowTitle(t))
                     .font(.body.weight(.medium))
                     .lineLimit(1)
-                Text(dateText(t.datePosted))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 6) {
+                    Text(dateText(t.datePosted))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    if t.confidence == 0 {
+                        Text(lang["import.pdf.lowConfidence"])
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(.orange)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .background(Color.orange.opacity(0.14), in: Capsule())
+                    }
+                }
             }
             Spacer()
             Text(amountText(t))
@@ -272,7 +283,9 @@ struct OFXImportView: View {
             defer { if scoped { url.stopAccessingSecurityScopedResource() } }
             do {
                 let data = try Data(contentsOf: url)
-                if isCSVFile(url: url, data: data) {
+                if isPDFFile(url: url, data: data) {
+                    try handlePDF(data)
+                } else if isCSVFile(url: url, data: data) {
                     try handleCSV(data)
                 } else {
                     try handleOFX(data)
@@ -282,6 +295,10 @@ struct OFXImportView: View {
                 parseError = friendlyOFX(e)
             } catch let e as CSVImportError {
                 parseError = friendlyCSV(e)
+            } catch let e as PDFParseError {
+                parseError = friendlyPDF(e)
+            } catch let e as PDFExtractError {
+                parseError = friendlyPDFExtract(e)
             } catch {
                 parseError = error.localizedDescription
             }
@@ -315,7 +332,7 @@ struct OFXImportView: View {
     private func presentStatement(_ st: OFXStatement) {
         let suggestion = OFXImportService.suggestAccount(for: st, among: accounts)
         statement = st
-        rows = st.transactions.map { DraftRow(txn: $0) }
+        rows = st.transactions.map { DraftRow(txn: $0, include: $0.confidence >= 1) }
         selectedUuid = suggestion.accountUuid ?? accounts.first?.uuid
         confidence = suggestion.confidence
         phase = .preview
@@ -329,6 +346,16 @@ struct OFXImportView: View {
             let head = String(decoding: data.prefix(512), as: UTF8.self).uppercased()
             return !head.contains("<OFX")
         }
+    }
+
+    private func isPDFFile(url: URL, data: Data) -> Bool {
+        if url.pathExtension.lowercased() == "pdf" { return true }
+        return data.prefix(5).elementsEqual(Array("%PDF-".utf8))
+    }
+
+    private func handlePDF(_ data: Data) throws {
+        let text = try PDFTextExtractor.extractText(from: data)
+        presentStatement(try PDFStatementParser.parse(text: text))
     }
 
     private func performImport() {
@@ -355,6 +382,19 @@ struct OFXImportView: View {
         case .noDateColumn:   return lang["import.csv.error.noDate"]
         case .noAmountColumn: return lang["import.csv.error.noAmount"]
         case .undecodable:    return lang["import.ofx.error.undecodable"]
+        }
+    }
+
+    private func friendlyPDF(_ e: PDFParseError) -> String {
+        switch e {
+        case .noTransactions: return lang["import.pdf.error.noTransactions"]
+        }
+    }
+
+    private func friendlyPDFExtract(_ e: PDFExtractError) -> String {
+        switch e {
+        case .notPDF: return lang["import.ofx.error.undecodable"]
+        case .noText: return lang["import.pdf.error.noText"]
         }
     }
 

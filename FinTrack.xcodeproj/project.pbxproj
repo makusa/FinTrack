@@ -18,6 +18,7 @@
 		10EAF1229CCD09A58535D853 /* AddEditSavingsProjectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 540F38D8FDDAE86D3FB26390 /* AddEditSavingsProjectView.swift */; };
 		167DD8D94BD2C94A5D09FCC6 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A85E6C13F1FA6E8EA17F750A /* RootView.swift */; };
 		168D9CCEBF3CB14A8DA3A352 /* ProGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F42BEA31DA050F765C11D84 /* ProGateView.swift */; };
+		16EEE5A4D548ECF4B02C519C /* PDFTextExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BE34C6A1056E1689B02C560 /* PDFTextExtractor.swift */; };
 		17D35A490B812757B7DA1041 /* SeedData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 407761AC420D582595A7D633 /* SeedData.swift */; };
 		1DA0347A4CF5427AB151740C /* FinTrackWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD37DF8944DEB5FCB3908F52 /* FinTrackWidgetBundle.swift */; };
 		217A7D592278AF5FBD0388B4 /* DuplicateReviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E2865724675E96FCCA20EA /* DuplicateReviewView.swift */; };
@@ -222,6 +223,7 @@
 		79879028C8F8BC32BD5A8523 /* RecurrencesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrencesView.swift; sourceTree = "<group>"; };
 		7AD7A61816C6AF8058D65405 /* RESPModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RESPModels.swift; sourceTree = "<group>"; };
 		7B87F108D8331B74AF4F4AC8 /* AppLockManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppLockManager.swift; sourceTree = "<group>"; };
+		7BE34C6A1056E1689B02C560 /* PDFTextExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFTextExtractor.swift; sourceTree = "<group>"; };
 		7D1F885CE490AC47AB21A204 /* PlaidManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaidManager.swift; sourceTree = "<group>"; };
 		7F69296D8AA5AFFC56CE2664 /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
 		83DC35CBE438FBE81673CB46 /* BankDirectory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankDirectory.swift; sourceTree = "<group>"; };
@@ -335,6 +337,7 @@
 				2051E8E3930FB97604AEC665 /* OFXImportView.swift */,
 				B87B96BF2E0609ED423AD04C /* OFXParser.swift */,
 				FC80FBBB773A3F264F0CA2BB /* PDFStatementParser.swift */,
+				7BE34C6A1056E1689B02C560 /* PDFTextExtractor.swift */,
 			);
 			path = FileImport;
 			sourceTree = "<group>";
@@ -706,6 +709,7 @@
 				AD2F13F58B7E62B3FDF84F2C /* OFXImportView.swift in Sources */,
 				B54DA76428918704B1E6A39B /* OFXParser.swift in Sources */,
 				748232FBEA9D734C075A206F /* PDFStatementParser.swift in Sources */,
+				16EEE5A4D548ECF4B02C519C /* PDFTextExtractor.swift in Sources */,
 				818CAA57F850B119D1838F06 /* PINPadView.swift in Sources */,
 				90010DED4A1BD6D4DBAA5BC1 /* PlaidConnectionView.swift in Sources */,
 				64D3CB28CEAC3B1F014AA483 /* PlaidManager.swift in Sources */,
