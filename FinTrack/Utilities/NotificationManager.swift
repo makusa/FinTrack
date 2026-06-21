@@ -322,18 +322,18 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         let id = response.notification.request.identifier
 
         // Map identifier prefix → (tab index, section key)
-        // Tabs: 0=Dashboard 1=Accounts 2=Transactions 3=Budgets 4=Settings
+        // Tabs: 0=Dashboard 1=Accounts 2=Transactions 3=Manage 4=Settings
         let tabIndex: Int
         let section: String
 
         if id.hasPrefix("fintrack.tx.") {
             tabIndex = 2; section = ""
         } else if id.hasPrefix("fintrack.loan.") || id.hasPrefix("fintrack.prep.") {
-            tabIndex = 4; section = "loans"
+            tabIndex = 3; section = "loans"
         } else if id.hasPrefix("fintrack.cl.") {
-            tabIndex = 4; section = "creditlines"
+            tabIndex = 3; section = "creditlines"
         } else if id.hasPrefix("fintrack.rec.") {
-            tabIndex = 4; section = "recurring"
+            tabIndex = 3; section = "recurring"
         } else {
             tabIndex = 0; section = ""
         }

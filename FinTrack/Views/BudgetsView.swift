@@ -34,41 +34,39 @@ struct BudgetsView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            Group {
-                if activeBudgets.isEmpty && archivedBudgets.isEmpty {
-                    emptyState
-                } else {
-                    list
+        Group {
+            if activeBudgets.isEmpty && archivedBudgets.isEmpty {
+                emptyState
+            } else {
+                list
+            }
+        }
+        .navigationTitle(lang["budget.title"])
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showAdd = true
+                } label: {
+                    Image(systemName: "plus.circle.fill").font(.title3)
                 }
+                .disabled(isAtFreeLimit)
             }
-            .navigationTitle(lang["budget.title"])
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showAdd = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill").font(.title3)
-                    }
-                    .disabled(isAtFreeLimit)
+        }
+        .safeAreaInset(edge: .bottom) {
+            if isAtFreeLimit { freeCapBanner }
+        }
+        .sheet(isPresented: $showAdd) {
+            if isAtFreeLimit {
+                NavigationStack {
+                    ProGateView(feature: .budgets)
+                        .environment(entitlements)
                 }
+            } else {
+                AddEditBudgetView(mode: .create)
             }
-            .safeAreaInset(edge: .bottom) {
-                if isAtFreeLimit { freeCapBanner }
-            }
-            .sheet(isPresented: $showAdd) {
-                if isAtFreeLimit {
-                    NavigationStack {
-                        ProGateView(feature: .budgets)
-                            .environment(entitlements)
-                    }
-                } else {
-                    AddEditBudgetView(mode: .create)
-                }
-            }
-            .sheet(item: $budgetToEdit) { b in
-                AddEditBudgetView(mode: .edit(b))
-            }
+        }
+        .sheet(item: $budgetToEdit) { b in
+            AddEditBudgetView(mode: .edit(b))
         }
     }
 

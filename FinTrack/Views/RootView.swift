@@ -21,7 +21,7 @@ struct RootView: View {
     /// FIN-004 — hides financial data in the iOS app switcher screenshot.
     @State private var isObscured: Bool = false
     /// Deep-link section to open inside SettingsView (loans, creditlines, recurring)
-    @State private var settingsDeepLink: String = ""
+    @State private var manageDeepLink: String = ""
 
     // P2 — iCloud restore prompt
     @AppStorage("fintrack.cloudSyncEnabled") private var cloudSyncEnabled = false
@@ -93,7 +93,7 @@ struct RootView: View {
             guard let tab = notif.userInfo?["tab"] as? Int else { return }
             let section = notif.userInfo?["section"] as? String ?? ""
             withAnimation { selectedTab = tab }
-            if tab == 4 { settingsDeepLink = section }
+            if tab == 3 { manageDeepLink = section }
         }
     }
 
@@ -111,11 +111,11 @@ struct RootView: View {
                 .tabItem { Label(lang["tab.transactions"], systemImage: "list.bullet.rectangle") }
                 .tag(2)
 
-            BudgetsView()
-                .tabItem { Label(lang["tab.budgets"], systemImage: "chart.bar.xaxis") }
+            ManageHubView(deepLink: $manageDeepLink)
+                .tabItem { Label(lang["tab.manage"], systemImage: "square.grid.2x2.fill") }
                 .tag(3)
 
-            SettingsView(deepLink: $settingsDeepLink)
+            SettingsView()
                 .tabItem { Label(lang["tab.settings"], systemImage: "gearshape.fill") }
                 .tag(4)
         }

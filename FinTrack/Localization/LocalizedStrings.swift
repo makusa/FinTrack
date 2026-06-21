@@ -23,6 +23,10 @@ enum LocalizedStrings {
         "tab.accounts":     ["fr": "Comptes",          "en": "Accounts",         "es": "Cuentas",       "pt": "Contas"],
         "tab.transactions": ["fr": "Transactions",     "en": "Transactions",     "es": "Transacciones", "pt": "Transações"],
         "tab.settings":     ["fr": "Réglages",         "en": "Settings",         "es": "Ajustes",       "pt": "Configurações"],
+        "tab.manage":       ["fr": "Gérer",            "en": "Manage",           "es": "Gestionar",     "pt": "Gerenciar"],
+        "manage.planning":     ["fr": "Planification", "en": "Planning", "es": "Planificación", "pt": "Planejamento"],
+        "manage.products":     ["fr": "Crédit et produits", "en": "Credit & products", "es": "Crédito y productos", "pt": "Crédito e produtos"],
+        "manage.organization": ["fr": "Organisation", "en": "Organization", "es": "Organización", "pt": "Organização"],
 
         // MARK: - Common actions
         "action.save":       ["fr": "Enregistrer",         "en": "Save",         "es": "Guardar",     "pt": "Salvar"],

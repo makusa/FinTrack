@@ -8,8 +8,6 @@ import SwiftData
 import UniformTypeIdentifiers
 
 struct SettingsView: View {
-    @Binding var deepLink: String
-
     @Environment(\.modelContext) private var context
 
     @Environment(LanguageManager.self) private var lang
@@ -21,13 +19,10 @@ struct SettingsView: View {
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
     @Query(sort: \Account.createdAt) private var allAccounts: [Account]
 
-    @State private var showExporter = false
-    @State private var exportDocument = CSVDocument(text: "")
     @State private var confirmReset = false
-    @State private var navPath = NavigationPath()
 
     var body: some View {
-        NavigationStack(path: $navPath) {
+        NavigationStack {
             Form {
                 languageSection
                 exchangeRatesSection
@@ -36,7 +31,6 @@ struct SettingsView: View {
                 securitySection
                 notificationsSection
                 cloudSyncSection
-                dataSection
                 statsSection
                 dangerZoneSection
                 aboutSection
@@ -45,34 +39,6 @@ struct SettingsView: View {
                 #endif
             }
             .navigationTitle(lang["settings.title"])
-            .navigationDestination(for: String.self) { section in
-                switch section {
-                case "loans":       LoansView()
-                case "creditlines": CreditLinesView()
-                case "recurring":   RecurrencesView()
-                default:            EmptyView()
-                }
-            }
-            .onChange(of: deepLink) { _, section in
-                guard !section.isEmpty else { return }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                    handleDeepLink(section)
-                    deepLink = ""
-                }
-            }
-            .fileExporter(
-                isPresented: $showExporter,
-                document: exportDocument,
-                contentType: .commaSeparatedText,
-                defaultFilename: defaultExportFilename
-            ) { result in
-                switch result {
-                case .success(_):
-                    AppLogger.export.info("CSV exported successfully")
-                case .failure(let error):
-                    AppLogger.export.error("CSV export failed: \(error, privacy: .private)")
-                }
-            }
             .confirmationDialog(
                 lang["settings.resetPrompt"],
                 isPresented: $confirmReset,
@@ -83,15 +49,6 @@ struct SettingsView: View {
             } message: {
                 Text(lang["settings.resetMessage"])
             }
-        }
-    }
-
-    private func handleDeepLink(_ section: String) {
-        switch section {
-        case "loans":       navPath.append("loans")
-        case "creditlines": navPath.append("creditlines")
-        case "recurring":   navPath.append("recurring")
-        default:            break
         }
     }
 
@@ -241,53 +198,6 @@ struct SettingsView: View {
         }
     }
 
-    private var dataSection: some View {
-        Section(lang["settings.data"]) {
-            NavigationLink {
-                CreditLinesView()
-            } label: {
-                Label(lang["cl.title"], systemImage: "creditcard.fill")
-            }
-
-            NavigationLink {
-                SavingsProjectsView()
-            } label: {
-                Label(lang["savings.title"], systemImage: "target")
-            }
-
-            NavigationLink {
-                LoansView()
-            } label: {
-                Label(lang["loan.title"], systemImage: "house.fill")
-            }
-
-            NavigationLink {
-                RegisteredAccountsView()
-            } label: {
-                Label(lang["reg.hub.title"], systemImage: "leaf.fill")
-            }
-
-            NavigationLink {
-                RecurrencesView()
-            } label: {
-                Label(lang["recurring.title"], systemImage: "arrow.2.squarepath")
-            }
-
-            NavigationLink {
-                ManageCategoriesView()
-            } label: {
-                Label(lang["category.manage"], systemImage: "tag")
-            }
-
-            Button {
-                prepareExport()
-            } label: {
-                Label(lang["settings.exportCSV"], systemImage: "square.and.arrow.up")
-            }
-            .disabled(allTransactions.isEmpty)
-        }
-    }
-
     @ViewBuilder
     private var statsSection: some View {
         Section(lang["settings.stats"]) {
@@ -383,18 +293,6 @@ struct SettingsView: View {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
         return "\(version) (\(build))"
-    }
-
-    private var defaultExportFilename: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return "fintrack-export-\(formatter.string(from: .now))"
-    }
-
-    private func prepareExport() {
-        let csv = CSVExporter.exportTransactions(allTransactions)
-        exportDocument = CSVDocument(text: csv)
-        showExporter = true
     }
 
     private func resetAll() {
