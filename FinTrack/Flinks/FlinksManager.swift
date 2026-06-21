@@ -134,15 +134,27 @@ final class FlinksManager {
     // MARK: Keychain persistence
 
     private func loadConnectedLogins() {
-        guard let data = KeychainHelper.data(forKey: keychainKey),
-              let decoded = try? JSONDecoder().decode([FlinksConnectedLogin].self, from: data)
-        else { return }
-        connectedLogins = decoded
+        // Prefer the iCloud-synced item (survives reinstall / new device).
+        if let data = KeychainHelper.data(forKey: keychainKey, synchronizable: true),
+           let decoded = try? JSONDecoder().decode([FlinksConnectedLogin].self, from: data) {
+            connectedLogins = decoded
+            return
+        }
+        // Migrate a legacy device-only item so existing connections aren't lost
+        // when upgrading to iCloud Keychain storage.
+        if let legacy = KeychainHelper.data(forKey: keychainKey),
+           let decoded = try? JSONDecoder().decode([FlinksConnectedLogin].self, from: legacy) {
+            connectedLogins = decoded
+            saveConnectedLogins()                          // re-store as synchronizable
+            _ = KeychainHelper.delete(forKey: keychainKey) // drop the device-only copy
+        }
     }
 
     func saveConnectedLogins() {
         guard let data = try? JSONEncoder().encode(connectedLogins) else { return }
-        _ = KeychainHelper.set(data, forKey: keychainKey)
+        // Synchronizable: bank LoginIds follow the user's iCloud Keychain across
+        // devices and survive reinstall (requires iCloud Keychain enabled).
+        _ = KeychainHelper.set(data, forKey: keychainKey, synchronizable: true)
     }
 
     func addLogin(_ login: FlinksConnectedLogin) {
