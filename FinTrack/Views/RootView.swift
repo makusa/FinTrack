@@ -5,6 +5,7 @@
 
 import SwiftUI
 import SwiftData
+import CoreData
 
 struct RootView: View {
     @Environment(\.modelContext) private var context
@@ -28,6 +29,7 @@ struct RootView: View {
     @State private var showRestorePrompt = false
     @State private var showReopenNotice = false
     @State private var restoreProbeRan = false
+    @State private var dedupeTask: Task<Void, Never>? = nil
 
     var body: some View {
         Group {
@@ -66,6 +68,13 @@ struct RootView: View {
             // Sync widget data on first launch
             WidgetDataWriter.write(context: context)
         }
+        .task {
+            // Clean duplicate system categories left by the seed/CloudKit race.
+            _ = CategoryDeduplicator.dedupeSystemCategories(context: context)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .NSPersistentStoreRemoteChange)) { _ in
+            scheduleCategoryDedupe()
+        }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
             isObscured = true
         }
@@ -77,6 +86,7 @@ struct RootView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             lockManager.handleForeground()
+            scheduleCategoryDedupe()
         }
         // Deep link from notification tap
         .onReceive(NotificationCenter.default.publisher(for: .fintrackDeepLink)) { notif in
@@ -136,6 +146,20 @@ struct RootView: View {
     /// when paid, sync is off, nothing exists locally, and the user hasn't chosen
     /// yet. "Load" enables sync; data downloads on the next launch (the container
     /// is built CloudKit-backed once, at startup).
+    /// Debounced dedupe: collapses a burst of CloudKit remote-change
+    /// notifications into a single pass a couple seconds later.
+    private func scheduleCategoryDedupe() {
+        dedupeTask?.cancel()
+        dedupeTask = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2))
+            if Task.isCancelled { return }
+            let removed = CategoryDeduplicator.dedupeSystemCategories(context: context)
+            if removed > 0 {
+                AppLogger.seed.info("CategoryDeduplicator removed \(removed) duplicate(s) after sync")
+            }
+        }
+    }
+
     private func probeForCloudRestore() async {
         guard entitlements.hasPaidTier,
               !cloudSyncEnabled,

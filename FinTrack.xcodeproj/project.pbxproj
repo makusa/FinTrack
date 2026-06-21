@@ -70,6 +70,7 @@
 		908BE1588649AF89355328FE /* CloudDataProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E4BA50FD00BEA578CF0AA /* CloudDataProbe.swift */; };
 		9513353237D375CA51C9E598 /* ExchangeRateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF6B9AA36AC85C390D2C87D4 /* ExchangeRateManager.swift */; };
 		9A281142653F3C4833C8792C /* RegisteredAccountsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7FDFD2AE95DDEA5E20C5539 /* RegisteredAccountsView.swift */; };
+		9C4E486EB57006FA403AE4AB /* CategoryDeduplicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4DCD4F11FBCFD3F5074438 /* CategoryDeduplicator.swift */; };
 		9CFCDC8334BB2628623BFD6D /* AddEditAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AA91C436EA64527214D120E /* AddEditAccountView.swift */; };
 		9E7BA0CD12BED53BC9288C35 /* LoanDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4466ADA3E562726D19C50E11 /* LoanDetailView.swift */; };
 		AA7DFD7A9F8BAD11D29FC5F7 /* AddCreditLineEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EB0D66462A9846880A3D4C /* AddCreditLineEntryView.swift */; };
@@ -169,6 +170,7 @@
 		383416B9543B9837F0206675 /* CashFlowCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CashFlowCalculator.swift; sourceTree = "<group>"; };
 		3A17F1735465B3B6FCADFBB4 /* DeveloperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeveloperView.swift; sourceTree = "<group>"; };
 		3A37216610FA9A5C994EF058 /* BankSyncProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BankSyncProvider.swift; sourceTree = "<group>"; };
+		3A4DCD4F11FBCFD3F5074438 /* CategoryDeduplicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CategoryDeduplicator.swift; sourceTree = "<group>"; };
 		3C39D70C12B091E664ADBDE4 /* TransactionRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionRow.swift; sourceTree = "<group>"; };
 		407761AC420D582595A7D633 /* SeedData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SeedData.swift; sourceTree = "<group>"; };
 		4078E37334EE1AD6990E5630 /* RecurringTransactionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurringTransactionManager.swift; sourceTree = "<group>"; };
@@ -262,6 +264,7 @@
 				0E5A5665A30F1D56650390EE /* AppLogger.swift */,
 				83DC35CBE438FBE81673CB46 /* BankDirectory.swift */,
 				383416B9543B9837F0206675 /* CashFlowCalculator.swift */,
+				3A4DCD4F11FBCFD3F5074438 /* CategoryDeduplicator.swift */,
 				619E4BA50FD00BEA578CF0AA /* CloudDataProbe.swift */,
 				D34E6F10D5FEAE7E5D0BD329 /* ColorPalette.swift */,
 				88B08DD594C51395758C470E /* CreditLineInterestManager.swift */,
@@ -604,6 +607,7 @@
 				0E3DF5A1A533E8A13EC3FDA2 /* CashFlowCalculator.swift in Sources */,
 				D253B19DD2EA070A567791C4 /* CashFlowView.swift in Sources */,
 				4E799AAC5FE4E53DE66E999A /* Category.swift in Sources */,
+				9C4E486EB57006FA403AE4AB /* CategoryDeduplicator.swift in Sources */,
 				908BE1588649AF89355328FE /* CloudDataProbe.swift in Sources */,
 				902B6089DC4E186A5BF64220 /* CloudSyncSettingsView.swift in Sources */,
 				E84D84543E5267B1FE8DC415 /* ColorPalette.swift in Sources */,
