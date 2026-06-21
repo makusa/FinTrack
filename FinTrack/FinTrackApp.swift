@@ -85,6 +85,9 @@ struct FinTrackApp: App {
             UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.lastError")
             UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.failCount")
             AppLogger.persistence.info("Store started: CloudKit")
+            // Refresh the iCloud marker so a future fresh install can detect
+            // that synced FinTrack data exists and offer to restore it (P2).
+            Task.detached(priority: .utility) { await CloudDataProbe.writeMarker() }
 
         } else if let local = try? makeLocalContainer() {
             modelContainer = local
