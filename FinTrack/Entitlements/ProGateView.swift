@@ -75,7 +75,7 @@ enum GatedFeature {
 
     var requiredProduct: FinTrackProduct {
         switch self {
-        case .bankSync: return .epargne  // tous les tiers payants
+        case .bankSync: return .placement  // synchro bancaire live — abonnement (Placement) uniquement
         default:         return .epargne
         }
     }

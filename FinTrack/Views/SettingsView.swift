@@ -128,7 +128,7 @@ struct SettingsView: View {
 
     @ViewBuilder
     private var bankSyncRow: some View {
-        if entitlements.hasPaidTier {
+        if entitlements.hasPlacement {
             NavigationLink {
                 BankSyncDestinationView()
             } label: {
@@ -136,14 +136,21 @@ struct SettingsView: View {
                       systemImage: "building.columns.badge.plus")
             }
         } else {
-            HStack {
-                Label(bankSyncProviderLabel,
-                      systemImage: "building.columns.badge.plus")
-                    .foregroundStyle(.secondary)
-                Spacer()
-                Image(systemName: "lock.fill")
-                    .font(.caption)
-                    .foregroundStyle(.orange)
+            // Synchro bancaire live = abonnement Placement uniquement. La ligne
+            // verrouillée mène au paywall (qui vend Placement), pour que les
+            // utilisateurs Épargne puissent passer à l'abonnement.
+            NavigationLink {
+                ProGateView(feature: .bankSync)
+            } label: {
+                HStack {
+                    Label(bankSyncProviderLabel,
+                          systemImage: "building.columns.badge.plus")
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Image(systemName: "lock.fill")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
             }
         }
     }
