@@ -486,6 +486,7 @@ struct ManageCategoriesView: View {
     @Environment(\.modelContext) private var context
 
     @Environment(LanguageManager.self) private var lang
+    @Environment(EntitlementManager.self) private var entitlements
     @Query(sort: \Category.name, order: .forward) private var categories: [Category]
 
     @State private var showAddCategory = false
@@ -495,6 +496,13 @@ struct ManageCategoriesView: View {
     }
     private var incomeCategories: [Category] {
         categories.filter { $0.applicability == .income || $0.applicability == .both }
+    }
+
+    private var customCategoryCount: Int {
+        categories.filter { !$0.isSystem }.count
+    }
+    private var isAtFreeLimit: Bool {
+        !entitlements.hasPaidTier && customCategoryCount >= FinTrackLimit.freeMaxCustomCategories
     }
 
     var body: some View {
@@ -520,11 +528,40 @@ struct ManageCategoriesView: View {
                 } label: {
                     Image(systemName: "plus")
                 }
+                .disabled(isAtFreeLimit)
             }
+        }
+        .safeAreaInset(edge: .bottom) {
+            if isAtFreeLimit { freeCapBanner }
         }
         .sheet(isPresented: $showAddCategory) {
             AddCategoryView()
         }
+    }
+
+    private var freeCapBanner: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "lock.fill").foregroundStyle(.orange)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(lang["category.free.cap.title"])
+                    .font(.callout.weight(.semibold))
+                Text(lang["category.free.cap.subtitle"])
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            NavigationLink {
+                SubscriptionView().environment(entitlements)
+            } label: {
+                Text(lang["entitlement.pro.cta"])
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 12).padding(.vertical, 6)
+                    .background(Color.orange.opacity(0.15), in: Capsule())
+                    .foregroundStyle(.orange)
+            }
+        }
+        .padding(.horizontal, 16).padding(.vertical, 12)
+        .background(.bar)
+        .overlay(alignment: .top) { Divider() }
     }
 
     private func categoryRow(_ cat: Category) -> some View {

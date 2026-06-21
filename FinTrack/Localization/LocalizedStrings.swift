@@ -880,6 +880,8 @@ enum LocalizedStrings {
         "category.expenses":    ["fr": "Dépenses (%d)",           "en": "Expenses (%d)",       "es": "Gastos (%d)",        "pt": "Despesas (%d)"],
         "category.incomes":     ["fr": "Revenus (%d)",            "en": "Income (%d)",         "es": "Ingresos (%d)",      "pt": "Receitas (%d)"],
         "category.default":     ["fr": "Par défaut",              "en": "Default",             "es": "Predeterminada",     "pt": "Padrão"],
+        "category.free.cap.title":    ["fr": "Limite gratuite atteinte", "en": "Free limit reached", "es": "Límite gratuito alcanzado", "pt": "Limite gratuito atingido"],
+        "category.free.cap.subtitle": ["fr": "Le forfait gratuit permet 3 catégories personnalisées.", "en": "The free plan allows 3 custom categories.", "es": "El plan gratuito permite 3 categorías personalizadas.", "pt": "O plano gratuito permite 3 categorias personalizadas."],
         "category.create":      ["fr": "Nouvelle catégorie",      "en": "New Category",        "es": "Nueva categoría",    "pt": "Nova categoria"],
         "category.namePlaceholder":["fr":"Ex. Abonnements",       "en": "e.g. Subscriptions",  "es": "ej. Suscripciones",  "pt": "ex. Assinaturas"],
         "category.applicability":["fr":"Applicable à",            "en": "Applies To",          "es": "Aplicable a",        "pt": "Aplicável a"],
