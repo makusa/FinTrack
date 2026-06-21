@@ -60,6 +60,7 @@
 		6E8D2A6A6C3F3D290EBA87E3 /* FinTrackSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148949877907760B7E338297 /* FinTrackSchema.swift */; };
 		6F557C03EC16CE672E209ECF /* RecurrencesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79879028C8F8BC32BD5A8523 /* RecurrencesView.swift */; };
 		708A7E841F0FE54C408D2E08 /* AccountDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D76D2AF0CE6FEC33302AB61E /* AccountDetailView.swift */; };
+		748232FBEA9D734C075A206F /* PDFStatementParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC80FBBB773A3F264F0CA2BB /* PDFStatementParser.swift */; };
 		762FF16D61FD6F647D8B3FA8 /* SubscriptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD3CF16E621A3AE8D61CC443 /* SubscriptionView.swift */; };
 		769BDEE13F10B73677B671AE /* RegisteredRoomPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA9DB9D6C2528C42A23DC965 /* RegisteredRoomPlanView.swift */; };
 		77B166C49A4BB5AC49F6A594 /* AddRESPContributionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2D2A67F3EB43BB51719FF51 /* AddRESPContributionView.swift */; };
@@ -270,6 +271,7 @@
 		FA19A380ED381C3B8F4A0057 /* AddEditLoanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditLoanView.swift; sourceTree = "<group>"; };
 		FA75C9EEFB489048F50342E4 /* FinTrackApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinTrackApp.swift; sourceTree = "<group>"; };
 		FC11FB8F7C0114F4001D83D9 /* PlaidSyncEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaidSyncEngine.swift; sourceTree = "<group>"; };
+		FC80FBBB773A3F264F0CA2BB /* PDFStatementParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PDFStatementParser.swift; sourceTree = "<group>"; };
 		FD37DF8944DEB5FCB3908F52 /* FinTrackWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinTrackWidgetBundle.swift; sourceTree = "<group>"; };
 		FF689CB36E8CEEFF2657D413 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -332,6 +334,7 @@
 				8C69CDBBE81A502B6C0455BE /* OFXImportService.swift */,
 				2051E8E3930FB97604AEC665 /* OFXImportView.swift */,
 				B87B96BF2E0609ED423AD04C /* OFXParser.swift */,
+				FC80FBBB773A3F264F0CA2BB /* PDFStatementParser.swift */,
 			);
 			path = FileImport;
 			sourceTree = "<group>";
@@ -702,6 +705,7 @@
 				37752CAB58A15BEB36DE0DCF /* OFXImportService.swift in Sources */,
 				AD2F13F58B7E62B3FDF84F2C /* OFXImportView.swift in Sources */,
 				B54DA76428918704B1E6A39B /* OFXParser.swift in Sources */,
+				748232FBEA9D734C075A206F /* PDFStatementParser.swift in Sources */,
 				818CAA57F850B119D1838F06 /* PINPadView.swift in Sources */,
 				90010DED4A1BD6D4DBAA5BC1 /* PlaidConnectionView.swift in Sources */,
 				64D3CB28CEAC3B1F014AA483 /* PlaidManager.swift in Sources */,

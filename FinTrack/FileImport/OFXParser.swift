@@ -20,6 +20,7 @@ struct OFXTransaction: Equatable {
     var name: String?         // <NAME>  — display payee
     var memo: String?         // <MEMO>
     var trnType: String?      // <TRNTYPE> (advisory only; sign is authoritative)
+    var confidence: Int = 2   // 0=low,1=medium,2=high — PDF best-effort sets this; OFX/CSV are exact (2)
 }
 
 struct OFXStatement: Equatable {
