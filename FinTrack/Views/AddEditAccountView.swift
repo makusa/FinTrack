@@ -14,6 +14,7 @@ enum AccountEditorMode {
 struct AddEditAccountView: View {
     @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
+    @Environment(ExchangeRateManager.self) private var rates
     @Environment(EntitlementManager.self) private var entitlements
     @Environment(\.dismiss) private var dismiss
 
@@ -50,9 +51,14 @@ struct AddEditAccountView: View {
     @State private var respQuebec: Bool = true
 
     /// CAD + USD for free tier; all currencies for Pro.
-    private var availableCurrencies: [CurrencyInfo] {
-        if entitlements.hasPaidTier { return Currencies.all }
-        return Currencies.all.filter { ["CAD", "USD"].contains($0.code) }
+    /// Currencies offered in the picker: the user's tracked list, plus this
+    /// account's own currency if it's no longer tracked (so it's never lost).
+    private var pickerCurrencies: [CurrencyInfo] {
+        var list = rates.activeCurrencyInfos
+        if !list.contains(where: { $0.code == currency }) {
+            list.append(Currencies.info(for: currency))
+        }
+        return list
     }
 
     /// Other (non-archived) registered accounts, excluding the one being edited.
@@ -140,7 +146,7 @@ struct AddEditAccountView: View {
 
                 Section(lang["label.currency"]) {
                     Picker(lang["label.currency"], selection: $currency) {
-                        ForEach(availableCurrencies) { cur in
+                        ForEach(pickerCurrencies) { cur in
                             Text("\(cur.code) — \(cur.nameFR)").tag(cur.code)
                         }
                     }
@@ -212,10 +218,6 @@ struct AddEditAccountView: View {
             }
             .onAppear {
                 loadIfEditing()
-                // Ensure selected currency is available in current tier
-                if !availableCurrencies.contains(where: { $0.code == currency }) {
-                    currency = Currencies.default
-                }
             }
         }
     }

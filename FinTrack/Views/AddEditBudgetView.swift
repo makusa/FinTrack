@@ -15,8 +15,19 @@ struct AddEditBudgetView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss)      private var dismiss
     @Environment(LanguageManager.self) private var lang
+    @Environment(ExchangeRateManager.self) private var rates
 
     let mode: BudgetEditorMode
+
+    /// Currencies offered in the picker: the user's tracked list, plus this
+    /// item's own currency if it's no longer tracked (so it's never lost).
+    private var pickerCurrencies: [CurrencyInfo] {
+        var list = rates.activeCurrencyInfos
+        if !list.contains(where: { $0.code == currency }) {
+            list.append(Currencies.info(for: currency))
+        }
+        return list
+    }
 
     // MARK: Queries
 
@@ -76,7 +87,7 @@ struct AddEditBudgetView: View {
                     }
                     .padding(.vertical, 8)
                     Picker(lang["label.currency"], selection: $currency) {
-                        ForEach(Currencies.all) { c in
+                        ForEach(pickerCurrencies) { c in
                             Text("\(c.code) — \(c.nameFR)").tag(c.code)
                         }
                     }
