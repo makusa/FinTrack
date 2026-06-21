@@ -132,8 +132,8 @@ struct SettingsView: View {
             NavigationLink {
                 BankSyncDestinationView()
             } label: {
-                Label(bankSyncProviderLabel,
-                      systemImage: "building.columns.badge.plus")
+                Label(lang["flinks.settings.section"],
+                      systemImage: "building.columns")
             }
         } else {
             // Synchro bancaire live = abonnement Placement uniquement. La ligne
@@ -143,8 +143,8 @@ struct SettingsView: View {
                 ProGateView(feature: .bankSync)
             } label: {
                 HStack {
-                    Label(bankSyncProviderLabel,
-                          systemImage: "building.columns.badge.plus")
+                    Label(lang["flinks.settings.section"],
+                          systemImage: "building.columns")
                         .foregroundStyle(.secondary)
                     Spacer()
                     Image(systemName: "lock.fill")
@@ -282,7 +282,7 @@ struct SettingsView: View {
             label = "Pro"
             color = .orange
         case .placement:
-            label = "Plaid"
+            label = "Premium"
             color = .teal
         }
         return Text(label)

@@ -28,7 +28,7 @@ struct BankSyncView: View {
                 if manager.connectedLogins.isEmpty {
                     ContentUnavailableView(
                         lang["flinks.none"],
-                        systemImage: "building.columns.badge.plus",
+                        systemImage: "building.columns",
                         description: Text(lang["flinks.none.sub"])
                     )
                 } else {

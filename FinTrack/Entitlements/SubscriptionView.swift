@@ -99,7 +99,7 @@ struct SubscriptionView: View {
         switch entitlements.tier {
         case .free:  return "person.circle"
         case .epargne:   return "star.fill"
-        case .placement: return "building.columns.badge.plus"
+        case .placement: return "building.columns"
         }
     }
 

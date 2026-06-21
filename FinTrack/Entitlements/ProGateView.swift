@@ -69,7 +69,7 @@ enum GatedFeature {
         case .unlimitedAccounts: return "building.columns.fill"
         case .registered:        return "leaf.fill"
         case .fileImport:        return "arrow.down.doc"
-        case .bankSync:          return "building.columns.badge.plus"
+        case .bankSync:          return "building.columns"
         }
     }
 
@@ -207,7 +207,7 @@ struct ProGateView: View {
 
     private static let plaidFeatures: [(String, String)] = [
         ("arrow.clockwise.circle.fill", "Sync automatique des transactions"),
-        ("building.columns.badge.plus", "Jusqu'à 10 connexions bancaires"),
+        ("building.columns", "Jusqu'à 10 connexions bancaires"),
         ("checkmark.shield.fill",       "Sécurisé par Plaid"),
         ("dollarsign.circle.fill",      "Toutes les banques canadiennes"),
     ]

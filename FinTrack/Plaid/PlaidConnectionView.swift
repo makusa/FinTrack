@@ -139,7 +139,7 @@ struct ConnectedAccountsView: View {
 
     private var emptyState: some View {
         VStack(spacing: 16) {
-            Image(systemName: "building.columns.badge.plus")
+            Image(systemName: "building.columns")
                 .font(.system(size: 48))
                 .foregroundStyle(.tint)
             Text(lang["plaid.empty.title"])

@@ -40,7 +40,7 @@ enum FinTrackProduct: String, CaseIterable {
     var icon: String {
         switch self {
         case .epargne:          return "star.fill"
-        case .placement: return "building.columns.badge.plus"
+        case .placement: return "building.columns"
         }
     }
 }
