@@ -531,6 +531,8 @@ enum LocalizedStrings {
         "settings.version":      ["fr": "Version",                "en": "Version",             "es": "Versión",            "pt": "Versão"],
         "settings.storage":      ["fr": "Stockage",               "en": "Storage",             "es": "Almacenamiento",     "pt": "Armazenamento"],
         "settings.storage.local":["fr": "Local (sur cet appareil)","en": "Local (on this device)","es": "Local (en este dispositivo)","pt": "Local (neste dispositivo)"],
+        "settings.storage.cloud":["fr": "iCloud (synchronisé)","en": "iCloud (synced)","es": "iCloud (sincronizado)","pt": "iCloud (sincronizado)"],
+        "settings.storage.memory":["fr": "Session temporaire","en": "Temporary session","es": "Sesión temporal","pt": "Sessão temporária"],
         "settings.exportCSV":    ["fr": "Exporter les transactions (CSV)","en": "Export Transactions (CSV)","es": "Exportar transacciones (CSV)","pt": "Exportar transações (CSV)"],
         "settings.resetPrompt":  ["fr": "Tout réinitialiser ?",   "en": "Reset Everything?",   "es": "¿Restablecer todo?", "pt": "Redefinir tudo?"],
         "settings.resetMessage": ["fr": "Toutes vos données seront supprimées. Cette action est irréversible.", "en": "All your data will be deleted. This action is irreversible.", "es": "Todos tus datos serán eliminados. Esta acción es irreversible.", "pt": "Todos os seus dados serão excluídos. Esta ação é irreversível."],

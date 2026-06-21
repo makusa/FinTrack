@@ -230,7 +230,7 @@ struct SettingsView: View {
             Text(appVersion)
         }
         LabeledContent(lang["settings.storage"]) {
-            Text(lang["settings.storage.local"])
+            Text(storageModeLabel)
         }
     }
 
@@ -284,6 +284,14 @@ struct SettingsView: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
             .background(color, in: Capsule())
+    }
+
+    private var storageModeLabel: String {
+        switch UserDefaults.standard.string(forKey: "fintrack.activeStoreMode") {
+        case "cloud":  return lang["settings.storage.cloud"]
+        case "memory": return lang["settings.storage.memory"]
+        default:       return lang["settings.storage.local"]
+        }
     }
 
     private var appVersion: String {

@@ -83,6 +83,7 @@ struct FinTrackApp: App {
                configurations: [ModelConfiguration(schema: baseSchema,
                                                    cloudKitDatabase: .private("iCloud.ca.regis.fintrack"))]) {
             modelContainer = cloud
+            UserDefaults.standard.set("cloud", forKey: "fintrack.activeStoreMode")
             UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.lastError")
             UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.failCount")
             AppLogger.persistence.info("Store started: CloudKit")
@@ -92,6 +93,7 @@ struct FinTrackApp: App {
 
         } else if let local = try? makeLocalContainer() {
             modelContainer = local
+            UserDefaults.standard.set("local", forKey: "fintrack.activeStoreMode")
             if cloudSyncEnabled {
                 recordCloudFailure(NSError(domain: "FinTrack", code: 1,
                                            userInfo: [NSLocalizedDescriptionKey: "CloudKit container init failed"]))
@@ -103,6 +105,7 @@ struct FinTrackApp: App {
             // an empty session (data on disk is untouched and recoverable),
             // never a crash. NEVER wipe automatically.
             AppLogger.persistence.error("Local store failed to open — emergency in-memory session")
+            UserDefaults.standard.set("memory", forKey: "fintrack.activeStoreMode")
             modelContainer = try! ModelContainer(
                 for: baseSchema,
                 configurations: [ModelConfiguration(schema: baseSchema,
