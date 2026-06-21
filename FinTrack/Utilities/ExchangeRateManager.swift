@@ -58,6 +58,33 @@ final class ExchangeRateManager {
         }
     }
 
+    // MARK: Tracked currencies (user-managed; default CAD + USD)
+
+    /// Currencies the user tracks — drives pickers and the rates table. CAD is
+    /// pinned (home + FX pivot) and cannot be removed. Rates for ALL currencies
+    /// are fetched regardless, so adding one is instant and works offline.
+    private(set) var activeCurrencies: [String] = ExchangeRateManager.loadActiveCurrencies()
+
+    static let pinnedCurrency = "CAD"
+    private static let activeKey       = "fx.activeCurrencies_v1"
+    private static let activeSeededKey = "fx.activeCurrencies.seeded_v1"
+
+    private static func loadActiveCurrencies() -> [String] {
+        let stored = UserDefaults.standard.stringArray(forKey: activeKey) ?? []
+        return normalizeActive(stored.isEmpty ? ["CAD", "USD"] : stored)
+    }
+
+    /// CAD always first & present; de-duplicated; preserves the given order.
+    /// Unknown codes are kept (never strand an existing account's currency).
+    private static func normalizeActive(_ codes: [String]) -> [String] {
+        var seen = Set<String>([pinnedCurrency])
+        var out  = [pinnedCurrency]
+        for c in codes where !seen.contains(c) {
+            out.append(c); seen.insert(c)
+        }
+        return out
+    }
+
     private let cacheKey      = "exchangeRates_v1"
     private let cacheBaseKey  = "exchangeRatesBase_v1"
     private let cacheDateKey  = "exchangeRatesDate_v1"
@@ -126,10 +153,11 @@ final class ExchangeRateManager {
             }
             let decoded = try JSONDecoder().decode(RatesResponse.self, from: data)
 
-            // Keep only currencies FinTrack cares about (+ a few extras)
-            let relevant = Set(Currencies.all.map { $0.code } + ["CNY", "INR", "MXN", "BRL", "NGN", "KES", "GHS", "ZAR"])
+            // Store ALL returned rates (≈160, a few KB) so any tracked currency
+            // is convertible instantly — including ones the user adds later, and
+            // while offline. The activeCurrencies list governs display only.
             var newRates: [String: Decimal] = [:]
-            for (code, rate) in decoded.rates where relevant.contains(code) {
+            for (code, rate) in decoded.rates {
                 newRates[code] = Decimal(rate)
             }
             newRates[base] = 1  // base = 1
@@ -150,6 +178,51 @@ final class ExchangeRateManager {
                 self.lastError = error.localizedDescription
             }
         }
+    }
+
+    // MARK: - Tracked currencies API
+
+    func isActive(_ code: String) -> Bool { activeCurrencies.contains(code) }
+
+    /// CAD is pinned and cannot be removed.
+    func canRemove(_ code: String) -> Bool { code != Self.pinnedCurrency }
+
+    /// Active currencies as CurrencyInfo (CAD first).
+    var activeCurrencyInfos: [CurrencyInfo] {
+        activeCurrencies.map { Currencies.info(for: $0) }
+    }
+
+    func addCurrency(_ code: String) {
+        guard !activeCurrencies.contains(code) else { return }
+        activeCurrencies = Self.normalizeActive(activeCurrencies + [code])
+        persistActive()
+    }
+
+    func removeCurrency(_ code: String) {
+        guard canRemove(code) else { return }
+        activeCurrencies.removeAll { $0 == code }
+        if displayCurrency == code { displayCurrency = Self.pinnedCurrency }
+        persistActive()
+    }
+
+    func setActiveCurrencies(_ codes: [String]) {
+        activeCurrencies = Self.normalizeActive(codes)
+        if !activeCurrencies.contains(displayCurrency) { displayCurrency = Self.pinnedCurrency }
+        persistActive()
+    }
+
+    private func persistActive() {
+        UserDefaults.standard.set(activeCurrencies, forKey: Self.activeKey)
+    }
+
+    /// One-time migration: seed the tracked list from currencies already in use
+    /// (so existing accounts/budgets/loans never lose their currency), unioned
+    /// with the CAD+USD defaults. Runs once; later launches are no-ops.
+    func seedActiveCurrenciesIfNeeded(used: [String]) {
+        guard !UserDefaults.standard.bool(forKey: Self.activeSeededKey) else { return }
+        activeCurrencies = Self.normalizeActive(["CAD", "USD"] + used.sorted())
+        persistActive()
+        UserDefaults.standard.set(true, forKey: Self.activeSeededKey)
     }
 
     // MARK: - Cache

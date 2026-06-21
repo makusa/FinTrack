@@ -140,6 +140,13 @@ struct FinTrackApp: App {
         // Seed default categories on the main context.
         SeedData.seedIfNeeded(context: modelContainer.mainContext)
 
+        // One-time: seed the tracked-currency list (CAD+USD + any currency already
+        // used by accounts/budgets/loans/credit lines/projects), so existing data
+        // is never stranded when the list becomes user-managed.
+        ExchangeRateManager.shared.seedActiveCurrenciesIfNeeded(
+            used: FinTrackApp.usedCurrencyCodes(in: modelContainer.mainContext)
+        )
+
         // Maintain transaction statuses (idempotent): bank-backed rows -> reconciled,
         // and the manual scheduled/cleared lifecycle is reclassified by date.
         TransactionStatusManager.sweep(context: modelContainer.mainContext)
@@ -160,6 +167,18 @@ struct FinTrackApp: App {
         RecurringTransactionManager.applyPending(context: modelContainer.mainContext)
         LoanPrepaymentManager.applyPending(context: modelContainer.mainContext)
         CreditLineInterestManager.applyPending(context: modelContainer.mainContext)
+    }
+
+    /// Distinct ISO codes already used by any currency-bearing model. Used once
+    /// to seed the tracked-currency list so existing data is never stranded.
+    private static func usedCurrencyCodes(in context: ModelContext) -> [String] {
+        var codes = Set<String>()
+        if let a = try? context.fetch(FetchDescriptor<Account>())        { codes.formUnion(a.map { $0.currency }) }
+        if let b = try? context.fetch(FetchDescriptor<Budget>())         { codes.formUnion(b.map { $0.currency }) }
+        if let l = try? context.fetch(FetchDescriptor<Loan>())           { codes.formUnion(l.map { $0.currency }) }
+        if let c = try? context.fetch(FetchDescriptor<CreditLine>())     { codes.formUnion(c.map { $0.currency }) }
+        if let p = try? context.fetch(FetchDescriptor<SavingsProject>()) { codes.formUnion(p.map { $0.currency }) }
+        return Array(codes)
     }
 
     // Keep a reference to shared singletons so @Observable propagates changes.
