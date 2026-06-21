@@ -68,6 +68,29 @@ enum RegisteredLimits {
         2024: 7_000, 2025: 7_000, 2026: 7_000,
     ]
 
+    /// Federal RRSP annual dollar maximum (CAD): the per-year ceiling on NEW room
+    /// from 18% of earned income. Used ONLY as a projection guardrail so a user's
+    /// annual estimate can't inflate room past the legal max. NOT a tax figure.
+    /// SOURCE OF TRUTH — confirm against CRA; append new years.
+    static let reerAnnualMaxByYear: [Int: Decimal] = [
+        2009: 21_000, 2010: 22_000, 2011: 22_450, 2012: 22_970,
+        2013: 23_820, 2014: 24_270, 2015: 24_930, 2016: 25_370,
+        2017: 26_010, 2018: 26_230, 2019: 26_500, 2020: 27_230,
+        2021: 27_830, 2022: 29_210, 2023: 30_780, 2024: 31_560,
+        2025: 32_490, 2026: 33_810,
+    ]
+
+    /// RRSP max for a year, clamped to the nearest known year outside the table
+    /// so the guardrail always bounds (slightly stale is fine — it's a cap).
+    static func reerAnnualMax(forYear year: Int) -> Decimal {
+        if let v = reerAnnualMaxByYear[year] { return v }
+        let years = reerAnnualMaxByYear.keys.sorted()
+        guard let first = years.first, let last = years.last else { return 0 }
+        if year < first { return reerAnnualMaxByYear[first]! }
+        if year > last  { return reerAnnualMaxByYear[last]! }
+        return reerAnnualMaxByYear[years.last { $0 <= year } ?? last]!
+    }
+
     /// Annual entitlement for a given type and year.
     static func annualLimit(_ type: RegisteredType, year: Int) -> Decimal {
         switch type {
@@ -145,9 +168,10 @@ enum RegisteredRoomCalculator {
                 // Keep remaining room, add new entitlement, restore this year's withdrawals.
                 room = room + nextAnnual + withdrawalsThisYear
             case .reer:
-                // Income-based: add the user's estimated annual new room (0 if unknown).
-                // RRSP withdrawals do NOT restore room, so withdrawalsThisYear is ignored.
-                room = room + reerAnnualRoom
+                // Income-based: add the user's estimated annual new room (0 if unknown),
+                // clamped to that year's federal RRSP maximum so an over-stated estimate
+                // can't inflate room past the legal ceiling. Withdrawals don't restore room.
+                room = room + min(reerAnnualRoom, RegisteredLimits.reerAnnualMax(forYear: y + 1))
             case .celiapp:
                 // No restoration. Unused room carries forward capped at maxCarryforward.
                 let cap = type.maxCarryforwardPerYear ?? room
