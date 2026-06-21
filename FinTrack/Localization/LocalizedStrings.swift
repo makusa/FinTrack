@@ -835,6 +835,7 @@ enum LocalizedStrings {
         "entitlement.table.transactions":["fr":"Transactions manuelles",            "en": "Manual transactions",            "es": "Transacciones manuales",        "pt": "Transações manuais"],
         "entitlement.table.budgets":    ["fr": "Budgets",                           "en": "Budgets",                        "es": "Presupuestos",                  "pt": "Orçamentos"],
         "entitlement.table.creditlines":["fr": "Marges de crédit (max 1 en Courant)", "en": "Credit lines (max 1 in free tier)", "es": "Créditos (máx 1 gratis)",      "pt": "Linhas de crédito (máx 1 grátis)"],
+        "entitlement.table.registered": ["fr": "Comptes enregistrés (CELI, CELIAPP)", "en": "Registered accounts (TFSA, FHSA)", "es": "Cuentas registradas (CELI, CELIAPP)", "pt": "Contas registadas (CELI, CELIAPP)"],
         "entitlement.table.savings":     ["fr": "Projets d'épargne (max 2 en Courant)", "en": "Savings projects (max 2 free)",   "es": "Proyectos de ahorro (máx 2)",   "pt": "Projetos de poupança (máx 2)"],
         "entitlement.table.loans":      ["fr": "Prêts (max 2 en Courant)",          "en": "Loans (max 2 in free tier)",     "es": "Préstamos (máx 2 gratis)",      "pt": "Empréstimos (máx 2 grátis)"],
         "entitlement.table.analytics":  ["fr": "Analytiques",                       "en": "Analytics",                      "es": "Analíticas",                    "pt": "Análises"],
