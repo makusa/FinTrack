@@ -23,8 +23,9 @@ struct OFXTransaction: Equatable {
 }
 
 struct OFXStatement: Equatable {
+    var bankId: String?       // <BANKID> (institution routing; for account fingerprint)
     var currency: String?     // <CURDEF>
-    var accountId: String?    // <ACCTID> (informational)
+    var accountId: String?    // <ACCTID> (informational; never stored in clear)
     var accountType: String?  // <ACCTTYPE> (CHECKING/SAVINGS/CREDITLINE/…)
     var transactions: [OFXTransaction]
 }
@@ -53,7 +54,7 @@ enum OFXParser {
         // producer used newlines. Collapses the SGML/XML difference.
         let normalized = body.replacingOccurrences(of: "<", with: "\n<")
 
-        var statement = OFXStatement(currency: nil, accountId: nil,
+        var statement = OFXStatement(bankId: nil, currency: nil, accountId: nil,
                                      accountType: nil, transactions: [])
         var current: PartialTxn? = nil
 
@@ -62,6 +63,7 @@ enum OFXParser {
             guard line.first == "<", let (tag, value) = Self.tagAndValue(line) else { continue }
 
             switch tag {
+            case "BANKID":   if statement.bankId == nil      { statement.bankId = value.nilIfEmpty }
             case "CURDEF":   if statement.currency == nil    { statement.currency = value.nilIfEmpty }
             case "ACCTID":   if statement.accountId == nil    { statement.accountId = value.nilIfEmpty }
             case "ACCTTYPE": if statement.accountType == nil  { statement.accountType = value.nilIfEmpty }
@@ -184,8 +186,14 @@ enum OFXAmount {
         return Decimal(string: t)
     }
 
+    /// Stable (cross-launch) id for the rare case a producer omits FITID.
+    /// FNV-1a over identifying fields — deterministic, so re-imports dedup
+    /// (Swift's hashValue is per-launch randomized and would break dedup).
     static func fallbackId(date: Date, amount: Decimal, name: String?, memo: String?) -> String {
-        "nofitid-\("\(Int(date.timeIntervalSince1970))|\(amount)|\(name ?? "")|\(memo ?? "")".hashValue)"
+        let key = "\(Int(date.timeIntervalSince1970))|\(amount)|\(name ?? "")|\(memo ?? "")"
+        var hash: UInt64 = 0xcbf29ce484222325
+        for byte in key.utf8 { hash = (hash ^ UInt64(byte)) &* 0x100000001b3 }
+        return "nofitid-" + String(hash, radix: 16)
     }
 }
 
