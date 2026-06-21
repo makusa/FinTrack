@@ -95,6 +95,9 @@ struct AccountDetailView: View {
                 registeredRoomSection(regType)
                 registeredEntriesSection()
             }
+            if account.respProfile != nil {
+                respGrantSection()
+            }
 
             Section("\(lang["tx.title"]) (\(sortedTransactions.count))") {
                 if sortedTransactions.isEmpty {
@@ -220,6 +223,51 @@ struct AccountDetailView: View {
             Text(lang["reg.room.accountFooter"])
         }
     }
+
+    @ViewBuilder
+    private func respGrantSection() -> some View {
+        if let profile = account.respProfile,
+           let r = RESPGrantService.evaluate(account: account) {
+            Section {
+                if r.suggestedContributionThisYear > 0 {
+                    LabeledContent(lang["resp.suggested"]) {
+                        Text(r.suggestedContributionThisYear.formatted(asCurrency: account.currency))
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.green)
+                    }
+                } else if r.isPastGrantAge {
+                    Label(lang["resp.pastAge"], systemImage: "clock.badge.xmark")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+
+                LabeledContent(lang["resp.cesg"]) {
+                    Text("\(r.cesg.earned.formatted(asCurrency: account.currency)) / \(RESPGrantProgram.cesg.lifetimeMax.formatted(asCurrency: account.currency))")
+                }
+                if profile.quebecResident {
+                    LabeledContent(lang["resp.iqee"]) {
+                        Text("\(r.iqee.earned.formatted(asCurrency: account.currency)) / \(RESPGrantProgram.iqee.lifetimeMax.formatted(asCurrency: account.currency))")
+                    }
+                }
+
+                LabeledContent(lang["resp.contributed"]) {
+                    Text("\(r.totalContributed.formatted(asCurrency: account.currency)) / \(RESPGrantCalculator.lifetimeContributionLimit.formatted(asCurrency: account.currency))")
+                        .foregroundStyle(r.isOverContributed ? Color.red : Color.primary)
+                }
+                if r.isOverContributed {
+                    Label("\(lang["resp.over"]) : \(r.contributionExcess.formatted(asCurrency: account.currency))",
+                          systemImage: "exclamationmark.triangle.fill")
+                        .font(.callout)
+                        .foregroundStyle(.red)
+                }
+            } header: {
+                Text("\(lang["resp.section"]) · \(profile.beneficiaryName.isEmpty ? lang["resp.beneficiary.section"] : profile.beneficiaryName)")
+            } footer: {
+                Text(lang["resp.section.footer"])
+            }
+        }
+    }
+
 
     private var sortedRegisteredEntries: [RegisteredEntry] {
         (account.registeredEntries ?? []).sorted { $0.date > $1.date }
