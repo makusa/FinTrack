@@ -82,6 +82,7 @@
 		908BE1588649AF89355328FE /* CloudDataProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 619E4BA50FD00BEA578CF0AA /* CloudDataProbe.swift */; };
 		9513353237D375CA51C9E598 /* ExchangeRateManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF6B9AA36AC85C390D2C87D4 /* ExchangeRateManager.swift */; };
 		9A281142653F3C4833C8792C /* RegisteredAccountsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7FDFD2AE95DDEA5E20C5539 /* RegisteredAccountsView.swift */; };
+		9BDEFF8005480299ABDFB9ED /* MerchantDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F9EEB8322D0CB6A3B15999A /* MerchantDictionary.swift */; };
 		9C4E486EB57006FA403AE4AB /* CategoryDeduplicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A4DCD4F11FBCFD3F5074438 /* CategoryDeduplicator.swift */; };
 		9CFCDC8334BB2628623BFD6D /* AddEditAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AA91C436EA64527214D120E /* AddEditAccountView.swift */; };
 		9E7BA0CD12BED53BC9288C35 /* LoanDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4466ADA3E562726D19C50E11 /* LoanDetailView.swift */; };
@@ -233,6 +234,7 @@
 		88B08DD594C51395758C470E /* CreditLineInterestManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditLineInterestManager.swift; sourceTree = "<group>"; };
 		8C69CDBBE81A502B6C0455BE /* OFXImportService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OFXImportService.swift; sourceTree = "<group>"; };
 		8F99E8950A3172F5EC30E943 /* RegisteredRoom.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisteredRoom.swift; sourceTree = "<group>"; };
+		8F9EEB8322D0CB6A3B15999A /* MerchantDictionary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MerchantDictionary.swift; sourceTree = "<group>"; };
 		9B028732F7CF6E7904296926 /* SavingsProjectsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavingsProjectsView.swift; sourceTree = "<group>"; };
 		9DB77B9957C1DA199B7DA46B /* AnalyticsDashboardSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsDashboardSection.swift; sourceTree = "<group>"; };
 		A2CEAC94077AAF3058B1ED00 /* AddRegisteredEntryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRegisteredEntryView.swift; sourceTree = "<group>"; };
@@ -406,6 +408,7 @@
 		7A8BC34468FCB2BDD1DD320D /* Categorization */ = {
 			isa = PBXGroup;
 			children = (
+				8F9EEB8322D0CB6A3B15999A /* MerchantDictionary.swift */,
 				D292EEB384674D4170C76DE7 /* PayeeNormalizer.swift */,
 			);
 			path = Categorization;
@@ -711,6 +714,7 @@
 				5ACE1828B05B86AE695797DB /* LocalizedStrings.swift in Sources */,
 				435481DA3242E1DF4920732E /* LockScreenView.swift in Sources */,
 				840741250D6F7869B6E58C35 /* ManageHubView.swift in Sources */,
+				9BDEFF8005480299ABDFB9ED /* MerchantDictionary.swift in Sources */,
 				69378E4AEA6481AB62DCEC00 /* NetWorthWidget.swift in Sources */,
 				E52A94E232681D1D5BFCFBFB /* NotificationManager.swift in Sources */,
 				3E5310FAD56F93B401C91D82 /* NotificationSettingsView.swift in Sources */,

@@ -23,28 +23,24 @@ enum PayeeNormalizer {
         ["PAIEMENT", "PREAUTORISE"], ["PRE", "AUTORISE"], ["PC", "FROM"], ["VISA", "DEBIT"],
         ["PAIEMENT"], ["ACHAT"], ["ACH"], ["POS"], ["RETRAIT"], ["DEPOT"],
         ["VISA"], ["DEBIT"], ["PREAUTORISE"], ["TRANSFERT"], ["VIREMENT"],
-        ["FRAIS"], ["FREE"], ["MB"]
+        ["FREE"], ["MB"],
+        // payment-processor codes ("PAYPAL *SPOTIFY", "SQ *CAFE", "TST* …")
+        ["PAYPAL"], ["PYPL"], ["SQ"], ["SQUARE"], ["TST"], ["SP"]
     ].sorted { $0.count > $1.count }
 
     /// Trailing geographic tokens to drop from the END.
     static let geoSuffixes: Set<String> = [
         "QC", "ON", "BC", "AB", "MB", "SK", "NS", "NB", "PE", "NL", "YT", "NT", "NU",
-        "CA", "CAN", "CANADA", "US", "USA"
+        "CA", "US", "USA"   // "CANADA"/"CAN" volontairement absents (cf. "Air Canada")
     ]
 
     static func normalize(_ raw: String) -> String {
         // 1) Fold accents + uppercase.
-        var s = raw.folding(options: [.diacriticInsensitive, .caseInsensitive],
+        let s = raw.folding(options: [.diacriticInsensitive, .caseInsensitive],
                             locale: Locale(identifier: "en")).uppercased()
 
-        // 2) Payment-processor prefix: "XXX *MERCHANT" → keep what follows the last '*'.
-        if let star = s.lastIndex(of: "*") {
-            let after = String(s[s.index(after: star)...]).trimmingCharacters(in: .whitespaces)
-            if after.filter(\.isLetter).count >= 3 { s = after }
-        }
-
-        // 3) Letters/spaces only; digits and punctuation become separators
-        //    (this is where card/reference numbers are erased).
+        // 2) Letters/spaces only; digits and punctuation (incl. '*') become
+        //    separators (this is where card/reference numbers are erased).
         var cleaned = ""
         for ch in s {
             cleaned.append(ch.isLetter ? ch : " ")
@@ -52,10 +48,10 @@ enum PayeeNormalizer {
 
         var tokens = cleaned.split(separator: " ").map(String.init)
 
-        // 4) Strip leading prefixes (iteratively, never emptying the token list).
+        // 3) Strip leading prefixes (iteratively, never emptying the token list).
         tokens = stripLeadingPrefixes(tokens)
 
-        // 5) Strip trailing geo tokens.
+        // 4) Strip trailing geo tokens.
         while let last = tokens.last, geoSuffixes.contains(last) { tokens.removeLast() }
 
         return tokens.joined(separator: " ")
