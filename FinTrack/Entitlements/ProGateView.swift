@@ -208,7 +208,7 @@ struct ProGateView: View {
     private static let plaidFeatures: [(String, String)] = [
         ("arrow.clockwise.circle.fill", "Sync automatique des transactions"),
         ("building.columns", "Jusqu'à 10 connexions bancaires"),
-        ("checkmark.shield.fill",       "Sécurisé par Plaid"),
+        ("checkmark.shield.fill",       "Connexion sécurisée et chiffrée"),
         ("dollarsign.circle.fill",      "Toutes les banques canadiennes"),
     ]
 

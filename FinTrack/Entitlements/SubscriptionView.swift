@@ -213,7 +213,7 @@ struct SubscriptionView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                 Text("Free").font(.caption.weight(.semibold)).foregroundStyle(.gray).frame(width: 44)
                 Text("Pro").font(.caption.weight(.semibold)).foregroundStyle(.orange).frame(width: 44)
-                Text("Plaid").font(.caption.weight(.semibold)).foregroundStyle(.teal).frame(width: 44)
+                Text("Pro+").font(.caption.weight(.semibold)).foregroundStyle(.teal).frame(width: 44)
             }
             .padding(.horizontal, 2)
             .padding(.vertical, 8)

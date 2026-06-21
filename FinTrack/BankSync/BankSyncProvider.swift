@@ -39,7 +39,7 @@ struct BankSyncDestinationView: View {
 /// Label shown in Réglages for the active provider.
 var bankSyncProviderLabel: String {
     switch activeBankSyncProvider {
-    case .plaid:  "Connexion bancaire (Plaid)"
-    case .flinks: "Connexion bancaire (Flinks)"
+    case .plaid:  "Connexion bancaire"
+    case .flinks: "Connexion bancaire"
     }
 }

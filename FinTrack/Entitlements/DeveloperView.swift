@@ -63,7 +63,7 @@ struct DeveloperView: View {
             subtitle: "Abonnement mensuel",
             icon:     "building.columns.circle.fill",
             color:    .teal,
-            features: ["Tout Épargne +", "Connexion bancaire Plaid", "Sync automatique des transactions"]
+            features: ["Tout Épargne +", "Connexion bancaire", "Sync automatique des transactions"]
         ),
     ]
 
