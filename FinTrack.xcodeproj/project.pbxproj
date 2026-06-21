@@ -89,6 +89,7 @@
 		ABB383DEFBB03927D8D0FF7A /* BankPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CF8D38D87648C662CD5F789 /* BankPicker.swift */; };
 		AD2F13F58B7E62B3FDF84F2C /* OFXImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2051E8E3930FB97604AEC665 /* OFXImportView.swift */; };
 		B27259C40EE62F46728876C6 /* AddEditCreditLineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8900D066E43A56DB2C7BEFB /* AddEditCreditLineView.swift */; };
+		B4F99899A6489D6A688FA4E0 /* PayeeNormalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D292EEB384674D4170C76DE7 /* PayeeNormalizer.swift */; };
 		B54DA76428918704B1E6A39B /* OFXParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = B87B96BF2E0609ED423AD04C /* OFXParser.swift */; };
 		B5698674F042DF35DAEBEF3D /* CreditLineInterestManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88B08DD594C51395758C470E /* CreditLineInterestManager.swift */; };
 		B57ED9EA697F76839E8FEC45 /* CreditLine.swift in Sources */ = {isa = PBXBuildFile; fileRef = DABA356B051CEFE3BBDC6F0B /* CreditLine.swift */; };
@@ -254,6 +255,7 @@
 		CA4220ADE1CE0B8E4A3C09D5 /* UpcomingTransfersWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpcomingTransfersWidget.swift; sourceTree = "<group>"; };
 		CE0BF4D20B7454B8155F244D /* AddEditPrepaymentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditPrepaymentView.swift; sourceTree = "<group>"; };
 		D0A00CBB4D610338F0B810C6 /* AddEditTransactionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditTransactionView.swift; sourceTree = "<group>"; };
+		D292EEB384674D4170C76DE7 /* PayeeNormalizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayeeNormalizer.swift; sourceTree = "<group>"; };
 		D2A3F91C820A6B4C7BB454D1 /* AddTransferView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTransferView.swift; sourceTree = "<group>"; };
 		D34E6F10D5FEAE7E5D0BD329 /* ColorPalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorPalette.swift; sourceTree = "<group>"; };
 		D6730631F84261829C39520A /* ManageHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManageHubView.swift; sourceTree = "<group>"; };
@@ -401,6 +403,14 @@
 			path = FinTrackWidget;
 			sourceTree = "<group>";
 		};
+		7A8BC34468FCB2BDD1DD320D /* Categorization */ = {
+			isa = PBXGroup;
+			children = (
+				D292EEB384674D4170C76DE7 /* PayeeNormalizer.swift */,
+			);
+			path = Categorization;
+			sourceTree = "<group>";
+		};
 		8F088E6AE018E681B18811D4 /* Dashboard */ = {
 			isa = PBXGroup;
 			children = (
@@ -442,6 +452,7 @@
 				FA75C9EEFB489048F50342E4 /* FinTrackApp.swift */,
 				F262FBA26B15D2C4597BBD7C /* Info.plist */,
 				02DF24527A311E25C3D71A55 /* BankSync */,
+				7A8BC34468FCB2BDD1DD320D /* Categorization */,
 				97E28331FB4C5B02B6392054 /* Entitlements */,
 				3DF0B3D91019797EE1F8FC99 /* FileImport */,
 				A63AEF89D477055BB47BDF51 /* Flinks */,
@@ -711,6 +722,7 @@
 				748232FBEA9D734C075A206F /* PDFStatementParser.swift in Sources */,
 				16EEE5A4D548ECF4B02C519C /* PDFTextExtractor.swift in Sources */,
 				818CAA57F850B119D1838F06 /* PINPadView.swift in Sources */,
+				B4F99899A6489D6A688FA4E0 /* PayeeNormalizer.swift in Sources */,
 				90010DED4A1BD6D4DBAA5BC1 /* PlaidConnectionView.swift in Sources */,
 				64D3CB28CEAC3B1F014AA483 /* PlaidManager.swift in Sources */,
 				3575359CC9143BC227FDF816 /* PlaidSyncEngine.swift in Sources */,
