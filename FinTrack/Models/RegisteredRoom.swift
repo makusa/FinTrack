@@ -91,10 +91,32 @@ enum RegisteredLimits {
         return reerAnnualMaxByYear[years.last { $0 <= year } ?? last]!
     }
 
+    /// CELI annual limit for a year, with graceful fallback so the table lagging
+    /// a year never silently drops accrual to 0:
+    ///  • before 2009 -> 0 (the TFSA did not exist yet);
+    ///  • beyond the table -> the last known limit is held (CELI limits only ever
+    ///    stay flat or rise, indexed to inflation), pending an app update.
+    static func celiAnnualLimit(forYear year: Int) -> Decimal {
+        if let v = celiAnnual[year] { return v }
+        let years = celiAnnual.keys.sorted()
+        guard let first = years.first, let last = years.last else { return 0 }
+        if year < first { return 0 }
+        if year > last  { return celiAnnual[last]! }
+        return celiAnnual[years.last { $0 <= year } ?? last]!
+    }
+
+    /// True when `year` is beyond the known CELI table — i.e. the held-forward
+    /// fallback is in use and the app may be due for a limits update. Available
+    /// for the UI to surface a subtle "limits may be outdated" hint.
+    static func celiLimitIsExtrapolated(forYear year: Int) -> Bool {
+        guard let last = celiAnnual.keys.max() else { return false }
+        return year > last
+    }
+
     /// Annual entitlement for a given type and year.
     static func annualLimit(_ type: RegisteredType, year: Int) -> Decimal {
         switch type {
-        case .celi:    return celiAnnual[year] ?? 0
+        case .celi:    return celiAnnualLimit(forYear: year)
         case .celiapp: return year >= 2023 ? 8_000 : 0   // FHSA launched 2023
         case .reer:    return 0                          // income-based; handled elsewhere
         }
