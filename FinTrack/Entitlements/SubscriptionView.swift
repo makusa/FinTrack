@@ -198,7 +198,7 @@ struct SubscriptionView: View {
             FeatureRow(name: lang["entitlement.table.recurring"],     free: true,  pro: true,  plaid: true),
             FeatureRow(name: lang["entitlement.table.currencies"],   free: true,  pro: true,  plaid: true),
             FeatureRow(name: lang["entitlement.table.categories"],   free: true,  pro: true,  plaid: true),
-            FeatureRow(name: lang["entitlement.table.transfers"],     free: false, pro: true,  plaid: true),
+            FeatureRow(name: lang["entitlement.table.transfers"],     free: true , pro: true,  plaid: true),
             FeatureRow(name: lang["entitlement.table.fx"],            free: false, pro: true,  plaid: true),
             FeatureRow(name: lang["entitlement.table.dashboard"],     free: false, pro: true,  plaid: true),
             FeatureRow(name: lang["entitlement.table.export"],        free: false, pro: true,  plaid: true),
