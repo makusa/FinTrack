@@ -56,6 +56,7 @@
 		708A7E841F0FE54C408D2E08 /* AccountDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D76D2AF0CE6FEC33302AB61E /* AccountDetailView.swift */; };
 		762FF16D61FD6F647D8B3FA8 /* SubscriptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BD3CF16E621A3AE8D61CC443 /* SubscriptionView.swift */; };
 		769BDEE13F10B73677B671AE /* RegisteredRoomPlanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA9DB9D6C2528C42A23DC965 /* RegisteredRoomPlanView.swift */; };
+		77B166C49A4BB5AC49F6A594 /* AddRESPContributionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2D2A67F3EB43BB51719FF51 /* AddRESPContributionView.swift */; };
 		7E38E29A5B5FBC0047FAEC02 /* AppLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E5A5665A30F1D56650390EE /* AppLogger.swift */; };
 		809F8A2DA7BC4ECEA9A0A764 /* FinTrackAccessoryWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C9983576B0236C6721841FA /* FinTrackAccessoryWidget.swift */; };
 		818CAA57F850B119D1838F06 /* PINPadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 711637AA9958C8B7BF0A014B /* PINPadView.swift */; };
@@ -222,6 +223,7 @@
 		A8900D066E43A56DB2C7BEFB /* AddEditCreditLineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditCreditLineView.swift; sourceTree = "<group>"; };
 		AC429D562A281124F93A2B8C /* WidgetDataWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDataWriter.swift; sourceTree = "<group>"; };
 		AF6B9AA36AC85C390D2C87D4 /* ExchangeRateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeRateManager.swift; sourceTree = "<group>"; };
+		B2D2A67F3EB43BB51719FF51 /* AddRESPContributionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRESPContributionView.swift; sourceTree = "<group>"; };
 		B6BA1F3423053EC109D1554A /* WidgetData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetData.swift; sourceTree = "<group>"; };
 		B74500B771A1359075449229 /* LoanPrepayment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoanPrepayment.swift; sourceTree = "<group>"; };
 		BD3CF16E621A3AE8D61CC443 /* SubscriptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionView.swift; sourceTree = "<group>"; };
@@ -313,6 +315,7 @@
 				540F38D8FDDAE86D3FB26390 /* AddEditSavingsProjectView.swift */,
 				D0A00CBB4D610338F0B810C6 /* AddEditTransactionView.swift */,
 				A2CEAC94077AAF3058B1ED00 /* AddRegisteredEntryView.swift */,
+				B2D2A67F3EB43BB51719FF51 /* AddRESPContributionView.swift */,
 				D2A3F91C820A6B4C7BB454D1 /* AddTransferView.swift */,
 				9DB77B9957C1DA199B7DA46B /* AnalyticsDashboardSection.swift */,
 				19AD119703063332E899FA3A /* BudgetDashboardSection.swift */,
@@ -597,6 +600,7 @@
 				369033F55CF3B80CE8206E08 /* AddEditRecurringTransactionView.swift in Sources */,
 				10EAF1229CCD09A58535D853 /* AddEditSavingsProjectView.swift in Sources */,
 				5FDC9958AC1B5F7B003A4C73 /* AddEditTransactionView.swift in Sources */,
+				77B166C49A4BB5AC49F6A594 /* AddRESPContributionView.swift in Sources */,
 				4DBF7F232677DDEB93186976 /* AddRegisteredEntryView.swift in Sources */,
 				BB89AD9A789084492F6B6461 /* AddTransferView.swift in Sources */,
 				823C8A5B06F5F888090233F7 /* AnalyticsDashboardSection.swift in Sources */,

@@ -31,6 +31,7 @@ struct AccountDetailView: View {
     @State private var showAddTransfer = false
     @State private var confirmArchive = false
     @State private var showAddEntry = false
+    @State private var showAddRESPContribution = false
 
     @Query private var allPlans: [RegisteredRoomPlan]
     @Query private var allAccounts: [Account]
@@ -97,6 +98,7 @@ struct AccountDetailView: View {
             }
             if account.respProfile != nil {
                 respGrantSection()
+                respContributionsSection()
             }
 
             Section("\(lang["tx.title"]) (\(sortedTransactions.count))") {
@@ -166,6 +168,9 @@ struct AccountDetailView: View {
         }
         .sheet(isPresented: $showAddEntry) {
             AddRegisteredEntryView(account: account)
+        }
+        .sheet(isPresented: $showAddRESPContribution) {
+            AddRESPContributionView(account: account)
         }
         .confirmationDialog(
             account.isArchived ? lang["account.unarchivePrompt"] : lang["account.archivePrompt"],
@@ -268,6 +273,48 @@ struct AccountDetailView: View {
         }
     }
 
+
+
+    private var sortedRESPContributions: [RESPContribution] {
+        (account.respContributions ?? []).sorted { $0.date > $1.date }
+    }
+
+    @ViewBuilder
+    private func respContributionsSection() -> some View {
+        Section("\(lang["resp.contributed"]) (\(sortedRESPContributions.count))") {
+            Button {
+                showAddRESPContribution = true
+            } label: {
+                Label(lang["resp.entry.add"], systemImage: "plus.circle")
+            }
+            ForEach(sortedRESPContributions) { c in
+                HStack(spacing: 12) {
+                    Image(systemName: "arrow.down.circle.fill")
+                        .foregroundStyle(Color.green)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(c.note.isEmpty ? lang["resp.contributed"] : c.note)
+                        Text(c.date.formatted(.dateTime.day().month().year()))
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Text(c.amount.formatted(asCurrency: account.currency)).fontWeight(.medium)
+                }
+            }
+            .onDelete(perform: deleteRESPContributions)
+        }
+    }
+
+    private func deleteRESPContributions(at offsets: IndexSet) {
+        let items = sortedRESPContributions
+        for i in offsets {
+            let c = items[i]
+            if let pairId = c.transferPairId {
+                deleteLinkedTransfer(pairId)
+            }
+            context.delete(c)
+        }
+        try? context.save()
+    }
 
     private var sortedRegisteredEntries: [RegisteredEntry] {
         (account.registeredEntries ?? []).sorted { $0.date > $1.date }
