@@ -27,8 +27,9 @@ enum OFXImportService {
     @discardableResult
     static func commit(statement: OFXStatement,
                        into account: Account,
-                       context: ModelContext) -> TransactionReconciler.Outcome {
-        let rows = OFXImportMapper.map(statement: statement, accountUuid: account.uuid)
+                       context: ModelContext,
+                       categories: [String: Category] = [:]) -> TransactionReconciler.Outcome {
+        let rows = OFXImportMapper.map(statement: statement, accountUuid: account.uuid, categories: categories)
         let outcome = TransactionReconciler.reconcile(rows, context: context)
         ImportAccountMap.record(
             fingerprint: ImportAccountMap.fingerprint(bankId: statement.bankId, acctId: statement.accountId),

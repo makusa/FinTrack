@@ -24,6 +24,7 @@ struct IncomingBankTransaction {
     let payee: String?            // provider-formatted display payee
     let note: String              // provider-formatted note
     let bankDescription: String?  // raw bank description, preserved on the row
+    var category: Category? = nil // resolved during manual import review; nil for live sync
 }
 
 enum TransactionReconciler {
@@ -136,7 +137,7 @@ enum TransactionReconciler {
     /// raw bank description preserved.
     private static func makeRow(_ inc: IncomingBankTransaction, target: Account) -> Transaction {
         let tx = Transaction(amount: inc.amount, type: inc.isIncome ? .income : .expense,
-                             date: inc.date, account: target, category: nil,
+                             date: inc.date, account: target, category: inc.category,
                              note: inc.note, payee: inc.payee)
         tx.externalId = inc.externalId
         tx.bankDescription = inc.bankDescription

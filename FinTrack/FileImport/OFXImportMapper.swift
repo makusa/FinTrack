@@ -8,13 +8,15 @@
 //
 
 import Foundation
+import SwiftData
 
 enum OFXImportMapper {
 
     /// Map every transaction of `statement` onto a reconciler row targeting
     /// `accountUuid`. externalId is namespaced by account because FITID is only
     /// unique within an account.
-    static func map(statement: OFXStatement, accountUuid: String) -> [IncomingBankTransaction] {
+    static func map(statement: OFXStatement, accountUuid: String,
+                    categories: [String: Category] = [:]) -> [IncomingBankTransaction] {
         statement.transactions.map { t in
             IncomingBankTransaction(
                 externalId: "\(statement.source):\(accountUuid):\(t.fitid)",
@@ -24,7 +26,8 @@ enum OFXImportMapper {
                 date: t.datePosted,
                 payee: t.name,
                 note: t.memo ?? "",
-                bankDescription: bankDescription(name: t.name, memo: t.memo)
+                bankDescription: bankDescription(name: t.name, memo: t.memo),
+                category: categories[t.fitid]
             )
         }
     }

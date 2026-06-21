@@ -583,6 +583,9 @@ enum LocalizedStrings {
         "import.pdf.lowConfidence":["fr": "À vérifier","en": "Review","es": "Revisar","pt": "Verificar"],
         "import.pdf.error.noTransactions":["fr": "Aucune transaction détectée dans ce PDF. Le format n est peut-être pas reconnu.","en": "No transactions detected in this PDF. The layout may not be recognized.","es": "No se detectaron transacciones en este PDF. Puede que el formato no se reconozca.","pt": "Nenhuma transação detetada neste PDF. O formato pode não ser reconhecido."],
         "import.pdf.error.noText":["fr": "Impossible d extraire le texte de ce PDF.","en": "Could not extract text from this PDF.","es": "No se pudo extraer texto de este PDF.","pt": "Não foi possível extrair texto deste PDF."],
+        // Catégorisation à l import
+        "import.cat.placeholder":["fr": "Catégoriser","en": "Categorize","es": "Categorizar","pt": "Categorizar"],
+        "import.cat.none":["fr": "Aucune catégorie","en": "No category","es": "Sin categoría","pt": "Sem categoria"],
         "settings.exportCSV":    ["fr": "Exporter les transactions (CSV)","en": "Export Transactions (CSV)","es": "Exportar transacciones (CSV)","pt": "Exportar transações (CSV)"],
         "settings.resetPrompt":  ["fr": "Tout réinitialiser ?",   "en": "Reset Everything?",   "es": "¿Restablecer todo?", "pt": "Redefinir tudo?"],
         "settings.resetMessage": ["fr": "Toutes vos données seront supprimées. Cette action est irréversible.", "en": "All your data will be deleted. This action is irreversible.", "es": "Todos tus datos serán eliminados. Esta acción es irreversible.", "pt": "Todos os seus dados serão excluídos. Esta ação é irreversível."],

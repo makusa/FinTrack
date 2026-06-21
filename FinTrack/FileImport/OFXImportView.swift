@@ -21,6 +21,11 @@ struct OFXImportView: View {
            sort: \Account.createdAt, order: .forward)
     private var accounts: [Account]
 
+    @Query(sort: \Category.name, order: .forward)
+    private var allCategories: [Category]
+
+    @Query private var historyTransactions: [Transaction]
+
     private enum Phase { case pick, mapping, preview, done }
     @State private var phase: Phase = .pick
     @State private var showImporter = false
@@ -37,6 +42,7 @@ struct OFXImportView: View {
         let id = UUID()
         let txn: OFXTransaction
         var include: Bool = true
+        var category: Category? = nil
     }
 
     /// .qfx / .ofx / .csv by extension; .data as a permissive fallback. The
@@ -171,35 +177,85 @@ struct OFXImportView: View {
         let t = row.wrappedValue.txn
         let on = row.wrappedValue.include
         return HStack(spacing: 12) {
-            Image(systemName: on ? "checkmark.circle.fill" : "circle")
-                .foregroundStyle(on ? Color.accentColor : Color.secondary)
-                .imageScale(.large)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(rowTitle(t))
-                    .font(.body.weight(.medium))
-                    .lineLimit(1)
-                HStack(spacing: 6) {
-                    Text(dateText(t.datePosted))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    if t.confidence == 0 {
-                        Text(lang["import.pdf.lowConfidence"])
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(.orange)
-                            .padding(.horizontal, 5)
-                            .padding(.vertical, 1)
-                            .background(Color.orange.opacity(0.14), in: Capsule())
+            HStack(spacing: 12) {
+                Image(systemName: on ? "checkmark.circle.fill" : "circle")
+                    .foregroundStyle(on ? Color.accentColor : Color.secondary)
+                    .imageScale(.large)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(rowTitle(t))
+                        .font(.body.weight(.medium))
+                        .lineLimit(1)
+                    HStack(spacing: 6) {
+                        Text(dateText(t.datePosted))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        if t.confidence == 0 {
+                            Text(lang["import.pdf.lowConfidence"])
+                                .font(.caption2.weight(.medium))
+                                .foregroundStyle(.orange)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 1)
+                                .background(Color.orange.opacity(0.14), in: Capsule())
+                        }
                     }
                 }
             }
+            .contentShape(Rectangle())
+            .onTapGesture { row.wrappedValue.include.toggle() }
+
             Spacer()
-            Text(amountText(t))
-                .font(.body.weight(.semibold))
-                .foregroundStyle(t.amount > 0 ? Color.green : Color.primary)
+
+            VStack(alignment: .trailing, spacing: 4) {
+                Text(amountText(t))
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(t.amount > 0 ? Color.green : Color.primary)
+                categoryMenu(row)
+            }
         }
         .opacity(on ? 1 : 0.45)
-        .contentShape(Rectangle())
-        .onTapGesture { row.wrappedValue.include.toggle() }
+    }
+
+    private func categoryMenu(_ row: Binding<DraftRow>) -> some View {
+        let t = row.wrappedValue.txn
+        return Menu {
+            Button(lang["import.cat.none"]) { row.wrappedValue.category = nil }
+            Divider()
+            ForEach(categoriesForRow(t)) { cat in
+                Button { row.wrappedValue.category = cat } label: {
+                    Label(cat.name, systemImage: cat.iconSystemName)
+                }
+            }
+        } label: {
+            categoryChipLabel(row.wrappedValue.category)
+        }
+    }
+
+    @ViewBuilder
+    private func categoryChipLabel(_ category: Category?) -> some View {
+        if let c = category {
+            HStack(spacing: 4) {
+                Image(systemName: c.iconSystemName).font(.caption2)
+                Text(c.name).font(.caption2.weight(.medium)).lineLimit(1)
+            }
+            .foregroundStyle(Color(hex: c.colorHex))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(Color(hex: c.colorHex).opacity(0.14), in: Capsule())
+        } else {
+            HStack(spacing: 4) {
+                Image(systemName: "tag").font(.caption2)
+                Text(lang["import.cat.placeholder"]).font(.caption2)
+            }
+            .foregroundStyle(.secondary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(Color(.tertiarySystemFill), in: Capsule())
+        }
+    }
+
+    private func categoriesForRow(_ t: OFXTransaction) -> [Category] {
+        let type: TransactionType = t.amount > 0 ? .income : .expense
+        return allCategories.filter { $0.matches(type) && !$0.isHidden }
     }
 
     private var importBar: some View {
@@ -331,8 +387,14 @@ struct OFXImportView: View {
     /// Shared entry into the review screen for both OFX and post-mapping CSV.
     private func presentStatement(_ st: OFXStatement) {
         let suggestion = OFXImportService.suggestAccount(for: st, among: accounts)
+        let categorizer = TransactionCategorizer(categories: allCategories, history: historyTransactions)
         statement = st
-        rows = st.transactions.map { DraftRow(txn: $0, include: $0.confidence >= 1) }
+        rows = st.transactions.map { txn in
+            let type: TransactionType = txn.amount > 0 ? .income : .expense
+            return DraftRow(txn: txn,
+                            include: txn.confidence >= 1,
+                            category: categorizer.suggest(name: txn.name, memo: txn.memo ?? "", type: type))
+        }
         selectedUuid = suggestion.accountUuid ?? accounts.first?.uuid
         confidence = suggestion.confidence
         phase = .preview
@@ -360,11 +422,16 @@ struct OFXImportView: View {
 
     private func performImport() {
         guard let st = statement, let acc = selectedAccount else { return }
-        let included = rows.filter { $0.include }.map { $0.txn }
-        guard !included.isEmpty else { return }
+        let includedRows = rows.filter { $0.include }
+        guard !includedRows.isEmpty else { return }
         var filtered = st
-        filtered.transactions = included
-        outcome = OFXImportService.commit(statement: filtered, into: acc, context: context)
+        filtered.transactions = includedRows.map(\.txn)
+        let categories = Dictionary(
+            includedRows.compactMap { r in r.category.map { (r.txn.fitid, $0) } },
+            uniquingKeysWith: { first, _ in first }
+        )
+        outcome = OFXImportService.commit(statement: filtered, into: acc,
+                                          context: context, categories: categories)
         phase = .done
     }
 
