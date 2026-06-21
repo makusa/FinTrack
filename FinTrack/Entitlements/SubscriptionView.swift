@@ -107,7 +107,7 @@ struct SubscriptionView: View {
         switch entitlements.tier {
         case .free:  return lang["entitlement.free.name"]
         case .epargne:   return lang["entitlement.pro.name"]
-        case .placement: return lang["entitlement.plaid.name"] + " + Pro"
+        case .placement: return lang["entitlement.plaid.name"]
         }
     }
 
@@ -199,6 +199,9 @@ struct SubscriptionView: View {
             FeatureRow(name: lang["entitlement.table.fx"],            free: false, pro: true,  plaid: true),
             FeatureRow(name: lang["entitlement.table.dashboard"],     free: false, pro: true,  plaid: true),
             FeatureRow(name: lang["entitlement.table.export"],        free: false, pro: true,  plaid: true),
+            FeatureRow(name: lang["entitlement.table.import"],        free: false, pro: true,  plaid: true),
+            FeatureRow(name: lang["entitlement.table.categorization"],free: false, pro: true,  plaid: true),
+            FeatureRow(name: lang["entitlement.table.icloud"],        free: false, pro: true,  plaid: true),
             FeatureRow(name: lang["entitlement.table.plaid"],         free: false, pro: false, plaid: true),
         ]
     }
