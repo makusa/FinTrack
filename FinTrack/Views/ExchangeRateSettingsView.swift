@@ -9,31 +9,59 @@ struct ExchangeRateSettingsView: View {
     @Environment(LanguageManager.self) private var lang
     @Environment(ExchangeRateManager.self) private var rates
     @Environment(EntitlementManager.self) private var entitlements
+
     // Local state avoids triggering a global re-render cascade on every
     // picker scroll tick. The actual change is applied via onChange.
     @State private var selectedCurrency: String = ""
     @State private var showConvertedLocal: Bool = false
+    @State private var showAddCurrency = false
+    @State private var showPaywall = false
 
-    /// Devises sélectionnables : CAD + USD pour Courant, toutes pour Pro.
-    private var selectableCurrencies: [CurrencyInfo] {
-        entitlements.hasPaidTier
-            ? Currencies.all
-            : Currencies.all.filter { ["CAD", "USD"].contains($0.code) }
+    /// Free tier may track up to freeMaxCurrencies; Pro is unlimited.
+    private var canAddCurrency: Bool {
+        entitlements.hasPaidTier || rates.activeCurrencies.count < FinTrackLimit.freeMaxCurrencies
     }
 
-    /// Devises affichées dans le tableau des taux : même filtre.
-    private var displayableCurrencies: [CurrencyInfo] {
-        Currencies.all.filter {
-            entitlements.hasPaidTier || ["CAD", "USD"].contains($0.code)
-        }
+    private var hasNonBaseActive: Bool {
+        rates.activeCurrencies.contains { $0 != rates.baseCurrency }
     }
 
     var body: some View {
         List {
+            // MARK: My currencies (user-managed list)
+            Section {
+                ForEach(rates.activeCurrencyInfos) { c in
+                    HStack {
+                        Text(c.symbol)
+                            .frame(width: 44, alignment: .leading)
+                            .foregroundStyle(.secondary)
+                        Text(c.code + " — " + c.nameFR)
+                        Spacer()
+                        if c.code == ExchangeRateManager.pinnedCurrency {
+                            Image(systemName: "pin.fill")
+                                .font(.caption2)
+                                .foregroundStyle(.tertiary)
+                        }
+                    }
+                }
+                .onDelete(perform: removeCurrencies)
+
+                Button {
+                    if canAddCurrency { showAddCurrency = true } else { showPaywall = true }
+                } label: {
+                    Label(lang["fx.currencies.add"],
+                          systemImage: canAddCurrency ? "plus.circle" : "lock.fill")
+                }
+            } header: {
+                Text(lang["fx.currencies.section"])
+            } footer: {
+                Text(canAddCurrency ? lang["fx.currencies.footer"] : lang["fx.currencies.freeCap"])
+            }
+
             // MARK: Display currency
             Section {
                 Picker(lang["fx.displayCurrency"], selection: $selectedCurrency) {
-                    ForEach(selectableCurrencies) { c in
+                    ForEach(rates.activeCurrencyInfos) { c in
                         HStack {
                             Text(c.symbol)
                                 .frame(width: 40, alignment: .leading)
@@ -41,11 +69,6 @@ struct ExchangeRateSettingsView: View {
                             Text(c.code + " — " + c.nameFR)
                         }
                         .tag(c.code)
-                    }
-                    if !entitlements.hasPaidTier {
-                        Label(lang["fx.pro.hint"], systemImage: "lock.fill")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
                     }
                 }
                 .pickerStyle(.navigationLink)
@@ -99,11 +122,11 @@ struct ExchangeRateSettingsView: View {
                 .disabled(rates.isLoading)
             }
 
-            // MARK: Current rates
-            if !rates.rates.isEmpty {
+            // MARK: Current rates (tracked currencies)
+            if !rates.rates.isEmpty && hasNonBaseActive {
                 Section(lang["fx.rates.current"]) {
                     let display = rates.displayCurrency
-                    ForEach(displayableCurrencies.filter { $0.code != rates.baseCurrency }, id: \.code) { currency in
+                    ForEach(rates.activeCurrencyInfos.filter { $0.code != rates.baseCurrency }) { currency in
                         let rate = rates.convert(1, from: rates.baseCurrency, to: currency.code)
                         HStack {
                             Text("1 \(rates.baseCurrency)")
@@ -119,6 +142,15 @@ struct ExchangeRateSettingsView: View {
         }
         .navigationTitle(lang["fx.title"])
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showAddCurrency) {
+            AddCurrencySheet()
+        }
+        .sheet(isPresented: $showPaywall) {
+            NavigationStack {
+                ProGateView(feature: .exchangeRates)
+                    .environment(entitlements)
+            }
+        }
         .onAppear {
             selectedCurrency   = rates.displayCurrency
             showConvertedLocal = rates.showConvertedAmounts
@@ -129,5 +161,64 @@ struct ExchangeRateSettingsView: View {
             rates.displayCurrency = new
         }
         .task { await rates.refreshIfNeeded() }
+    }
+
+    private func removeCurrencies(at offsets: IndexSet) {
+        let infos = rates.activeCurrencyInfos
+        for i in offsets {
+            let code = infos[i].code
+            if rates.canRemove(code) { rates.removeCurrency(code) }
+        }
+    }
+}
+
+// MARK: - Add-currency catalogue picker
+
+private struct AddCurrencySheet: View {
+    @Environment(LanguageManager.self) private var lang
+    @Environment(ExchangeRateManager.self) private var rates
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var search = ""
+
+    /// Catalogue currencies not already tracked, filtered by the search text.
+    private var available: [CurrencyInfo] {
+        let q = search.trimmingCharacters(in: .whitespaces).lowercased()
+        return Currencies.all.filter { c in
+            !rates.activeCurrencies.contains(c.code)
+                && (q.isEmpty
+                    || c.code.lowercased().contains(q)
+                    || c.nameFR.lowercased().contains(q))
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            List(available) { c in
+                Button {
+                    rates.addCurrency(c.code)
+                    dismiss()
+                } label: {
+                    HStack {
+                        Text(c.symbol)
+                            .frame(width: 44, alignment: .leading)
+                            .foregroundStyle(.secondary)
+                        Text(c.code + " — " + c.nameFR)
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        Image(systemName: "plus.circle")
+                            .foregroundStyle(.tint)
+                    }
+                }
+            }
+            .searchable(text: $search, prompt: lang["fx.currencies.searchPrompt"])
+            .navigationTitle(lang["fx.currencies.add"])
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(lang["action.cancel"]) { dismiss() }
+                }
+            }
+        }
     }
 }

@@ -70,6 +70,8 @@ enum FinTrackLimit {
     static let freeMaxRegisteredAccounts = 2
     /// Maximum user-created (custom) categories in the free tier. System categories don't count.
     static let freeMaxCustomCategories = 3
+    /// Maximum tracked currencies in the free tier (CAD is always one of them).
+    static let freeMaxCurrencies = 2
 }
 
 // MARK: - EntitlementManager
