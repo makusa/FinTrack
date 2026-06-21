@@ -523,6 +523,8 @@ enum LocalizedStrings {
         "settings.accountCount": ["fr": "Nombre de comptes",      "en": "Number of Accounts",  "es": "Número de cuentas",  "pt": "Número de contas"],
         "settings.txCount":      ["fr": "Nombre de transactions", "en": "Number of Transactions","es": "Número de transacciones","pt": "Número de transações"],
         "settings.dangerZone":   ["fr": "Zone dangereuse",        "en": "Danger Zone",         "es": "Zona de peligro",    "pt": "Zona de perigo"],
+        "settings.section.preferences": ["fr": "Préférences", "en": "Preferences", "es": "Preferencias", "pt": "Preferências"],
+        "settings.section.privacy": ["fr": "Sécurité et confidentialité", "en": "Security & privacy", "es": "Seguridad y privacidad", "pt": "Segurança e privacidade"],
         "settings.resetAll":     ["fr": "Réinitialiser toutes les données","en": "Reset All Data","es": "Restablecer todos los datos","pt": "Redefinir todos os dados"],
         "settings.resetAll.footer":["fr":"Supprime tous les comptes, transactions et catégories personnalisées. Les catégories par défaut seront recréées. Cette action est irréversible.", "en": "Deletes all accounts, transactions, and custom categories. Default categories will be recreated. This action is irreversible.", "es": "Elimina todas las cuentas, transacciones y categorías personalizadas. Las categorías predeterminadas se recrearán. Esta acción es irreversible.", "pt": "Exclui todas as contas, transações e categorias personalizadas. As categorias padrão serão recriadas. Esta ação é irreversível."],
         "settings.about":        ["fr": "À propos",               "en": "About",               "es": "Acerca de",          "pt": "Sobre"],

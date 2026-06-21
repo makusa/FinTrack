@@ -24,21 +24,45 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                languageSection
-                exchangeRatesSection
+                // Abonnement (en tête)
                 subscriptionSection
-                bankSyncSection
-                securitySection
-                notificationsSection
-                cloudSyncSection
-                statsSection
+
+                // Préférences
+                Section(lang["settings.section.preferences"]) {
+                    languageRow
+                    exchangeRatesRow
+                    notificationsRow
+                }
+
+                // Sécurité et confidentialité
+                Section {
+                    securityRow
+                    bankSyncRow
+                    cloudSyncRow
+                } header: {
+                    Text(lang["settings.section.privacy"])
+                } footer: {
+                    privacyFooter
+                }
+
+                // À propos (version, stockage, stats)
+                Section(lang["settings.about"]) {
+                    aboutRows
+                    statsRows
+                }
+
                 dangerZoneSection
-                aboutSection
+
                 #if DEBUG
                 developerSection
                 #endif
             }
             .navigationTitle(lang["settings.title"])
+            .alert(lang["settings.cloudSync.restart.title"], isPresented: $showCloudRestartAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(lang["settings.cloudSync.restart.body"])
+            }
             .confirmationDialog(
                 lang["settings.resetPrompt"],
                 isPresented: $confirmReset,
@@ -55,43 +79,33 @@ struct SettingsView: View {
     // MARK: - Sections
 
     @ViewBuilder
-    private var languageSection: some View {
-        Section(lang["settings.language.section"]) {
-            ForEach(AppLanguage.allCases) { language in
-                Button {
-                    lang.setLanguage(language)
-                } label: {
-                    HStack {
-                        Text(language.flag + "  " + language.displayName)
-                            .foregroundStyle(.primary)
-                        Spacer()
-                        if lang.current == language {
-                            Image(systemName: "checkmark")
-                                .foregroundStyle(.tint)
-                                .fontWeight(.semibold)
-                        }
-                    }
-                }
+    private var languageRow: some View {
+        NavigationLink {
+            LanguagePickerView()
+        } label: {
+            HStack {
+                Label(lang["settings.language.section"], systemImage: "globe")
+                Spacer()
+                Text(lang.current.flag + " " + lang.current.displayName)
+                    .foregroundStyle(.secondary)
             }
         }
     }
 
     @ViewBuilder
-    private var exchangeRatesSection: some View {
-        Section(lang["fx.settings.section"]) {
-            NavigationLink {
-                ExchangeRateSettingsView()
-            } label: {
-                HStack {
-                    Label(lang["fx.title"], systemImage: "arrow.left.arrow.right.circle")
-                    Spacer()
-                    if rateManager.isLoading {
-                        ProgressView().scaleEffect(0.8)
-                    } else if rateManager.lastUpdated != nil {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
-                            .font(.caption)
-                    }
+    private var exchangeRatesRow: some View {
+        NavigationLink {
+            ExchangeRateSettingsView()
+        } label: {
+            HStack {
+                Label(lang["fx.title"], systemImage: "arrow.left.arrow.right.circle")
+                Spacer()
+                if rateManager.isLoading {
+                    ProgressView().scaleEffect(0.8)
+                } else if rateManager.lastUpdated != nil {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundStyle(.green)
+                        .font(.caption)
                 }
             }
         }
@@ -113,100 +127,85 @@ struct SettingsView: View {
     }
 
     @ViewBuilder
-    private var bankSyncSection: some View {
-        Section(lang["flinks.settings.section"]) {
-            if entitlements.hasPaidTier {
-                NavigationLink {
-                    BankSyncDestinationView()
-                } label: {
-                    Label(bankSyncProviderLabel,
-                          systemImage: "building.columns.badge.plus")
-                }
-            } else {
-                HStack {
-                    Label(bankSyncProviderLabel,
-                          systemImage: "building.columns.badge.plus")
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Image(systemName: "lock.fill")
-                        .font(.caption)
-                        .foregroundStyle(.orange)
-                }
-            }
-        }
-    }
-
-    @ViewBuilder
-    private var securitySection: some View {
-        Section(lang["security.title"]) {
+    private var bankSyncRow: some View {
+        if entitlements.hasPaidTier {
             NavigationLink {
-                SecuritySettingsView()
+                BankSyncDestinationView()
             } label: {
-                Label(lang["security.title"], systemImage: "lock.shield")
+                Label(bankSyncProviderLabel,
+                      systemImage: "building.columns.badge.plus")
+            }
+        } else {
+            HStack {
+                Label(bankSyncProviderLabel,
+                      systemImage: "building.columns.badge.plus")
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Image(systemName: "lock.fill")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
             }
         }
     }
 
     @ViewBuilder
-    private var notificationsSection: some View {
-        Section(lang["notification.settings"]) {
-            NavigationLink {
-                NotificationSettingsView()
-            } label: {
-                Label(lang["notification.manage"], systemImage: "bell.badge")
+    private var securityRow: some View {
+        NavigationLink {
+            SecuritySettingsView()
+        } label: {
+            Label(lang["security.title"], systemImage: "lock.shield")
+        }
+    }
+
+    @ViewBuilder
+    private var notificationsRow: some View {
+        NavigationLink {
+            NotificationSettingsView()
+        } label: {
+            Label(lang["notification.manage"], systemImage: "bell.badge")
+        }
+    }
+
+    @ViewBuilder
+    private var cloudSyncRow: some View {
+        if entitlements.hasPaidTier {
+            Toggle(isOn: $cloudSyncEnabled) {
+                Label(lang["settings.cloudSync"], systemImage: "icloud.fill")
+            }
+            .onChange(of: cloudSyncEnabled) { _, _ in
+                showCloudRestartAlert = true
+            }
+        } else {
+            HStack {
+                Label(lang["settings.cloudSync"], systemImage: "icloud.fill")
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Image(systemName: "lock.fill")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+            }
+        }
+    }
+
+    private var privacyFooter: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(entitlements.hasPaidTier
+                 ? lang["settings.cloudSync.footer"]
+                 : lang["settings.cloudSync.locked"])
+            if let lastError = UserDefaults.standard.string(forKey: "fintrack.cloudSync.lastError") {
+                Text("\(lang["settings.cloudSync.lastError"]) \(lastError)")
+                    .foregroundStyle(.orange)
             }
         }
     }
 
     @ViewBuilder
-    private var cloudSyncSection: some View {
-        Section {
-            if entitlements.hasPaidTier {
-                Toggle(isOn: $cloudSyncEnabled) {
-                    Label(lang["settings.cloudSync"], systemImage: "icloud.fill")
-                }
-                .onChange(of: cloudSyncEnabled) { _, _ in
-                    showCloudRestartAlert = true
-                }
-            } else {
-                HStack {
-                    Label(lang["settings.cloudSync"], systemImage: "icloud.fill")
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                    Image(systemName: "lock.fill")
-                        .font(.caption)
-                        .foregroundStyle(.orange)
-                }
-            }
-        } header: {
-            Text(lang["settings.cloudSync.section"])
-        } footer: {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(entitlements.hasPaidTier
-                     ? lang["settings.cloudSync.footer"]
-                     : lang["settings.cloudSync.locked"])
-                if let lastError = UserDefaults.standard.string(forKey: "fintrack.cloudSync.lastError") {
-                    Text("\(lang["settings.cloudSync.lastError"]) \(lastError)")
-                        .foregroundStyle(.orange)
-                }
-            }
+    private var statsRows: some View {
+        LabeledContent(lang["settings.accountCount"]) {
+            Text("\(allAccounts.count)")
         }
-        .alert(lang["settings.cloudSync.restart.title"], isPresented: $showCloudRestartAlert) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(lang["settings.cloudSync.restart.body"])
-        }
-    }
-
-    @ViewBuilder
-    private var statsSection: some View {
-        Section(lang["settings.stats"]) {
-            LabeledContent(lang["settings.accountCount"]) {
-                Text("\(allAccounts.count)")
-            }
-            LabeledContent(lang["settings.txCount"]) {
-                Text("\(allTransactions.count)")
-            }
+        LabeledContent(lang["settings.txCount"]) {
+            Text("\(allTransactions.count)")
         }
     }
 
@@ -226,14 +225,12 @@ struct SettingsView: View {
     }
 
     @ViewBuilder
-    private var aboutSection: some View {
-        Section(lang["settings.about"]) {
-            LabeledContent(lang["settings.version"]) {
-                Text(appVersion)
-            }
-            LabeledContent(lang["settings.storage"]) {
-                Text(lang["settings.storage.local"])
-            }
+    private var aboutRows: some View {
+        LabeledContent(lang["settings.version"]) {
+            Text(appVersion)
+        }
+        LabeledContent(lang["settings.storage"]) {
+            Text(lang["settings.storage.local"])
         }
     }
 
@@ -312,6 +309,35 @@ struct SettingsView: View {
 
         try? context.save()
         SeedData.seedIfNeeded(context: context)
+    }
+}
+
+// MARK: - Language picker
+
+private struct LanguagePickerView: View {
+    @Environment(LanguageManager.self) private var lang
+
+    var body: some View {
+        List {
+            ForEach(AppLanguage.allCases) { language in
+                Button {
+                    lang.setLanguage(language)
+                } label: {
+                    HStack {
+                        Text(language.flag + "  " + language.displayName)
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        if lang.current == language {
+                            Image(systemName: "checkmark")
+                                .foregroundStyle(.tint)
+                                .fontWeight(.semibold)
+                        }
+                    }
+                }
+            }
+        }
+        .navigationTitle(lang["settings.language.section"])
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
