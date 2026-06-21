@@ -51,6 +51,12 @@ targets:
         CODE_SIGN_IDENTITY: "iPhone Developer"
     entitlements:
       path: FinTrack/FinTrack.entitlements
+      properties:
+        aps-environment: development
+        com.apple.developer.icloud-container-identifiers:
+          - iCloud.ca.regis.fintrack
+        com.apple.developer.icloud-services:
+          - CloudKit
     dependencies:
       - target: FinTrackWidget
         embed: true
