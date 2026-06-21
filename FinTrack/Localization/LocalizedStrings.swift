@@ -814,6 +814,12 @@ enum LocalizedStrings {
         "icloud.sync.info":    ["fr": "Vos données sont synchronisées automatiquement entre tous vos appareils Apple connectés au même compte iCloud.", "en": "Your data is automatically synced across all your Apple devices signed in to the same iCloud account.", "es": "Tus datos se sincronizan automáticamente en todos tus dispositivos Apple con la misma cuenta iCloud.", "pt": "Seus dados são sincronizados automaticamente em todos os seus dispositivos Apple com a mesma conta iCloud."],
         "icloud.openSettings": ["fr": "Ouvrir Réglages iOS",                       "en": "Open iOS Settings",                       "es": "Abrir Ajustes de iOS",                    "pt": "Abrir Configurações do iOS"],
         "icloud.container":    ["fr": "Conteneur CloudKit",                        "en": "CloudKit Container",                      "es": "Contenedor CloudKit",                     "pt": "Container CloudKit"],
+        "cloud.restore.title":          ["fr": "Données iCloud trouvées", "en": "iCloud data found", "es": "Datos de iCloud encontrados", "pt": "Dados do iCloud encontrados"],
+        "cloud.restore.message":        ["fr": "Des données FinTrack ont été trouvées dans votre iCloud. Voulez-vous les charger sur cet appareil ?", "en": "FinTrack data was found in your iCloud. Do you want to load it onto this device?", "es": "Se encontraron datos de FinTrack en tu iCloud. ¿Quieres cargarlos en este dispositivo?", "pt": "Foram encontrados dados do FinTrack no seu iCloud. Deseja carregá-los neste dispositivo?"],
+        "cloud.restore.load":           ["fr": "Charger", "en": "Load", "es": "Cargar", "pt": "Carregar"],
+        "cloud.restore.fresh":          ["fr": "Repartir à zéro", "en": "Start fresh", "es": "Empezar de cero", "pt": "Começar do zero"],
+        "cloud.restore.reopen.title":   ["fr": "Presque terminé", "en": "Almost done", "es": "Casi listo", "pt": "Quase pronto"],
+        "cloud.restore.reopen.message": ["fr": "Rouvrez FinTrack pour charger vos données iCloud.", "en": "Reopen FinTrack to load your iCloud data.", "es": "Vuelve a abrir FinTrack para cargar tus datos de iCloud.", "pt": "Reabra o FinTrack para carregar seus dados do iCloud."],
 
         // MARK: - Notifications
         

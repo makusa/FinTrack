@@ -22,6 +22,13 @@ struct RootView: View {
     /// Deep-link section to open inside SettingsView (loans, creditlines, recurring)
     @State private var settingsDeepLink: String = ""
 
+    // P2 — iCloud restore prompt
+    @AppStorage("fintrack.cloudSyncEnabled") private var cloudSyncEnabled = false
+    @AppStorage("fintrack.cloudRestore.handled") private var restoreHandled = false
+    @State private var showRestorePrompt = false
+    @State private var showReopenNotice = false
+    @State private var restoreProbeRan = false
+
     var body: some View {
         Group {
             if !lockManager.isSetup {
@@ -101,6 +108,44 @@ struct RootView: View {
             SettingsView(deepLink: $settingsDeepLink)
                 .tabItem { Label(lang["tab.settings"], systemImage: "gearshape.fill") }
                 .tag(4)
+        }
+        .task { await probeForCloudRestore() }
+        .onChange(of: entitlements.hasPaidTier) { _, isPaid in
+            if isPaid { Task { await probeForCloudRestore() } }
+        }
+        .alert(lang["cloud.restore.title"], isPresented: $showRestorePrompt) {
+            Button(lang["cloud.restore.load"]) {
+                cloudSyncEnabled = true
+                restoreHandled = true
+                showReopenNotice = true
+            }
+            Button(lang["cloud.restore.fresh"], role: .cancel) {
+                restoreHandled = true
+            }
+        } message: {
+            Text(lang["cloud.restore.message"])
+        }
+        .alert(lang["cloud.restore.reopen.title"], isPresented: $showReopenNotice) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(lang["cloud.restore.reopen.message"])
+        }
+    }
+
+    /// P2 — Offers to load existing iCloud data on a fresh, paid install. Only runs
+    /// when paid, sync is off, nothing exists locally, and the user hasn't chosen
+    /// yet. "Load" enables sync; data downloads on the next launch (the container
+    /// is built CloudKit-backed once, at startup).
+    private func probeForCloudRestore() async {
+        guard entitlements.hasPaidTier,
+              !cloudSyncEnabled,
+              !restoreHandled,
+              !restoreProbeRan,
+              _accounts.isEmpty
+        else { return }
+        restoreProbeRan = true
+        if await CloudDataProbe.hasCloudData() {
+            showRestorePrompt = true
         }
     }
 }
