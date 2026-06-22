@@ -22,7 +22,6 @@ struct BudgetsView: View {
     private var allTransactions: [Transaction]
 
     @State private var showAdd          = false
-    @State private var budgetToEdit: Budget? = nil
     @State private var showArchived     = false
 
     private var isAtFreeLimit: Bool {
@@ -64,9 +63,6 @@ struct BudgetsView: View {
             } else {
                 AddEditBudgetView(mode: .create)
             }
-        }
-        .sheet(item: $budgetToEdit) { b in
-            AddEditBudgetView(mode: .edit(b))
         }
     }
 
@@ -151,9 +147,11 @@ struct BudgetsView: View {
             // Active budgets
             Section(lang["budget.active"]) {
                 ForEach(statuses) { status in
-                    BudgetRow(status: status)
-                        .contentShape(Rectangle())
-                        .onTapGesture { budgetToEdit = status.budget }
+                    NavigationLink {
+                        BudgetDetailView(budget: status.budget)
+                    } label: {
+                        BudgetRow(status: status)
+                    }
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
                                 deleteBudget(status.budget)
