@@ -98,13 +98,21 @@ final class Budget {
     var notes: String? = nil
     var createdAt: Date = Date.now
 
-    /// Nil = applies to ALL expense categories (global spending budget).
+    /// Empty = applies to ALL expense categories (global spending budget).
+    /// Otherwise the budget tracks expenses in ANY of these categories (many-to-many).
     @Relationship(deleteRule: .nullify, inverse: \Category.budgets)
-    var category: Category? = nil
+    var categories: [Category] = []
 
     var period: BudgetPeriod {
         get { BudgetPeriod(rawValue: periodRaw) ?? .monthly }
         set { periodRaw = newValue.rawValue }
+    }
+
+    /// Localized label for the budget's category scope.
+    /// Empty categories = global budget ("all expenses").
+    var categoriesLabel: String {
+        if categories.isEmpty { return LanguageManager.shared["budget.category.all"] }
+        return categories.map(\.localizedName).sorted().joined(separator: ", ")
     }
 
     init(
@@ -114,7 +122,7 @@ final class Budget {
         period: BudgetPeriod,
         colorHex: String = "#3478F6",
         iconSystemName: String = "cart.fill",
-        category: Category? = nil,
+        categories: [Category] = [],
         notes: String? = nil
     ) {
         self.name          = name
@@ -123,7 +131,7 @@ final class Budget {
         self.periodRaw     = period.rawValue
         self.colorHex      = colorHex
         self.iconSystemName = iconSystemName
-        self.category      = category
+        self.categories    = categories
         self.notes         = notes
         self.isActive      = true
         self.createdAt     = .now
@@ -180,10 +188,9 @@ enum BudgetCalculator {
                 guard tx.type == .expense else { return false }
                 guard tx.date >= start && tx.date < end else { return false }
                 guard tx.account?.currency == budget.currency else { return false }
-                if let cat = budget.category {
-                    return tx.category?.persistentModelID == cat.persistentModelID
-                }
-                return true   // global budget: all expenses in currency
+                if budget.categories.isEmpty { return true } // global: all expenses in currency
+                guard let txCat = tx.category else { return false }
+                return budget.categories.contains { $0.persistentModelID == txCat.persistentModelID }
             }
             .reduce(Decimal(0)) { $0 + $1.amount }
     }
@@ -218,10 +225,9 @@ enum BudgetCalculator {
                     guard tx.type == .expense else { return false }
                     guard tx.date >= start && tx.date < end else { return false }
                     guard tx.account?.currency == budget.currency else { return false }
-                    if let cat = budget.category {
-                        return tx.category?.persistentModelID == cat.persistentModelID
-                    }
-                    return true
+                    if budget.categories.isEmpty { return true }
+                    guard let txCat = tx.category else { return false }
+                    return budget.categories.contains { $0.persistentModelID == txCat.persistentModelID }
                 }
                 .reduce(Decimal(0)) { $0 + $1.amount }
 

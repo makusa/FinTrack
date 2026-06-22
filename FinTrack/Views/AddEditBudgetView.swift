@@ -29,7 +29,7 @@ struct AddEditBudgetView: View {
             _limitText         = State(initialValue: b.limitAmount.appFormattedForInput)
             _currency          = State(initialValue: b.currency)
             _period            = State(initialValue: b.period)
-            _selectedCategoryID = State(initialValue: b.category?.persistentModelID)
+            _selectedCategoryIDs = State(initialValue: Set(b.categories.map(\.persistentModelID)))
             _colorHex          = State(initialValue: b.colorHex)
             _iconSystemName    = State(initialValue: b.iconSystemName)
             _notes             = State(initialValue: b.notes ?? "")
@@ -61,7 +61,7 @@ struct AddEditBudgetView: View {
     @State private var limitText: String = ""
     @State private var currency: String = Currencies.default
     @State private var period: BudgetPeriod = .monthly
-    @State private var selectedCategoryID: PersistentIdentifier? = nil   // nil = global (toutes catégories)
+    @State private var selectedCategoryIDs: Set<PersistentIdentifier> = []   // vide = global (toutes catégories)
     @State private var colorHex: String = ColorPalette.accountColors.first ?? "#3478F6"
     @State private var iconSystemName: String = "cart.fill"
     @State private var notes: String = ""
@@ -72,8 +72,14 @@ struct AddEditBudgetView: View {
 
     private var isEditing: Bool { if case .edit = mode { return true } ; return false }
 
-    private var selectedCategoryObject: Category? {
-        expenseCategories.first { $0.persistentModelID == selectedCategoryID }
+    private var selectedCategoryObjects: [Category] {
+        expenseCategories.filter { selectedCategoryIDs.contains($0.persistentModelID) }
+    }
+
+    private var categorySelectionLabel: String {
+        let chosen = selectedCategoryObjects
+        if chosen.isEmpty { return lang["budget.category.all"] }
+        return chosen.map(\.localizedName).sorted().joined(separator: ", ")
     }
 
     private var limit: Decimal? {
@@ -136,7 +142,7 @@ struct AddEditBudgetView: View {
                         BudgetCategoryPickerList(
                             categories: expenseCategories,
                             allLabel: lang["budget.category.all"],
-                            selectedID: $selectedCategoryID
+                            selectedIDs: $selectedCategoryIDs
                         )
                         .navigationTitle(lang["label.category"])
                         .navigationBarTitleDisplayMode(.inline)
@@ -144,15 +150,10 @@ struct AddEditBudgetView: View {
                         HStack {
                             Text(lang["label.category"])
                             Spacer()
-                            if let cat = selectedCategoryObject {
-                                Image(systemName: cat.iconSystemName)
-                                    .foregroundStyle(Color(hex: cat.colorHex))
-                                Text(cat.localizedName)
-                                    .foregroundStyle(.secondary)
-                            } else {
-                                Text(lang["budget.category.all"])
-                                    .foregroundStyle(.secondary)
-                            }
+                            Text(categorySelectionLabel)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.trailing)
+                                .lineLimit(2)
                         }
                     }
                 } header: {
@@ -263,7 +264,7 @@ struct AddEditBudgetView: View {
         guard let amt = limit, amt > 0 else { return }
         let trimmedName  = name.trimmingCharacters(in: .whitespaces)
         let trimmedNotes = notes.trimmingCharacters(in: .whitespaces)
-        let chosenCategory = expenseCategories.first { $0.persistentModelID == selectedCategoryID }
+        let chosenCategories = expenseCategories.filter { selectedCategoryIDs.contains($0.persistentModelID) }
 
         switch mode {
         case .create:
@@ -274,7 +275,7 @@ struct AddEditBudgetView: View {
                 period: period,
                 colorHex: colorHex,
                 iconSystemName: iconSystemName,
-                category: chosenCategory,
+                categories: chosenCategories,
                 notes: trimmedNotes.isEmpty ? nil : trimmedNotes
             )
             context.insert(b)
@@ -285,7 +286,7 @@ struct AddEditBudgetView: View {
             b.period         = period
             b.colorHex       = colorHex
             b.iconSystemName = iconSystemName
-            b.category       = chosenCategory
+            b.categories     = chosenCategories
             b.notes          = trimmedNotes.isEmpty ? nil : trimmedNotes
         }
         try? context.save()
@@ -303,17 +304,15 @@ struct AddEditBudgetView: View {
 // MARK: - Sélecteur de catégorie (liste explicite, fiable en création comme en édition)
 
 private struct BudgetCategoryPickerList: View {
-    @Environment(\.dismiss) private var dismiss
-
     let categories: [Category]
     let allLabel: String
-    @Binding var selectedID: PersistentIdentifier?
+    @Binding var selectedIDs: Set<PersistentIdentifier>
 
     var body: some View {
         List {
+            // "Toutes les dépenses" = aucune catégorie sélectionnée (budget global).
             Button {
-                selectedID = nil
-                dismiss()
+                selectedIDs.removeAll()
             } label: {
                 HStack {
                     Image(systemName: "square.grid.2x2")
@@ -321,15 +320,17 @@ private struct BudgetCategoryPickerList: View {
                     Text(allLabel)
                         .foregroundStyle(.primary)
                     Spacer()
-                    if selectedID == nil {
+                    if selectedIDs.isEmpty {
                         Image(systemName: "checkmark").foregroundStyle(.tint)
                     }
                 }
             }
+            // Multi-sélection: chaque tap bascule la catégorie (ne ferme pas l'écran).
             ForEach(categories) { cat in
                 Button {
-                    selectedID = cat.persistentModelID
-                    dismiss()
+                    let id = cat.persistentModelID
+                    if selectedIDs.contains(id) { selectedIDs.remove(id) }
+                    else { selectedIDs.insert(id) }
                 } label: {
                     HStack {
                         Image(systemName: cat.iconSystemName)
@@ -337,7 +338,7 @@ private struct BudgetCategoryPickerList: View {
                         Text(cat.localizedName)
                             .foregroundStyle(.primary)
                         Spacer()
-                        if selectedID == cat.persistentModelID {
+                        if selectedIDs.contains(cat.persistentModelID) {
                             Image(systemName: "checkmark").foregroundStyle(.tint)
                         }
                     }

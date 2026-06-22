@@ -32,10 +32,9 @@ struct BudgetDetailView: View {
             guard tx.type == .expense else { return false }
             guard tx.date >= start && tx.date < end else { return false }
             guard tx.account?.currency == budget.currency else { return false }
-            if let cat = budget.category {
-                return tx.category?.persistentModelID == cat.persistentModelID
-            }
-            return true
+            if budget.categories.isEmpty { return true }
+            guard let txCat = tx.category else { return false }
+            return budget.categories.contains { $0.persistentModelID == txCat.persistentModelID }
         }
     }
 
@@ -57,7 +56,7 @@ struct BudgetDetailView: View {
                         VStack(alignment: .leading, spacing: 3) {
                             Text(budget.name)
                                 .font(.title3.weight(.bold))
-                            Text(budget.category?.name ?? lang["budget.category.all"])
+                            Text(budget.categoriesLabel)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                         }
