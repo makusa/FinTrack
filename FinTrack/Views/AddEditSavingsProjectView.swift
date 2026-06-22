@@ -18,6 +18,7 @@ struct AddEditSavingsProjectView: View {
     @Environment(\.dismiss) private var dismiss
 
     let mode: SavingsProjectEditorMode
+    @State private var didInitialLoad = false
 
     /// Currencies offered in the picker: the user's tracked list, plus this
     /// item's own currency if it's no longer tracked (so it's never lost).
@@ -122,7 +123,11 @@ struct AddEditSavingsProjectView: View {
                 Button(lang["action.delete"], role: .destructive) { deleteIfEditing() }
                 Button(lang["action.cancel"], role: .cancel) {}
             }
-            .onAppear(perform: loadIfEditing)
+            .onAppear {
+                guard !didInitialLoad else { return }
+                didInitialLoad = true
+                loadIfEditing()
+            }
         }
     }
 

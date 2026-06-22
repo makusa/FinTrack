@@ -17,6 +17,7 @@ struct AddEditTransactionView: View {
     @Environment(\.dismiss) private var dismiss
 
     let mode: TransactionEditorMode
+    @State private var didInitialLoad = false
     let preselectedAccount: Account?
 
     @Query(filter: #Predicate<Account> { !$0.isArchived },
@@ -143,7 +144,11 @@ struct AddEditTransactionView: View {
             Button(lang["action.delete"], role: .destructive) { deleteIfEditing() }
             Button(lang["action.cancel"], role: .cancel) {}
         }
-        .onAppear(perform: setupInitialValues)
+        .onAppear {
+            guard !didInitialLoad else { return }
+            didInitialLoad = true
+            setupInitialValues()
+        }
     }
 
     // MARK: - Sections

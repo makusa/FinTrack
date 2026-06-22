@@ -19,6 +19,7 @@ struct AddEditAccountView: View {
     @Environment(\.dismiss) private var dismiss
 
     let mode: AccountEditorMode
+    @State private var didInitialLoad = false
 
     @Query private var allAccounts: [Account]
 
@@ -217,6 +218,8 @@ struct AddEditAccountView: View {
                 }
             }
             .onAppear {
+                guard !didInitialLoad else { return }
+                didInitialLoad = true
                 loadIfEditing()
             }
         }

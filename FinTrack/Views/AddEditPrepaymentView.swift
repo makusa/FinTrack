@@ -17,6 +17,7 @@ struct AddEditPrepaymentView: View {
     @Environment(\.dismiss) private var dismiss
 
     let mode: PrepaymentEditorMode
+    @State private var didInitialLoad = false
 
     @Query(filter: #Predicate<Account> { !$0.isArchived },
            sort: \Account.createdAt, order: .forward)
@@ -107,6 +108,8 @@ struct AddEditPrepaymentView: View {
                 Button(lang["action.cancel"], role: .cancel) {}
             }
             .onAppear {
+                guard !didInitialLoad else { return }
+                didInitialLoad = true
                 loadIfEditing()
                 if !isEditing {
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
