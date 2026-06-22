@@ -54,6 +54,10 @@ struct AddEditBudgetView: View {
 
     private var isEditing: Bool { if case .edit = mode { return true } ; return false }
 
+    private var selectedCategoryObject: Category? {
+        expenseCategories.first { $0.persistentModelID == selectedCategoryID }
+    }
+
     private var limit: Decimal? {
         Decimal(string: limitText.replacingOccurrences(of: ",", with: ".").trimmingCharacters(in: .whitespaces))
     }
@@ -105,23 +109,34 @@ struct AddEditBudgetView: View {
                     }
                 }
 
-                // MARK: Category
+                // MARK: Category — sélection via une liste explicite (NavigationLink).
+                // Un Picker .navigationLink ne permettait pas de changer la catégorie
+                // quand elle était déjà remplie (édition). Des boutons explicites qui
+                // écrivent la sélection puis ferment sont fiables dans tous les cas.
                 Section {
-                    // Sélection liée à l'identifiant stable (PersistentIdentifier),
-                    // pas à l'objet @Model: un Picker lié à une référence @Model ne met
-                    // pas à jour la sélection de façon fiable (surtout pré-remplie en édition).
-                    Picker(lang["label.category"], selection: $selectedCategoryID) {
-                        Text(lang["budget.category.all"]).tag(PersistentIdentifier?.none)
-                        ForEach(expenseCategories) { cat in
-                            HStack {
+                    NavigationLink {
+                        BudgetCategoryPickerList(
+                            categories: expenseCategories,
+                            allLabel: lang["budget.category.all"],
+                            selectedID: $selectedCategoryID
+                        )
+                        .navigationTitle(lang["label.category"])
+                        .navigationBarTitleDisplayMode(.inline)
+                    } label: {
+                        HStack {
+                            Text(lang["label.category"])
+                            Spacer()
+                            if let cat = selectedCategoryObject {
                                 Image(systemName: cat.iconSystemName)
                                     .foregroundStyle(Color(hex: cat.colorHex))
                                 Text(cat.localizedName)
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                Text(lang["budget.category.all"])
+                                    .foregroundStyle(.secondary)
                             }
-                            .tag(Optional(cat.persistentModelID))
                         }
                     }
-                    .pickerStyle(.navigationLink)
                 } header: {
                     Text(lang["label.category"])
                 } footer: {
@@ -278,5 +293,52 @@ struct AddEditBudgetView: View {
 
     private func decimalToText(_ d: Decimal) -> String {
         return d.appFormattedForInput
+    }
+}
+
+// MARK: - Sélecteur de catégorie (liste explicite, fiable en création comme en édition)
+
+private struct BudgetCategoryPickerList: View {
+    @Environment(\.dismiss) private var dismiss
+
+    let categories: [Category]
+    let allLabel: String
+    @Binding var selectedID: PersistentIdentifier?
+
+    var body: some View {
+        List {
+            Button {
+                selectedID = nil
+                dismiss()
+            } label: {
+                HStack {
+                    Image(systemName: "square.grid.2x2")
+                        .foregroundStyle(.secondary)
+                    Text(allLabel)
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    if selectedID == nil {
+                        Image(systemName: "checkmark").foregroundStyle(.tint)
+                    }
+                }
+            }
+            ForEach(categories) { cat in
+                Button {
+                    selectedID = cat.persistentModelID
+                    dismiss()
+                } label: {
+                    HStack {
+                        Image(systemName: cat.iconSystemName)
+                            .foregroundStyle(Color(hex: cat.colorHex))
+                        Text(cat.localizedName)
+                            .foregroundStyle(.primary)
+                        Spacer()
+                        if selectedID == cat.persistentModelID {
+                            Image(systemName: "checkmark").foregroundStyle(.tint)
+                        }
+                    }
+                }
+            }
+        }
     }
 }
