@@ -119,7 +119,14 @@ final class LanguageManager {
     /// Resolve a localization key for the current language.
     /// Falls back to French, then the key itself.
     subscript(key: String) -> String {
-        LocalizedStrings.resolve(key: key, language: current.rawValue)
+        let raw = LocalizedStrings.resolve(key: key, language: current.rawValue)
+        // Marqueurs de nom de palier: le label ne vit qu'à un seul endroit
+        // (entitlement.pro.name / entitlement.plaid.name). Substitution paresseuse:
+        // seules les chaînes contenant "{" paient le coût.
+        guard raw.contains("{") else { return raw }
+        return raw
+            .replacingOccurrences(of: "{pro}", with: LocalizedStrings.resolve(key: "entitlement.pro.name", language: current.rawValue))
+            .replacingOccurrences(of: "{max}", with: LocalizedStrings.resolve(key: "entitlement.plaid.name", language: current.rawValue))
     }
 
     /// Format string with arguments (wraps String(format:)).

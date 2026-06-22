@@ -107,7 +107,7 @@ enum LocalizedStrings {
         "account.noAccounts.sub":  ["fr": "Appuyez sur + pour ajouter un compte.", "en": "Tap + to add an account.", "es": "Toca + para añadir una cuenta.", "pt": "Toque em + para adicionar uma conta."],
         "account.create":          ["fr": "Nouveau compte",        "en": "New Account",          "es": "Nueva cuenta",         "pt": "Nova conta"],
         "account.edit":            ["fr": "Modifier le compte",    "en": "Edit Account",         "es": "Editar cuenta",        "pt": "Editar conta"],
-        "account.currency.proHint":  ["fr": "Toutes les devises disponibles avec Pro", "en": "All currencies available with Pro", "es": "Todas las divisas disponibles con Pro", "pt": "Todas as moedas disponíveis com Pro"],
+        "account.currency.proHint":  ["fr": "Toutes les devises disponibles avec {pro}", "en": "All currencies available with {pro}", "es": "Todas las divisas disponibles con {pro}", "pt": "Todas as moedas disponíveis com {pro}"],
         "account.initialBalance":  ["fr": "Solde initial",         "en": "Initial Balance",      "es": "Saldo inicial",        "pt": "Saldo inicial"],
         "account.archivePrompt":   ["fr": "Archiver ce compte ?",  "en": "Archive this account?","es": "¿Archivar esta cuenta?","pt": "Arquivar esta conta?"],
         "account.unarchivePrompt": ["fr": "Désarchiver ce compte ?","en": "Unarchive account?",  "es": "¿Desarchivar cuenta?", "pt": "Desarquivar conta?"],
@@ -253,7 +253,7 @@ enum LocalizedStrings {
 
         // MARK: - Recurring
         "recurring.free.cap.title":   ["fr": "Limite atteinte (5/5)",                         "en": "Limit reached (5/5)",                          "es": "Límite alcanzado (5/5)",                       "pt": "Limite atingido (5/5)"],
-        "recurring.free.cap.subtitle": ["fr": "Passez à Pro pour des récurrences illimitées","en": "Upgrade to Pro for unlimited recurring",    "es": "Actualiza a Pro para recurrencias ilimitadas","pt": "Atualize para Pro para recorrências ilimitadas"],
+        "recurring.free.cap.subtitle": ["fr": "Passez à {pro} pour des récurrences illimitées","en": "Upgrade to {pro} for unlimited recurring",    "es": "Actualiza a {pro} para recurrencias ilimitadas","pt": "Atualize para {pro} para recorrências ilimitadas"],
         "recurring.title":        ["fr": "Récurrences",          "en": "Recurring",           "es": "Recurrentes",        "pt": "Recorrências"],
         "recurring.active":       ["fr": "Actives (%d)",         "en": "Active (%d)",         "es": "Activas (%d)",       "pt": "Ativas (%d)"],
         "recurring.paused":       ["fr": "En pause (%d)",        "en": "Paused (%d)",         "es": "Pausadas (%d)",      "pt": "Pausadas (%d)"],
@@ -290,7 +290,7 @@ enum LocalizedStrings {
 
         // MARK: - Loans
         "loan.free.cap.title":    ["fr": "Limite atteinte (2/2)",                          "en": "Limit reached (2/2)",                           "es": "Límite alcanzado (2/2)",                        "pt": "Limite atingido (2/2)"],
-        "loan.free.cap.subtitle": ["fr": "Passez à Pro pour des prêts illimités",       "en": "Upgrade to Pro for unlimited loans",        "es": "Actualiza a Pro para préstamos ilimitados", "pt": "Atualize para Pro para empréstimos ilimitados"],
+        "loan.free.cap.subtitle": ["fr": "Passez à {pro} pour des prêts illimités",       "en": "Upgrade to {pro} for unlimited loans",        "es": "Actualiza a {pro} para préstamos ilimitados", "pt": "Atualize para {pro} para empréstimos ilimitados"],
         "loan.title":           ["fr": "Prêts",                  "en": "Loans",               "es": "Préstamos",          "pt": "Empréstimos"],
         "loan.create":          ["fr": "Nouveau prêt",           "en": "New Loan",            "es": "Nuevo préstamo",     "pt": "Novo empréstimo"],
         "loan.edit":            ["fr": "Modifier le prêt",       "en": "Edit Loan",           "es": "Editar préstamo",    "pt": "Editar empréstimo"],
@@ -352,7 +352,7 @@ enum LocalizedStrings {
 
         // MARK: - Credit Lines
         "cl.free.cap.title":    ["fr": "Limite atteinte (1/1)",                          "en": "Limit reached (1/1)",                           "es": "Límite alcanzado (1/1)",                        "pt": "Limite atingido (1/1)"],
-        "cl.free.cap.subtitle": ["fr": "Passez à Pro pour des marges illimitées",     "en": "Upgrade to Pro for unlimited credit lines", "es": "Actualiza a Pro para créditos ilimitados",  "pt": "Atualize para Pro para linhas ilimitadas"],
+        "cl.free.cap.subtitle": ["fr": "Passez à {pro} pour des marges illimitées",     "en": "Upgrade to {pro} for unlimited credit lines", "es": "Actualiza a {pro} para créditos ilimitados",  "pt": "Atualize para {pro} para linhas ilimitadas"],
         "cl.title":            ["fr": "Marges de crédit",        "en": "Credit Lines",        "es": "Líneas de crédito",  "pt": "Linhas de crédito"],
         "cl.create":           ["fr": "Nouvelle marge de crédit","en": "New Credit Line",     "es": "Nueva línea de crédito","pt": "Nova linha de crédito"],
         "cl.edit":             ["fr": "Modifier la marge",       "en": "Edit Credit Line",    "es": "Editar línea",       "pt": "Editar linha"],
@@ -407,7 +407,7 @@ enum LocalizedStrings {
 
         // MARK: - Savings Projects
         "savings.free.cap.title":   ["fr": "Limite atteinte (2/2)",                              "en": "Limit reached (2/2)",                               "es": "Límite alcanzado (2/2)",                            "pt": "Limite atingido (2/2)"],
-        "savings.free.cap.subtitle": ["fr": "Passez à Pro pour des projets illimités",        "en": "Upgrade to Pro for unlimited projects",         "es": "Actualiza a Pro para proyectos ilimitados",     "pt": "Atualize para Pro para projetos ilimitados"],
+        "savings.free.cap.subtitle": ["fr": "Passez à {pro} pour des projets illimités",        "en": "Upgrade to {pro} for unlimited projects",         "es": "Actualiza a {pro} para proyectos ilimitados",     "pt": "Atualize para {pro} para projetos ilimitados"],
         "savings.title":        ["fr": "Projets d'épargne",       "en": "Savings Goals",       "es": "Metas de ahorro",    "pt": "Metas de poupança"],
         "savings.create":       ["fr": "Créer un projet",         "en": "Create Goal",         "es": "Crear meta",         "pt": "Criar meta"],
         "savings.createNew":    ["fr": "Nouveau projet",          "en": "New Goal",            "es": "Nueva meta",         "pt": "Nova meta"],
@@ -733,13 +733,13 @@ enum LocalizedStrings {
         "fx.loading":              ["fr": "Mise à jour des taux…",                 "en": "Updating rates…",                    "es": "Actualizando tipos…",               "pt": "Atualizando taxas…"],
         "fx.refresh":              ["fr": "Actualiser les taux",                   "en": "Refresh Rates",                      "es": "Actualizar tipos",                  "pt": "Atualizar taxas"],
         "fx.updated":              ["fr": "Mis à jour %@",                         "en": "Updated %@",                         "es": "Actualizado %@",                    "pt": "Atualizado %@"],
-        "fx.pro.hint":             ["fr": "Toutes les devises disponibles avec Pro", "en": "All currencies available with Pro", "es": "Todas las divisas disponibles con Pro", "pt": "Todas as moedas disponíveis com Pro"],
+        "fx.pro.hint":             ["fr": "Toutes les devises disponibles avec {pro}", "en": "All currencies available with {pro}", "es": "Todas las divisas disponibles con {pro}", "pt": "Todas as moedas disponíveis com {pro}"],
         "fx.unavailable":          ["fr": "Taux non disponibles (mode hors ligne)","en": "Rates unavailable (offline)",        "es": "Tipos no disponibles (sin conexión)","pt": "Taxas indisponíveis (offline)"],
 
         // MARK: - Budgets
         "tab.budgets":                   ["fr": "Budgets",                              "en": "Budgets",                        "es": "Presupuestos",                  "pt": "Orçamentos"],
         "budget.free.cap.title":   ["fr": "Limite atteinte (3/3)",                         "en": "Limit reached (3/3)",                          "es": "Límite alcanzado (3/3)",                       "pt": "Limite atingido (3/3)"],
-        "budget.free.cap.subtitle": ["fr": "Passez à Pro pour des budgets illimités",   "en": "Upgrade to Pro for unlimited budgets",     "es": "Actualiza a Pro para presupuestos ilimitados","pt": "Atualize para Pro para orçamentos ilimitados"],
+        "budget.free.cap.subtitle": ["fr": "Passez à {pro} pour des budgets illimités",   "en": "Upgrade to {pro} for unlimited budgets",     "es": "Actualiza a {pro} para presupuestos ilimitados","pt": "Atualize para {pro} para orçamentos ilimitados"],
         "budget.title":                  ["fr": "Budgets",                              "en": "Budgets",                        "es": "Presupuestos",                  "pt": "Orçamentos"],
         "budget.create":                 ["fr": "Nouveau budget",                       "en": "New Budget",                     "es": "Nuevo presupuesto",             "pt": "Novo orçamento"],
         "budget.edit":                   ["fr": "Modifier le budget",                   "en": "Edit Budget",                    "es": "Editar presupuesto",            "pt": "Editar orçamento"],
@@ -784,7 +784,7 @@ enum LocalizedStrings {
         "settings.cloudSync.section": ["fr": "Synchronisation", "en": "Sync", "es": "Sincronización", "pt": "Sincronização"],
         "settings.cloudSync": ["fr": "Synchronisation iCloud", "en": "iCloud Sync", "es": "Sincronización iCloud", "pt": "Sincronização iCloud"],
         "settings.cloudSync.footer": ["fr": "Vos données sont chiffrées et synchronisées entre vos appareils via votre compte iCloud personnel. Redémarrage de l'app requis.", "en": "Your data is encrypted and synced across your devices via your personal iCloud account. App restart required.", "es": "Tus datos se cifran y sincronizan entre tus dispositivos a través de tu cuenta personal de iCloud. Se requiere reiniciar la app.", "pt": "Os seus dados são encriptados e sincronizados entre os seus dispositivos através da sua conta iCloud pessoal. É necessário reiniciar a app."],
-        "settings.cloudSync.locked": ["fr": "Disponible avec Pro ou Max.", "en": "Available with Pro or Max.", "es": "Disponible con Pro o Max.", "pt": "Disponível com Pro ou Max."],
+        "settings.cloudSync.locked": ["fr": "Disponible avec {pro} ou {max}.", "en": "Available with {pro} or {max}.", "es": "Disponible con {pro} o {max}.", "pt": "Disponível com {pro} ou {max}."],
         "settings.cloudSync.restart.title": ["fr": "Redémarrage requis", "en": "Restart Required", "es": "Reinicio requerido", "pt": "Reinício necessário"],
         "settings.cloudSync.restart.body": ["fr": "Fermez et rouvrez FinTrack pour appliquer le changement de synchronisation.", "en": "Close and reopen FinTrack to apply the sync change.", "es": "Cierra y vuelve a abrir FinTrack para aplicar el cambio de sincronización.", "pt": "Feche e reabra o FinTrack para aplicar a alteração de sincronização."],
         "flinks.settings.section": ["fr": "Connexion bancaire", "en": "Bank Connection", "es": "Conexión bancaria", "pt": "Conexão bancária"],
@@ -819,7 +819,7 @@ enum LocalizedStrings {
         "entitlement.pro.tagline":      ["fr": "Toutes les fonctionnalités avancées, une seule fois.", "en": "All advanced features, paid once.", "es": "Todas las funciones avanzadas, una sola vez.", "pt": "Todos os recursos avançados, pago uma vez."],
         "entitlement.pro.subtitle":     ["fr": "Toutes les fonctionnalités débloquées", "en": "All features unlocked",     "es": "Todas las funciones desbloqueadas","pt": "Todos os recursos desbloqueados"],
         "entitlement.pro.description":  ["fr": "Budgets, prêts, analytiques, récurrences, virements, taux de change et plus.", "en": "Budgets, loans, analytics, recurring, transfers, exchange rates and more.", "es": "Presupuestos, préstamos, analíticas, recurrencias, transferencias y más.", "pt": "Orçamentos, empréstimos, análises, recorrências, transferências e mais."],
-        "entitlement.pro.teaser": ["fr": "Disponible avec Pro ou Max", "en": "Available with Pro or Max", "es": "Disponible con Pro o Max", "pt": "Disponível com Pro ou Max"],
+        "entitlement.pro.teaser": ["fr": "Disponible avec {pro} ou {max}", "en": "Available with {pro} or {max}", "es": "Disponible con {pro} o {max}", "pt": "Disponível com {pro} ou {max}"],
         "entitlement.pro.cta":          ["fr": "Débloquer Pro",                     "en": "Unlock Pro",                     "es": "Desbloquear Pro",               "pt": "Desbloquear Pro"],
         "tier.placement.name":       ["fr": "Max", "en": "Max", "es": "Max", "pt": "Max"],
         "entitlement.plaid.name":       ["fr": "Max", "en": "Max", "es": "Max", "pt": "Max"],
