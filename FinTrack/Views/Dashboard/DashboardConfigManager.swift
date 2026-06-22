@@ -40,7 +40,7 @@ enum DashboardWidgetID: String, CaseIterable, Codable, Identifiable {
 
     var isPinned: Bool { self == .globalBalance }
 
-    /// Widgets requiring Épargne or Placement tier.
+    /// Widgets requiring Pro or Max tier.
     /// Courant users cannot add or view these on their dashboard.
     var requiresPro: Bool {
         switch self {
