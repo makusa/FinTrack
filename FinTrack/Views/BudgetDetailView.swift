@@ -115,7 +115,7 @@ struct BudgetDetailView: View {
             .listRowBackground(Color.clear)
 
             // MARK: History sparkline
-            if historyData.count > 1 {
+            if historyData.contains(where: { $0 > 0 }) {
                 Section(lang["budget.history"]) {
                     VStack(alignment: .leading, spacing: 8) {
                         let limitDbl = (budget.limitAmount as NSDecimalNumber).doubleValue
@@ -125,8 +125,9 @@ struct BudgetDetailView: View {
                         Chart {
                             ForEach(Array(vals.enumerated()), id: \.offset) { i, val in
                                 BarMark(
-                                    x: .value("Period", i),
-                                    y: .value(lang["budget.spent"], val)
+                                    x: .value("Period", "\(i)"),
+                                    y: .value(lang["budget.spent"], val),
+                                    width: .ratio(0.6)
                                 )
                                 .foregroundStyle(val > limitDbl ? Color.red.opacity(0.7) : Color(hex: budget.colorHex).opacity(0.7))
                                 .cornerRadius(4)
