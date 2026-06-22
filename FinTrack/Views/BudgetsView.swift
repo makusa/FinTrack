@@ -148,7 +148,7 @@ struct BudgetsView: View {
             Section(lang["budget.active"]) {
                 ForEach(statuses) { status in
                     NavigationLink {
-                        BudgetDetailView(budget: status.budget)
+                        BudgetDetailView(budget: status.budget, allTransactions: allTransactions)
                     } label: {
                         BudgetRow(status: status)
                     }

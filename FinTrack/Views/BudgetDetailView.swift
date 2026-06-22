@@ -11,8 +11,7 @@ struct BudgetDetailView: View {
     @Environment(LanguageManager.self) private var lang
     @Bindable var budget: Budget
 
-    @Query(sort: \Transaction.date, order: .reverse)
-    private var allTransactions: [Transaction]
+    let allTransactions: [Transaction]
 
     @State private var showEdit = false
 
