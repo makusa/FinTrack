@@ -113,11 +113,11 @@ enum CashFlowCalculator {
         // ── Projects allocation ───────────────────────────────────────────
         let activeProjects = projects.filter { $0.isActive && $0.currency == currency }
         let projectLines = activeProjects.compactMap { p -> CashFlowLine? in
-            guard (p.monthlyContribution as NSDecimalNumber).doubleValue > 0 else { return nil }
+            guard (p.monthlyEquivalentContribution as NSDecimalNumber).doubleValue > 0 else { return nil }
             return CashFlowLine(
                 label: p.name,
                 sublabel: p.projectionLabel,
-                amount: p.monthlyContribution
+                amount: p.monthlyEquivalentContribution
             )
         }
         let monthlyAllocated = projectLines.reduce(Decimal(0)) { $0 + $1.amount }

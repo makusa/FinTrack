@@ -85,6 +85,8 @@ enum RecurringTransactionManager {
                     sourceRecurringId: rule.persistentModelID.hashValue
                 )
                 credit.transferPairId = pairId
+                debit.savingsProject  = rule.savingsProject
+                credit.savingsProject = rule.savingsProject
                 context.insert(debit)
                 context.insert(credit)
             } else {
@@ -98,6 +100,7 @@ enum RecurringTransactionManager {
                     payee: rule.payee,
                     sourceRecurringId: rule.persistentModelID.hashValue  // link for traceability
                 )
+                tx.savingsProject = rule.savingsProject
                 context.insert(tx)
             }
             inserted = true
@@ -124,6 +127,7 @@ enum RecurringTransactionManager {
                 account: destination, note: rule.note.isEmpty ? "\(LanguageManager.shared["transfer.from.label"]) \(rule.account?.name ?? "")" : rule.note,
                 payee: rule.account?.name, sourceRecurringId: rule.persistentModelID.hashValue)
             credit.transferPairId = pairId
+            debit.savingsProject = rule.savingsProject; credit.savingsProject = rule.savingsProject
             context.insert(debit); context.insert(credit)
         } else {
             let tx = Transaction(
@@ -132,6 +136,7 @@ enum RecurringTransactionManager {
                 note: rule.note, payee: rule.payee,
                 sourceRecurringId: rule.persistentModelID.hashValue
             )
+            tx.savingsProject = rule.savingsProject
             context.insert(tx)
         }
         // Advance the due date by one period.

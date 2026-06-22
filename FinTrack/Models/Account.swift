@@ -85,6 +85,7 @@ final class Account {
     var savingsProjects:     [SavingsProject]?      = []
     var recurringRules:      [RecurringTransaction]? = []
     var incomingTransfers:   [RecurringTransaction]? = []
+    var savingsSourceProjects: [SavingsProject]?    = []
     var loanPrepayments:     [LoanPrepayment]?      = []
     var creditLineEntries:   [CreditLineEntry]?     = []
     var creditLines:         [CreditLine]?          = []

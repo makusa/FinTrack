@@ -114,6 +114,10 @@ final class Transaction {
     var account: Account?
     var category: Category?
 
+    /// Savings project whose auto-transfer generated this entry (reliable cleanup).
+    @Relationship(deleteRule: .nullify, inverse: \SavingsProject.generatedTransactions)
+    var savingsProject: SavingsProject? = nil
+
     var type: TransactionType {
         get { TransactionType(rawValue: typeRaw) ?? .expense }
         set { typeRaw = newValue.rawValue }

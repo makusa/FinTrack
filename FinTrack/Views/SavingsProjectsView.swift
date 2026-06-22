@@ -175,7 +175,11 @@ struct SavingsProjectsView: View {
     }
 
     private func archive(_ p: SavingsProject) { p.isActive.toggle(); try? context.save() }
-    private func delete(_ p: SavingsProject)  { context.delete(p); try? context.save() }
+    private func delete(_ p: SavingsProject)  {
+        SavingsTransferService.cleanupOnDelete(p, removeGenerated: false, context: context)
+        context.delete(p)
+        try? context.save()
+    }
 }
 
 // MARK: - Row
@@ -214,14 +218,41 @@ struct SavingsProjectRow: View {
 struct SavingsProjectDetailView: View {
     @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
-    @Environment(EntitlementManager.self) private var entitlements
     @Bindable var project: SavingsProject
     @State private var showEdit       = false
     @State private var scrubDate:    Date?   = nil
     @State private var scrubAmount:  Double? = nil
+    @State private var chartRange:   SavingsChartRange = .all
 
     private var calc: ProjectionData {
-        ProjectionData(project: project, maxMonths: entitlements.hasPaidTier ? 120 : 3)
+        // Not tier-gated: the projection always runs to the goal (capped at 10 years).
+        ProjectionData(project: project)
+    }
+
+    /// Ranges worth offering, given how far the projection actually extends.
+    private var availableRanges: [SavingsChartRange] {
+        let spanMonths = max(calc.points.count - 1, 0)
+        var ranges: [SavingsChartRange] = []
+        if spanMonths > 12 { ranges.append(.oneYear) }
+        if spanMonths > 60 { ranges.append(.fiveYears) }
+        ranges.append(.all)
+        return ranges
+    }
+
+    /// Visible X window for the chart, driven by the range selector.
+    private var effectiveXDomain: ClosedRange<Date> {
+        let first = calc.points.first?.date ?? Date()
+        let last  = calc.points.last?.date ?? Date()
+        guard let months = chartRange.months else { return first...last }
+        let end = Calendar.current.date(byAdding: .month, value: months, to: first) ?? last
+        return first...min(end, last)
+    }
+
+    /// X-axis label stride adapted to the visible window.
+    private var visibleStrideMonths: Int {
+        let visible = chartRange.months.map { min($0, max(calc.points.count - 1, 1)) }
+            ?? max(calc.points.count - 1, 1)
+        return visible <= 12 ? 2 : (visible <= 36 ? 6 : 12)
     }
 
     var body: some View {
@@ -284,7 +315,7 @@ struct SavingsProjectDetailView: View {
             }
             row(lang["savings.contribution"],
                 value: (project.monthlyContribution as NSDecimalNumber).doubleValue > 0
-                    ? project.monthlyContribution.formatted(asCurrency: project.currency) + lang["label.perMonth"]
+                    ? project.monthlyContribution.formatted(asCurrency: project.currency) + project.transferFrequency.unitSuffix
                     : lang["savings.detail.noDeadline"],
                 emphasis: true)
         }
@@ -299,11 +330,19 @@ struct SavingsProjectDetailView: View {
             } else {
                 VStack(alignment: .leading, spacing: 10) {
 
+                    // ── Range selector (only when more than one range is useful) ──
+                    if availableRanges.count > 1 {
+                        Picker("", selection: $chartRange) {
+                            ForEach(availableRanges) { r in Text(r.label).tag(r) }
+                        }
+                        .pickerStyle(.segmented)
+                    }
+
                     // ── Scrubber readout ──────────────────────────────────
                     HStack {
                         if let d = scrubDate, let a = scrubAmount {
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(d.appFormattedLong())
+                                Text(d.formatted(.dateTime.month(.wide).year().locale(LanguageManager.shared.locale)))
                                     .font(.caption2).foregroundStyle(.secondary)
                                 Text(Decimal(a).formatted(asCurrency: project.currency))
                                     .font(.subheadline.weight(.bold))
@@ -312,7 +351,7 @@ struct SavingsProjectDetailView: View {
                                     let remaining = max(0, (target as NSDecimalNumber).doubleValue - a)
                                     Text(remaining <= 0
                                          ? lang["savings.goalReached.check"]
-                                         : "Encore \(Decimal(remaining).formatted(asCurrency: project.currency))")
+                                         : String(format: lang["savings.scrub.remaining"], Decimal(remaining).formatted(asCurrency: project.currency)))
                                         .font(.caption2)
                                         .foregroundStyle(remaining <= 0 ? AnyShapeStyle(Color.green) : AnyShapeStyle(.secondary))
                                 }
@@ -386,7 +425,7 @@ struct SavingsProjectDetailView: View {
                         }
                     }
                     .chartXAxis {
-                        AxisMarks(values: .stride(by: .month, count: calc.xStrideMonths)) { _ in
+                        AxisMarks(values: .stride(by: .month, count: visibleStrideMonths)) { _ in
                             AxisGridLine().foregroundStyle(Color(.separator).opacity(0.3))
                             AxisValueLabel(
                                 format: .dateTime.month(.abbreviated).locale(LanguageManager.shared.locale)
@@ -394,6 +433,7 @@ struct SavingsProjectDetailView: View {
                         }
                     }
                     .frame(height: 200)
+                    .chartXScale(domain: effectiveXDomain)
                     .contentShape(Rectangle())
                     .chartOverlay { proxy in
                         GeometryReader { geo in
@@ -405,9 +445,12 @@ struct SavingsProjectDetailView: View {
                                             let origin = geo[plotFrame].origin
                                             let x = val.location.x - origin.x
                                             guard x >= 0 else { return }
-                                            if let date: Date = proxy.value(atX: x) {
-                                                scrubDate   = date
-                                                scrubAmount = interpolatedSavings(at: date)
+                                            if let raw: Date = proxy.value(atX: x),
+                                               let nearest = calc.points.min(by: {
+                                                   abs($0.date.timeIntervalSince(raw)) < abs($1.date.timeIntervalSince(raw))
+                                               }) {
+                                                scrubDate   = nearest.date
+                                                scrubAmount = nearest.amount
                                             }
                                         }
                                         .onEnded { _ in
@@ -426,17 +469,6 @@ struct SavingsProjectDetailView: View {
         }
     }
 
-    /// Step-function interpolation: returns the last known balance at or before `date`.
-    private func interpolatedSavings(at date: Date) -> Double {
-        let pts = calc.points.sorted { $0.date < $1.date }
-        guard !pts.isEmpty else { return 0 }
-        var result = pts.first!.amount
-        for p in pts {
-            if p.date <= date { result = p.amount } else { break }
-        }
-        return result
-    }
-
     private var metricsSection: some View {
         Section(lang["savings.indicators"]) {
             if let reachDate = project.targetReachDate {
@@ -451,9 +483,10 @@ struct SavingsProjectDetailView: View {
             }
 
             if let req = project.requiredMonthlyForDeadline {
+                let perTransfer = req / Decimal(project.transferFrequency.approxPeriodsPerMonth)
                 row(lang["savings.requiredContrib"],
-                    value: req.formatted(asCurrency: project.currency) + lang["label.perMonth"],
-                    color: req > project.monthlyContribution ? .orange : .green)
+                    value: perTransfer.formatted(asCurrency: project.currency) + project.transferFrequency.unitSuffix,
+                    color: req > project.monthlyEquivalentContribution ? .orange : .green)
             }
         }
     }
@@ -472,6 +505,27 @@ struct SavingsProjectDetailView: View {
     }
 }
 
+// MARK: - Chart range
+
+enum SavingsChartRange: String, CaseIterable, Identifiable {
+    case oneYear, fiveYears, all
+    var id: String { rawValue }
+    var months: Int? {
+        switch self {
+        case .oneYear:   return 12
+        case .fiveYears: return 60
+        case .all:       return nil
+        }
+    }
+    var label: String {
+        switch self {
+        case .oneYear:   return LanguageManager.shared["savings.range.1y"]
+        case .fiveYears: return LanguageManager.shared["savings.range.5y"]
+        case .all:       return LanguageManager.shared["savings.range.all"]
+        }
+    }
+}
+
 // MARK: - Projection data
 
 private struct ProjectionPoint: Identifiable {
@@ -485,13 +539,13 @@ private struct ProjectionData {
     let xStrideMonths: Int
 
     init(project: SavingsProject, maxMonths: Int = 120) {
-        let monthly = (project.monthlyContribution as NSDecimalNumber).doubleValue
+        let monthly = (project.monthlyEquivalentContribution as NSDecimalNumber).doubleValue
         guard monthly > 0 else { points = []; xStrideMonths = 3; return }
 
         let current = (project.currentAmount as NSDecimalNumber).doubleValue
         let cal = Calendar.current
 
-        // How many months to show? (capped by tier: 3m for Courant, 120m for Épargne)
+        // How many months to show? Runs to the goal (+3 months padding), capped at maxMonths.
         let totalMonths: Int
         if let months = project.monthsToTarget {
             totalMonths = min(months + 3, maxMonths)
@@ -500,8 +554,9 @@ private struct ProjectionData {
         }
 
         var pts: [ProjectionPoint] = []
+        let startOfMonth = cal.date(from: cal.dateComponents([.year, .month], from: .now)) ?? .now
         for i in 0...totalMonths {
-            guard let date = cal.date(byAdding: .month, value: i, to: .now) else { continue }
+            guard let date = cal.date(byAdding: .month, value: i, to: startOfMonth) else { continue }
             var amount = current + monthly * Double(i)
             if let target = project.targetAmount {
                 amount = min(amount, (target as NSDecimalNumber).doubleValue)

@@ -54,6 +54,13 @@ struct AddEditSavingsProjectView: View {
     // Recurring contribution
     @State private var createRecurring: Bool = false
     @State private var contributionSourceAccount: Account? = nil
+    @State private var transferFrequency: RecurrenceFrequency = .monthly
+    @State private var transferDay: Int = 1
+    @State private var initialAutoTransfer: Bool = false   // was auto-transfer on at load?
+    @State private var showDisableConfirm: Bool = false
+    @State private var initialTransferFrequency: RecurrenceFrequency = .monthly
+    @State private var initialTransferDay: Int = 1
+    @State private var showScheduleChangeConfirm: Bool = false
 
     private var isEditing: Bool { if case .edit = mode { return true }; return false }
     private var navTitle: String { isEditing ? lang["savings.edit"] : lang["savings.createNew"] }
@@ -74,8 +81,13 @@ struct AddEditSavingsProjectView: View {
         (contributionDecimal as NSDecimalNumber).doubleValue > 0
     }
 
+    /// Only accounts whose currency matches the goal's (no FX conversion in transfers).
+    private var sameCurrencyAccounts: [Account] {
+        accounts.filter { $0.currency == currency }
+    }
+
     private var previewProject: SavingsProject {
-        SavingsProject(
+        let p = SavingsProject(
             name: name, iconSystemName: iconSystemName, colorHex: colorHex,
             currency: currency,
             currentAmount: trackViaAccount ? (selectedAccount?.balance ?? currentDecimal) : currentDecimal,
@@ -84,6 +96,8 @@ struct AddEditSavingsProjectView: View {
             monthlyContribution: contributionDecimal,
             targetDate: hasDeadline ? targetDate : nil
         )
+        p.transferFrequency = transferFrequency
+        return p
     }
 
     // MARK: Icon choices
@@ -106,7 +120,6 @@ struct AddEditSavingsProjectView: View {
                 targetSection
                 contributionSection
                 if hasTarget && !hasDeadline { livePreviewSection }
-                if hasDeadline              { deadlinePreviewSection }
                 notesSection
                 if isEditing { deleteSection }
             }
@@ -115,13 +128,28 @@ struct AddEditSavingsProjectView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading)  { Button(lang["action.cancel"]) { dismiss() } }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(lang["action.save"]) { save() }
+                    Button(lang["action.save"]) { attemptSave() }
                         .disabled(!canSave).fontWeight(.semibold)
                 }
             }
             .confirmationDialog(lang["savings.delete"], isPresented: $showDeleteConfirm, titleVisibility: .visible) {
                 Button(lang["action.delete"], role: .destructive) { deleteIfEditing() }
                 Button(lang["action.cancel"], role: .cancel) {}
+            }
+            .confirmationDialog(lang["savings.recurring.disable.title"],
+                                isPresented: $showDisableConfirm, titleVisibility: .visible) {
+                Button(lang["savings.recurring.disable.keepPast"]) { performSave(removePast: false) }
+                Button(lang["savings.recurring.disable.removePast"], role: .destructive) { performSave(removePast: true) }
+                Button(lang["action.cancel"], role: .cancel) {}
+            } message: {
+                Text(lang["savings.recurring.disable.message"])
+            }
+            .confirmationDialog(lang["savings.recurring.reschedule.title"],
+                                isPresented: $showScheduleChangeConfirm, titleVisibility: .visible) {
+                Button(lang["action.continue"]) { performSave(removePast: false) }
+                Button(lang["action.cancel"], role: .cancel) {}
+            } message: {
+                Text(lang["savings.recurring.reschedule.message"])
             }
             .onAppear {
                 guard !didInitialLoad else { return }
@@ -184,6 +212,10 @@ struct AddEditSavingsProjectView: View {
             Picker(lang["label.currency"], selection: $currency) {
                 ForEach(pickerCurrencies) { c in Text("\(c.code) — \(c.name)").tag(c.code) }
             }
+            .onChange(of: currency) { _, newCurrency in
+                if let acc = selectedAccount, acc.currency != newCurrency { selectedAccount = nil }
+                if let src = contributionSourceAccount, src.currency != newCurrency { contributionSourceAccount = nil }
+            }
         }
     }
 
@@ -199,12 +231,16 @@ struct AddEditSavingsProjectView: View {
             if trackViaAccount {
                 Picker(lang["label.account"], selection: $selectedAccount) {
                     Text(lang["label.none"] + "…").tag(Account?.none)
-                    ForEach(accounts) { acc in
+                    ForEach(sameCurrencyAccounts) { acc in
                         HStack {
                             Image(systemName: acc.iconSystemName).foregroundStyle(Color(hex: acc.colorHex))
                             Text(acc.name)
                         }.tag(Optional(acc))
                     }
+                }
+                if sameCurrencyAccounts.isEmpty {
+                    Text(String(format: lang["savings.account.sameCurrencyOnly"], currency))
+                        .font(.caption).foregroundStyle(.secondary)
                 }
                 if let acc = selectedAccount {
                     HStack {
@@ -249,6 +285,18 @@ struct AddEditSavingsProjectView: View {
                                selection: $targetDate,
                                in: Date()...,
                                displayedComponents: .date)
+                    // #1: required contribution shown right under the deadline,
+                    // just before the manual contribution field.
+                    if let req = previewProject.requiredMonthlyForDeadline {
+                        let perTransfer = req / Decimal(transferFrequency.approxPeriodsPerMonth)
+                        HStack {
+                            Text(lang["savings.requiredContrib"]).foregroundStyle(.secondary)
+                            Spacer()
+                            Text(perTransfer.formatted(asCurrency: currency) + transferFrequency.unitSuffix)
+                                .font(.body.weight(.semibold))
+                                .foregroundStyle(req > previewProject.monthlyEquivalentContribution && hasContribution ? .orange : .green)
+                        }
+                    }
                 }
             }
         } header: { Text(lang["savings.target"]) }
@@ -279,7 +327,7 @@ struct AddEditSavingsProjectView: View {
                     // Source account picker (where money is debited from)
                     Picker(lang["savings.recurring.source"], selection: $contributionSourceAccount) {
                         Text(lang["prepayment.account.none"]).tag(Account?.none)
-                        ForEach(accounts.filter { $0.id != selectedAccount?.id }) { acc in
+                        ForEach(sameCurrencyAccounts.filter { $0.id != selectedAccount?.id }) { acc in
                             Label {
                                 HStack {
                                     Text(acc.name)
@@ -292,6 +340,30 @@ struct AddEditSavingsProjectView: View {
                                     .foregroundStyle(Color(hex: acc.colorHex))
                             }
                             .tag(Optional(acc))
+                        }
+                    }
+                    if sameCurrencyAccounts.filter({ $0.id != selectedAccount?.id }).isEmpty {
+                        Text(String(format: lang["savings.account.sameCurrencyOnly"], currency))
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+
+                    // #3: frequency + day of transfer
+                    Picker(lang["savings.recurring.frequency"], selection: $transferFrequency) {
+                        ForEach(SavingsTransferSchedule.offeredFrequencies) { f in
+                            Text(f.label).tag(f)
+                        }
+                    }
+                    .onChange(of: transferFrequency) { _, newFreq in
+                        let maxDay = SavingsTransferSchedule.isWeekdayBased(newFreq) ? 7 : 28
+                        if transferDay > maxDay || transferDay < 1 { transferDay = 1 }
+                    }
+                    if SavingsTransferSchedule.isWeekdayBased(transferFrequency) {
+                        Picker(lang["savings.recurring.weekday"], selection: $transferDay) {
+                            ForEach(1...7, id: \.self) { wd in Text(weekdayName(wd)).tag(wd) }
+                        }
+                    } else {
+                        Picker(lang["savings.recurring.dayOfMonth"], selection: $transferDay) {
+                            ForEach(1...28, id: \.self) { d in Text("\(d)").tag(d) }
                         }
                     }
 
@@ -339,19 +411,6 @@ struct AddEditSavingsProjectView: View {
         }
     }
 
-    @ViewBuilder
-    private var deadlinePreviewSection: some View {
-        let p = previewProject
-        Section {
-            if let req = p.requiredMonthlyForDeadline {
-                summaryRow(lang["savings.projection.required"],
-                           value: req.formatted(asCurrency: currency) + lang["savings.perMonth"],
-                           emphasis: true,
-                           color: req > contributionDecimal && hasContribution ? .orange : .green)
-            }
-        } header: { Text(lang["savings.requiredContrib"]) }
-    }
-
     private var notesSection: some View {
         Section(lang["savings.notes.section"]) {
             TextField(lang["savings.notes.placeholder"], text: $notes, axis: .vertical)
@@ -381,6 +440,14 @@ struct AddEditSavingsProjectView: View {
         }
     }
 
+    private func weekdayName(_ weekday: Int) -> String {
+        var cal = Calendar.current
+        cal.locale = LanguageManager.shared.locale
+        let symbols = cal.standaloneWeekdaySymbols   // index 0 = Sunday
+        let idx = (weekday - 1) % 7
+        return symbols.indices.contains(idx) ? symbols[idx].capitalized : "\(weekday)"
+    }
+
     // MARK: - Logic
 
     private func loadIfEditing() {
@@ -398,14 +465,42 @@ struct AddEditSavingsProjectView: View {
         hasDeadline          = p.targetDate != nil
         if let d = p.targetDate { targetDate = d }
         notes                = p.notes ?? ""
-        // createRecurring stays false in edit mode — manage existing rules separately
+        // Load auto-transfer configuration so the toggle reflects reality.
+        createRecurring           = p.autoTransferEnabled
+        initialAutoTransfer       = p.autoTransferEnabled
+        transferFrequency         = p.transferFrequency
+        transferDay               = p.transferDay
+        initialTransferFrequency  = p.transferFrequency
+        initialTransferDay        = p.transferDay
+        contributionSourceAccount = p.sourceAccount
     }
 
-    private func save() {
+    /// Save button entry point: if auto-transfer is being turned OFF and past
+    /// transactions exist, ask what to do with them first; otherwise save.
+    private var scheduleChanged: Bool {
+        transferFrequency != initialTransferFrequency || transferDay != initialTransferDay
+    }
+
+    private func attemptSave() {
+        let wantsAuto = createRecurring && hasContribution && contributionSourceAccount != nil
+        if initialAutoTransfer, !wantsAuto, case .edit(let p) = mode,
+           SavingsTransferService.hasPastTransactions(p) {
+            showDisableConfirm = true
+        } else if initialAutoTransfer, wantsAuto, scheduleChanged,
+                  case .edit(let p) = mode,
+                  SavingsTransferService.hasPastTransactions(p) {
+            showScheduleChangeConfirm = true
+        } else {
+            performSave(removePast: false)
+        }
+    }
+
+    private func performSave(removePast: Bool) {
         let trimName = name.trimmingCharacters(in: .whitespaces)
         let current  = trackViaAccount
             ? (selectedAccount?.balance ?? currentDecimal)
             : currentDecimal
+        let project: SavingsProject
 
         switch mode {
         case .create:
@@ -421,44 +516,7 @@ struct AddEditSavingsProjectView: View {
                     ? nil : notes.trimmingCharacters(in: .whitespaces)
             )
             context.insert(p)
-
-            // Create recurring monthly transfer if requested
-            if createRecurring, hasContribution, let source = contributionSourceAccount {
-                let startDate = firstOfNextMonth()
-                let ruleName  = trimName.isEmpty ? lang["savings.title"] : trimName
-
-                if trackViaAccount, let savings = selectedAccount {
-                    // Transfer: debit source → credit savings account
-                    let rule = RecurringTransaction(
-                        title: ruleName,
-                        amount: contributionDecimal,
-                        type: .expense,
-                        frequency: .monthly,
-                        startDate: startDate,
-                        account: source,
-                        note: lang["savings.contribution"] + " — " + ruleName,
-                        payee: nil,
-                        isLoanPayment: false
-                    )
-                    rule.isTransfer        = true
-                    rule.destinationAccount = savings
-                    context.insert(rule)
-                } else {
-                    // Simple expense on source account
-                    let rule = RecurringTransaction(
-                        title: ruleName,
-                        amount: contributionDecimal,
-                        type: .expense,
-                        frequency: .monthly,
-                        startDate: startDate,
-                        account: source,
-                        note: lang["savings.contribution"] + " — " + ruleName,
-                        payee: nil,
-                        isLoanPayment: false
-                    )
-                    context.insert(rule)
-                }
-            }
+            project = p
 
         case .edit(let p):
             p.name              = trimName
@@ -473,6 +531,24 @@ struct AddEditSavingsProjectView: View {
             p.targetDate        = hasTarget && hasDeadline ? targetDate : nil
             p.notes = notes.trimmingCharacters(in: .whitespaces).isEmpty
                 ? nil : notes.trimmingCharacters(in: .whitespaces)
+            project = p
+        }
+
+        // Auto-transfer configuration (#2/#3/#4)
+        project.transferFrequency = transferFrequency
+        project.transferDay       = transferDay
+
+        let wantsAuto = createRecurring && hasContribution && contributionSourceAccount != nil
+        if wantsAuto, let source = contributionSourceAccount {
+            project.autoTransferEnabled = true
+            project.sourceAccount       = source
+            SavingsTransferService.syncRule(for: project, source: source, context: context)
+        } else if initialAutoTransfer {
+            // Was on, now off → disable (removePast decided by the dialog / default).
+            SavingsTransferService.disableAutoTransfer(for: project, removePast: removePast, context: context)
+            project.sourceAccount = nil
+        } else {
+            project.autoTransferEnabled = false
         }
 
         try? context.save()
@@ -483,18 +559,11 @@ struct AddEditSavingsProjectView: View {
 
     private func deleteIfEditing() {
         guard case .edit(let p) = mode else { return }
+        // Remove the linked rule(s) so no orphaned auto-transfer keeps generating.
+        SavingsTransferService.cleanupOnDelete(p, removeGenerated: false, context: context)
         context.delete(p)
         try? context.save()
         dismiss()
-    }
-
-    /// Returns the 1st day of next month as the first contribution date.
-    private func firstOfNextMonth() -> Date {
-        let cal = Calendar.current
-        let now = Date()
-        guard let nextMonth = cal.date(byAdding: .month, value: 1, to: now) else { return now }
-        let components = cal.dateComponents([.year, .month], from: nextMonth)
-        return cal.date(from: components) ?? nextMonth
     }
 
     private func decimalToText(_ d: Decimal) -> String {

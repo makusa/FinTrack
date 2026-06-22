@@ -44,6 +44,30 @@ enum RecurrenceFrequency: String, CaseIterable, Identifiable {
         }
     }
 
+    /// Approximate number of occurrences per month (for monthly-equivalent math).
+    var approxPeriodsPerMonth: Double {
+        switch self {
+        case .daily:     return 365.0 / 12.0
+        case .weekly:    return 52.0 / 12.0
+        case .biweekly:  return 26.0 / 12.0
+        case .monthly:   return 1.0
+        case .quarterly: return 1.0 / 3.0
+        case .yearly:    return 1.0 / 12.0
+        }
+    }
+
+    /// Compact per-period unit suffix, e.g. "/sem.", "/mois".
+    var unitSuffix: String {
+        switch self {
+        case .daily:     return LanguageManager.shared["freq.unit.daily"]
+        case .weekly:    return LanguageManager.shared["freq.unit.weekly"]
+        case .biweekly:  return LanguageManager.shared["freq.unit.biweekly"]
+        case .monthly:   return LanguageManager.shared["freq.unit.monthly"]
+        case .quarterly: return LanguageManager.shared["freq.unit.quarterly"]
+        case .yearly:    return LanguageManager.shared["freq.unit.yearly"]
+        }
+    }
+
     var iconSystemName: String {
         switch self {
         case .daily:     return "clock.arrow.2.circlepath"
@@ -115,6 +139,10 @@ final class RecurringTransaction {
     var destinationAccount: Account? = nil   // target account for transfers
     @Relationship(deleteRule: .nullify, inverse: \Category.recurringRules)
     var category: Category?
+
+    /// Savings project that owns this rule (auto-transfer). nil = standalone rule.
+    @Relationship(deleteRule: .nullify, inverse: \SavingsProject.recurringTransactions)
+    var savingsProject: SavingsProject? = nil
 
     // MARK: Computed
 

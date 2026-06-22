@@ -223,8 +223,8 @@ struct SavingsGoalsCard: View {
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
                 Spacer()
-                if (p.monthlyContribution as NSDecimalNumber).doubleValue > 0 {
-                    Text("\(p.monthlyContribution.formatted(asCurrency: p.currency))/mois")
+                if (p.monthlyEquivalentContribution as NSDecimalNumber).doubleValue > 0 {
+                    Text("\(p.monthlyEquivalentContribution.formatted(asCurrency: p.currency))/mois")
                         .font(.caption2.weight(.medium))
                         .foregroundStyle(.secondary)
                 }
