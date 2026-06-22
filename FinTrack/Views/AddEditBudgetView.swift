@@ -19,6 +19,23 @@ struct AddEditBudgetView: View {
 
     let mode: BudgetEditorMode
 
+    init(mode: BudgetEditorMode) {
+        self.mode = mode
+        // Charge l'état UNE SEULE FOIS, ici. Auparavant c'était fait dans .onAppear,
+        // qui se re-déclenche au retour du sélecteur de catégorie et réécrasait la
+        // sélection que l'utilisateur venait de faire -> catégorie « non modifiable ».
+        if case .edit(let b) = mode {
+            _name              = State(initialValue: b.name)
+            _limitText         = State(initialValue: b.limitAmount.appFormattedForInput)
+            _currency          = State(initialValue: b.currency)
+            _period            = State(initialValue: b.period)
+            _selectedCategoryID = State(initialValue: b.category?.persistentModelID)
+            _colorHex          = State(initialValue: b.colorHex)
+            _iconSystemName    = State(initialValue: b.iconSystemName)
+            _notes             = State(initialValue: b.notes ?? "")
+        }
+    }
+
     /// Currencies offered in the picker: the user's tracked list, plus this
     /// item's own currency if it's no longer tracked (so it's never lost).
     private var pickerCurrencies: [CurrencyInfo] {
@@ -49,6 +66,7 @@ struct AddEditBudgetView: View {
     @State private var iconSystemName: String = "cart.fill"
     @State private var notes: String = ""
     @State private var showDeleteConfirm = false
+    @State private var didInitialFocus = false
 
     @FocusState private var limitFocused: Bool
 
@@ -179,8 +197,10 @@ struct AddEditBudgetView: View {
                 Button(lang["action.cancel"], role: .cancel) {}
             }
             .onAppear {
-                loadIfEditing()
-                if !isEditing {
+                // L'état est déjà chargé dans init(). On ne fait ici que le focus initial,
+                // une seule fois (onAppear peut se re-déclencher au retour d'un sous-écran).
+                if !isEditing && !didInitialFocus {
+                    didInitialFocus = true
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { limitFocused = true }
                 }
             }
@@ -239,18 +259,6 @@ struct AddEditBudgetView: View {
 
     // MARK: - Logic
 
-    private func loadIfEditing() {
-        guard case .edit(let b) = mode else { return }
-        name             = b.name
-        limitText        = decimalToText(b.limitAmount)
-        currency         = b.currency
-        period           = b.period
-        selectedCategoryID = b.category?.persistentModelID
-        colorHex         = b.colorHex
-        iconSystemName   = b.iconSystemName
-        notes            = b.notes ?? ""
-    }
-
     private func save() {
         guard let amt = limit, amt > 0 else { return }
         let trimmedName  = name.trimmingCharacters(in: .whitespaces)
@@ -289,10 +297,6 @@ struct AddEditBudgetView: View {
         context.delete(b)
         try? context.save()
         dismiss()
-    }
-
-    private func decimalToText(_ d: Decimal) -> String {
-        return d.appFormattedForInput
     }
 }
 
