@@ -51,6 +51,8 @@ struct AddEditLoanView: View {
     @State private var notes: String = ""
     @State private var showAdvanced: Bool = false
     @State private var createRecurring: Bool = true
+    @State private var paymentIsCustom: Bool = false
+    @State private var customPaymentText: String = ""
     @State private var showDeleteConfirm: Bool = false
 
     @State private var notifEnabled: Bool = false
@@ -81,6 +83,33 @@ struct AddEditLoanView: View {
             frequency: frequency,
             compounding: compounding,
             firstPaymentDate: firstPaymentDate
+        )
+    }
+
+    /// Montant de paiement suggéré (amortissement). nil si les paramètres sont incomplets.
+    private var suggestedPayment: Decimal? {
+        guard let calc = calculator else { return nil }
+        return Decimal(calc.paymentAmount)
+    }
+
+    /// Montant effectivement appliqué à la règle : personnalisé si l'utilisateur l'a
+    /// modifié, sinon le suggéré.
+    private var effectivePaymentAmount: Decimal? {
+        if paymentIsCustom {
+            let parsed = Decimal(string: customPaymentText
+                .replacingOccurrences(of: ",", with: ".")
+                .trimmingCharacters(in: .whitespaces))
+            if let p = parsed, p > 0 { return p }
+        }
+        return suggestedPayment
+    }
+
+    /// Binding du champ montant : affiche le suggéré (live) tant qu'il n'est pas
+    /// personnalisé ; toute saisie bascule en personnalisé.
+    private var paymentText: Binding<String> {
+        Binding(
+            get: { paymentIsCustom ? customPaymentText : (suggestedPayment.map(decimalToText) ?? "") },
+            set: { paymentIsCustom = true; customPaymentText = $0 }
         )
     }
 
@@ -321,6 +350,27 @@ struct AddEditLoanView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+            if createRecurring {
+                HStack {
+                    Text(lang["loan.paymentAmount"])
+                    Spacer()
+                    TextField("", text: paymentText)
+                        .keyboardType(.decimalPad)
+                        .multilineTextAlignment(.trailing)
+                        .frame(maxWidth: 140)
+                    Text(Currencies.info(for: currency).symbol)
+                        .foregroundStyle(.secondary)
+                }
+                if paymentIsCustom, let sug = suggestedPayment {
+                    Button {
+                        paymentIsCustom = false
+                    } label: {
+                        Label(lang.f("loan.useSuggested", sug.formatted(asCurrency: currency)),
+                              systemImage: "arrow.uturn.backward")
+                            .font(.caption)
+                    }
+                }
+            }
         }
     }
 
@@ -400,6 +450,11 @@ struct AddEditLoanView: View {
         selectedAccount = loan.account
         notes = loan.notes ?? ""
         createRecurring = (loan.paymentRule != nil)
+        if let rule = loan.paymentRule, let s = suggestedPayment,
+           abs((rule.amount as NSDecimalNumber).doubleValue - (s as NSDecimalNumber).doubleValue) > 0.005 {
+            paymentIsCustom = true
+            customPaymentText = decimalToText(rule.amount)
+        }
     }
 
     private func save() {
@@ -433,7 +488,7 @@ struct AddEditLoanView: View {
 
             // Auto-create recurring transaction if requested
             if createRecurring, let calc = calculator {
-                let amount = Decimal(calc.paymentAmount)
+                let amount = effectivePaymentAmount ?? Decimal(calc.paymentAmount)
                 let rule = RecurringTransaction(
                     title: trimLabel.isEmpty ? type.label : trimLabel,
                     amount: amount,
@@ -491,7 +546,7 @@ struct AddEditLoanView: View {
         let trimLabel  = label.trimmingCharacters(in: .whitespaces)
         let trimLender = lenderName.trimmingCharacters(in: .whitespaces)
         if createRecurring, let calc = calculator {
-            let amount = Decimal(calc.paymentAmount)
+            let amount = effectivePaymentAmount ?? Decimal(calc.paymentAmount)
             let title  = trimLabel.isEmpty ? type.label : trimLabel
             let ruleNote = "Remboursement \(trimLender.isEmpty ? type.label : trimLender)"
             let rulePayee = trimLender.isEmpty ? nil : trimLender
