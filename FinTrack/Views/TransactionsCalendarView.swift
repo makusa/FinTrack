@@ -104,6 +104,9 @@ struct TransactionsCalendarView: View {
         if sourceFilter != .real {
             // 1. Recurring rules
             for rule in activeRecurring {
+                // Les paiements de prêt sont déjà projetés via l'amortissement (section 2) ;
+                // on saute ici leur règle génératrice pour éviter le doublon.
+                if rule.isLoanPayment { continue }
                 if !matchesFilters(type: rule.type, account: rule.account) { continue }
                 var d = rule.nextDueDate
                 var guardCount = 0
