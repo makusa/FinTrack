@@ -210,6 +210,7 @@ struct LoanRow: View {
     @Environment(LanguageManager.self) private var lang
 
     private var calc: LoanCalculator { loan.calculator }
+    private var preps: [PrepaymentInfo] { loan.prepaymentInstances() }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -239,7 +240,7 @@ struct LoanRow: View {
                         .foregroundStyle(.secondary)
                 }
                 // Progress bar
-                ProgressView(value: calc.progressFraction)
+                ProgressView(value: calc.progressFractionWith(preps))
                     .tint(.green)
                     .scaleEffect(y: 0.8)
             }
@@ -247,10 +248,10 @@ struct LoanRow: View {
             Spacer()
 
             VStack(alignment: .trailing, spacing: 3) {
-                Text(Decimal(calc.currentBalance).formatted(asCurrency: loan.currency))
+                Text(Decimal(calc.currentBalanceWith(preps)).formatted(asCurrency: loan.currency))
                     .font(.body.weight(.semibold))
                     .foregroundStyle(.red)
-                Text(lang.f("loan.paymentsCount", calc.paymentsRemaining))
+                Text(lang.f("loan.paymentsCount", calc.paymentsRemainingWith(preps)))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
