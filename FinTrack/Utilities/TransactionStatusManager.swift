@@ -55,3 +55,34 @@ enum TransactionStatusManager {
         }
     }
 }
+
+extension TransactionStatusManager {
+
+    /// Toggle the "skipped" override on a transaction (excluded from the balance).
+    /// Unskipping restores the natural status: reconciled if bank-backed, else
+    /// scheduled/cleared by date.
+    static func toggleSkip(_ tx: Transaction, context: ModelContext) {
+        if tx.status == .skipped {
+            tx.status = tx.externalId != nil
+                ? .reconciled
+                : TransactionStatus.defaultForManual(date: tx.date)
+        } else {
+            tx.status = .skipped
+        }
+        tx.account?.recalculateBalance()
+        do { try context.save() } catch {
+            AppLogger.persistence.error("toggleSkip save failed: \(error, privacy: .private)")
+        }
+    }
+
+    /// Toggle manual reconciliation. Reconciled and cleared both count toward the
+    /// balance, so no recalculation is required.
+    static func toggleReconciled(_ tx: Transaction, context: ModelContext) {
+        tx.status = (tx.status == .reconciled)
+            ? TransactionStatus.defaultForManual(date: tx.date)
+            : .reconciled
+        do { try context.save() } catch {
+            AppLogger.persistence.error("toggleReconciled save failed: \(error, privacy: .private)")
+        }
+    }
+}

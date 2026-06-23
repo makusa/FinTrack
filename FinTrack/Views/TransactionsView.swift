@@ -169,6 +169,20 @@ struct TransactionsView: View {
                         } label: {
                             TransactionRow(transaction: tx)
                         }
+                        .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                            if tx.externalId == nil {
+                                Button { TransactionStatusManager.toggleSkip(tx, context: context) } label: {
+                                    Label(tx.status == .skipped ? lang["action.unskip"] : lang["action.skip"],
+                                          systemImage: tx.status == .skipped ? "arrow.uturn.backward" : "minus.circle")
+                                }
+                                .tint(.orange)
+                                Button { TransactionStatusManager.toggleReconciled(tx, context: context) } label: {
+                                    Label(tx.status == .reconciled ? lang["action.unreconcile"] : lang["action.reconcile"],
+                                          systemImage: "checkmark.seal")
+                                }
+                                .tint(.green)
+                            }
+                        }
                     }
                     .onDelete { offsets in
                         delete(in: group.items, at: offsets)

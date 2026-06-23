@@ -998,6 +998,9 @@ enum LocalizedStrings {
         "setup.finish":                 ["fr": "Terminer",                              "en": "Finish",                             "es": "Finalizar",                         "pt": "Concluir"],
         "action.next":                  ["fr": "Suivant",                               "en": "Next",                               "es": "Siguiente",                         "pt": "Próximo"],
         "action.skip":                  ["fr": "Passer",                                "en": "Skip",                               "es": "Omitir",                            "pt": "Pular"],
+        "action.unskip": ["fr": "Rétablir", "en": "Restore", "es": "Restablecer", "pt": "Restaurar"],
+        "action.reconcile": ["fr": "Réconcilier", "en": "Reconcile", "es": "Conciliar", "pt": "Conciliar"],
+        "action.unreconcile": ["fr": "Dé-réconcilier", "en": "Unreconcile", "es": "Desconciliar", "pt": "Desconciliar"],
 
         // MARK: - iCloud / CloudKit
         "icloud.section":      ["fr": "iCloud",                                    "en": "iCloud",                                  "es": "iCloud",                                  "pt": "iCloud"],
