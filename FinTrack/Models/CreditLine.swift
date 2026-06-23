@@ -64,6 +64,9 @@ final class CreditLineEntry {
 
     var creditLine: CreditLine?
 
+    /// Cash-account transaction representing the same draw/repayment (1:1).
+    var transaction: Transaction? = nil
+
     var type: CreditLineEntryType {
         get { CreditLineEntryType(rawValue: typeRaw) ?? .draw }
         set { typeRaw = newValue.rawValue }

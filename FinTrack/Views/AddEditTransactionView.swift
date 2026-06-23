@@ -423,6 +423,12 @@ struct AddEditTransactionView: View {
             tx.payee = trimmedPayee.isEmpty ? nil : trimmedPayee
             tx.notificationEnabled = notifEnabled
             tx.notificationDaysBefore = notifDaysBefore
+            // Garde l'entrée de marge liée synchronisée avec la transaction.
+            if let entry = tx.creditLineEntry {
+                entry.amount = amount
+                entry.date = date
+                entry.type = (type == .income) ? .draw : .repayment
+            }
         }
 
         account.recalculateBalance()

@@ -322,7 +322,13 @@ struct CreditLineDetailView: View {
         for entry in toDelete {
             // Don't delete auto-generated interest entries manually
             guard entry.type != .interestAccrual else { continue }
-            context.delete(entry)
+            if let tx = entry.transaction {
+                let acc = tx.account
+                context.delete(tx)          // cascade supprime l'entrée liée
+                acc?.recalculateBalance()
+            } else {
+                context.delete(entry)
+            }
         }
         try? context.save()
     }

@@ -122,6 +122,11 @@ final class Transaction {
     @Relationship(deleteRule: .nullify, inverse: \RecurringTransaction.generatedTransactions)
     var recurringRule: RecurringTransaction? = nil
 
+    /// Credit-line entry this transaction mirrors (draw/repayment). Deleting the
+    /// transaction cascades to delete the linked entry.
+    @Relationship(deleteRule: .cascade, inverse: \CreditLineEntry.transaction)
+    var creditLineEntry: CreditLineEntry? = nil
+
     var type: TransactionType {
         get { TransactionType(rawValue: typeRaw) ?? .expense }
         set { typeRaw = newValue.rawValue }
