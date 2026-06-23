@@ -515,6 +515,10 @@ final class Loan {
     @Relationship(deleteRule: .cascade, inverse: \LoanPrepayment.loan)
     var prepayments: [LoanPrepayment]? = []
 
+    /// Recurring rule generating this loan's payments (deleted with the loan).
+    @Relationship(deleteRule: .cascade, inverse: \RecurringTransaction.loan)
+    var paymentRule: RecurringTransaction?
+
     // MARK: Accessors
 
     var type: LoanType {

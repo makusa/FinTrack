@@ -149,6 +149,10 @@ final class CreditLine {
     @Relationship(deleteRule: .cascade, inverse: \CreditLineEntry.creditLine)
     var entries: [CreditLineEntry]? = []
 
+    /// Recurring rule generating this credit line's repayments (deleted with it).
+    @Relationship(deleteRule: .cascade, inverse: \RecurringTransaction.creditLine)
+    var paymentRule: RecurringTransaction?
+
     // MARK: Accessors
 
     var compounding: CreditLineCompounding {

@@ -308,6 +308,11 @@ struct AddEditCreditLineView: View {
                           ? decimalToText(cl.minimumPaymentValue) : ""
         selectedAccount = cl.account
         notes           = cl.notes ?? ""
+        createRecurring = (cl.paymentRule != nil)
+        if let rule = cl.paymentRule {
+            recurringAmountText = decimalToText(rule.amount)
+            recurringFrequency = rule.frequency
+        }
     }
 
     private func save() {
@@ -352,6 +357,7 @@ struct AddEditCreditLineView: View {
                     isCreditLinePayment: true
                 )
                 context.insert(rule)
+                rule.creditLine = cl
             }
 
         case .edit(let cl):
@@ -367,6 +373,7 @@ struct AddEditCreditLineView: View {
             cl.notes                = trimNotes.isEmpty ? nil : trimNotes
             cl.notificationEnabled  = notifEnabled
             cl.notificationDaysBefore = notifDaysBefore
+            syncCreditLinePaymentRule(cl)
         }
 
         try? context.save()
@@ -375,9 +382,49 @@ struct AddEditCreditLineView: View {
         dismiss()
     }
 
+    /// Synchronise la règle de remboursement de la marge avec le formulaire à l'édition.
+    private func syncCreditLinePaymentRule(_ cl: CreditLine) {
+        let trimName   = name.trimmingCharacters(in: .whitespaces)
+        let trimLender = lenderName.trimmingCharacters(in: .whitespaces)
+        if createRecurring, let recAmt = parseDecimal(recurringAmountText), recAmt > 0 {
+            let title = trimName.isEmpty ? lang["cl.title"] : trimName
+            let ruleNote = "Remboursement \(trimLender.isEmpty ? lang["cl.title"].lowercased() : trimLender)"
+            let rulePayee = trimLender.isEmpty ? nil : trimLender
+            if let rule = cl.paymentRule {
+                rule.title = title
+                rule.amount = recAmt
+                rule.type = .expense
+                rule.frequency = recurringFrequency
+                rule.account = selectedAccount
+                rule.note = ruleNote
+                rule.payee = rulePayee
+            } else {
+                let rule = RecurringTransaction(
+                    title: title,
+                    amount: recAmt,
+                    type: .expense,
+                    frequency: recurringFrequency,
+                    startDate: Calendar.current.date(byAdding: .month, value: 1, to: .now) ?? .now,
+                    account: selectedAccount,
+                    note: ruleNote,
+                    payee: rulePayee,
+                    isCreditLinePayment: true
+                )
+                rule.creditLine = cl
+                context.insert(rule)
+            }
+        } else if let rule = cl.paymentRule {
+            context.delete(rule)
+        }
+    }
+
     private func deleteIfEditing() {
         guard case .edit(let cl) = mode else { return }
-        context.delete(cl); try? context.save(); dismiss()
+        context.delete(cl)
+        try? context.save()
+        let ctx = context
+        Task { await NotificationManager.shared.scheduleAll(context: ctx) }
+        dismiss()
     }
 
     private func parseDecimal(_ s: String) -> Decimal? {

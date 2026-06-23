@@ -399,6 +399,7 @@ struct AddEditLoanView: View {
         firstPaymentDate = loan.firstPaymentDate
         selectedAccount = loan.account
         notes = loan.notes ?? ""
+        createRecurring = (loan.paymentRule != nil)
     }
 
     private func save() {
@@ -445,6 +446,7 @@ struct AddEditLoanView: View {
                     isLoanPayment: true
                 )
                 context.insert(rule)
+                rule.loan = loan
             }
 
         case .edit(let loan):
@@ -462,6 +464,7 @@ struct AddEditLoanView: View {
             loan.notes = trimNotes.isEmpty ? nil : trimNotes
             loan.notificationEnabled = notifEnabled
             loan.notificationDaysBefore = notifDaysBefore
+            syncLoanPaymentRule(loan)
         }
 
         do {
@@ -482,11 +485,47 @@ struct AddEditLoanView: View {
         }
     }
 
+    /// Synchronise la règle de paiement du prêt avec le formulaire à l'édition :
+    /// créer, mettre à jour ou supprimer selon le toggle « créer une récurrence ».
+    private func syncLoanPaymentRule(_ loan: Loan) {
+        let trimLabel  = label.trimmingCharacters(in: .whitespaces)
+        let trimLender = lenderName.trimmingCharacters(in: .whitespaces)
+        if createRecurring, let calc = calculator {
+            let amount = Decimal(calc.paymentAmount)
+            let title  = trimLabel.isEmpty ? type.label : trimLabel
+            let ruleNote = "Remboursement \(trimLender.isEmpty ? type.label : trimLender)"
+            let rulePayee = trimLender.isEmpty ? nil : trimLender
+            if let rule = loan.paymentRule {
+                rule.title = title
+                rule.amount = amount
+                rule.type = .expense
+                rule.frequency = frequency.recurringFrequency
+                rule.account = selectedAccount
+                rule.note = ruleNote
+                rule.payee = rulePayee
+            } else {
+                let rule = RecurringTransaction(
+                    title: title,
+                    amount: amount,
+                    type: .expense,
+                    frequency: frequency.recurringFrequency,
+                    startDate: firstPaymentDate,
+                    account: selectedAccount,
+                    note: ruleNote,
+                    payee: rulePayee,
+                    isLoanPayment: true
+                )
+                rule.loan = loan
+                context.insert(rule)
+            }
+        } else if let rule = loan.paymentRule {
+            context.delete(rule)
+        }
+    }
+
     private func deleteIfEditing() {
         guard case .edit(let loan) = mode else { return }
         context.delete(loan)
-        loan.notificationEnabled = notifEnabled
-        loan.notificationDaysBefore = notifDaysBefore
         try? context.save()
         let ctx = context
         Task { await NotificationManager.shared.scheduleAll(context: ctx) }
