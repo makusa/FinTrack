@@ -225,3 +225,23 @@ extension RecurringTransactionManager {
         for a in accounts { a.recalculateBalance() }
     }
 }
+
+
+extension RecurringTransactionManager {
+
+    /// True if the rule has at least one past-due (missed) occurrence relative to today.
+    static func hasMissedOccurrences(_ rule: RecurringTransaction) -> Bool {
+        rule.nextDueDate < Calendar.current.startOfDay(for: .now)
+    }
+
+    /// Advance `nextDueDate` to the next occurrence on or after today, skipping every
+    /// past-due (missed) occurrence. Used when resuming a paused rule without catch-up.
+    static func skipMissedOccurrences(_ rule: RecurringTransaction) {
+        let today = Calendar.current.startOfDay(for: .now)
+        var guardCount = 0
+        while rule.nextDueDate < today && guardCount < 100_000 {
+            rule.nextDueDate = rule.frequency.nextDate(after: rule.nextDueDate)
+            guardCount += 1
+        }
+    }
+}

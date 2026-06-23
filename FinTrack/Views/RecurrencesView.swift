@@ -18,6 +18,8 @@ struct RecurrencesView: View {
     @State private var showInactive = false
     @State private var showDeleteScopeConfirm = false
     @State private var pendingDeleteRule: RecurringTransaction?
+    @State private var showReactivateConfirm = false
+    @State private var pendingReactivateRule: RecurringTransaction?
 
     /// True when a free-tier user has reached the 5-rule cap.
     private var isAtFreeLimit: Bool {
@@ -145,6 +147,16 @@ struct RecurrencesView: View {
         } message: { _ in
             Text(lang["recurring.deleteScope.message"])
         }
+        .confirmationDialog(lang["recurring.reactivate.title"],
+                            isPresented: $showReactivateConfirm,
+                            titleVisibility: .visible,
+                            presenting: pendingReactivateRule) { rule in
+            Button(lang["recurring.reactivate.catchUp"]) { reactivate(rule, catchUp: true) }
+            Button(lang["recurring.reactivate.skip"]) { reactivate(rule, catchUp: false) }
+            Button(lang["action.cancel"], role: .cancel) {}
+        } message: { _ in
+            Text(lang["recurring.reactivate.message"])
+        }
     }
 
     // MARK: - Free tier cap banner
@@ -205,8 +217,32 @@ struct RecurrencesView: View {
     // MARK: - Actions
 
     private func toggleActive(_ rule: RecurringTransaction) {
-        rule.isActive.toggle()
+        if rule.isActive {
+            // Mise en pause : gel simple (plus de génération ni de rappel).
+            rule.isActive = false
+            try? context.save()
+            rescheduleNotifications()
+        } else if RecurringTransactionManager.hasMissedOccurrences(rule) {
+            // Reprise avec échéances manquées : demander rattrapage ou reprise nette.
+            pendingReactivateRule = rule
+            showReactivateConfirm = true
+        } else {
+            // Reprise sans échéance manquée : réactivation directe.
+            rule.isActive = true
+            try? context.save()
+            rescheduleNotifications()
+        }
+    }
+
+    private func reactivate(_ rule: RecurringTransaction, catchUp: Bool) {
+        if !catchUp {
+            // Repartir à la prochaine échéance : ignorer les occurrences passées.
+            RecurringTransactionManager.skipMissedOccurrences(rule)
+        }
+        rule.isActive = true
         try? context.save()
+        // Génère immédiatement ce qui est dû (rattrapage si catchUp), recalcule, sauvegarde.
+        RecurringTransactionManager.applyPending(context: context)
         rescheduleNotifications()
     }
 
