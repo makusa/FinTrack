@@ -345,7 +345,7 @@ struct AddEditCreditLineView: View {
             // Initial draw entry
             if let drawAmt = parseDecimal(currentDrawText), drawAmt > 0 {
                 let entry = CreditLineEntry(type: .draw, amount: drawAmt,
-                                            date: .now, note: "Solde initial")
+                                            date: .now, note: lang["cl.initialDrawNote"])
                 entry.creditLine = cl
                 context.insert(entry)
             }

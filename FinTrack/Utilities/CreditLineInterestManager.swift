@@ -52,7 +52,7 @@ enum CreditLineInterestManager {
                     type: .interestAccrual,
                     amount: Decimal(rounded),
                     date: statement,
-                    note: "Intérêts courus (\(formatDateRange(from: periodStart, to: statement)))"
+                    note: formatDateRange(from: periodStart, to: statement)
                 )
                 entry.creditLine = line
                 context.insert(entry)

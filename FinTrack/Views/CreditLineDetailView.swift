@@ -101,7 +101,7 @@ struct CreditLineDetailView: View {
                     )
                 }
 
-                Text("\(creditLine.lenderName.isEmpty ? "" : creditLine.lenderName + " · ")\(String(format: "%.2f", (creditLine.annualInterestRate as NSDecimalNumber).doubleValue))% / an")
+                Text("\(creditLine.lenderName.isEmpty ? "" : creditLine.lenderName + " · ")\(String(format: "%.2f", (creditLine.annualInterestRate as NSDecimalNumber).doubleValue))% \(lang["cl.perYear"])")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -159,16 +159,16 @@ struct CreditLineDetailView: View {
                 Chart {
                     ForEach(points, id: \.0) { (date, balance) in
                         LineMark(
-                            x: .value("Date", date),
-                            y: .value("Solde", balance)
+                            x: .value(lang["label.date"], date),
+                            y: .value(lang["label.balance"], balance)
                         )
                         .foregroundStyle(Color.red)
                         .lineStyle(StrokeStyle(lineWidth: 2.5))
                         .interpolationMethod(.stepEnd)
 
                         AreaMark(
-                            x: .value("Date", date),
-                            y: .value("Solde", balance)
+                            x: .value(lang["label.date"], date),
+                            y: .value(lang["label.balance"], balance)
                         )
                         .foregroundStyle(Color.red.opacity(0.08))
                         .interpolationMethod(.stepEnd)

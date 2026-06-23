@@ -398,6 +398,8 @@ enum LocalizedStrings {
         "cl.minPayment":       ["fr": "Paiement minimum",        "en": "Minimum Payment",     "es": "Pago mínimo",        "pt": "Pagamento mínimo"],
         "cl.minPayment.footer":["fr": "Utilisé pour estimer l'obligation mensuelle dans le flux de trésorerie.", "en": "Used to estimate the monthly obligation in cash flow.", "es": "Usado para estimar la obligación mensual en el flujo de caja.", "pt": "Usado para estimar a obrigação mensal no fluxo de caixa."],
         "cl.dailyRate":        ["fr": "Taux journalier",         "en": "Daily Rate",          "es": "Tasa diaria",        "pt": "Taxa diária"],
+        "cl.perYear":          ["fr": "/ an", "en": "/ yr", "es": "/ año", "pt": "/ ano"],
+        "cl.initialDrawNote":  ["fr": "Solde initial", "en": "Initial balance", "es": "Saldo inicial", "pt": "Saldo inicial"],
         "cl.entry.repayment":  ["fr": "Remboursement",           "en": "Repayment",           "es": "Pago",               "pt": "Pagamento"],
         
         "cl.entry.account.draw":             ["fr": "Compte à créditer",                                     "en": "Account to credit",                                   "es": "Cuenta a acreditar",                                  "pt": "Conta a creditar"],
