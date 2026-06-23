@@ -113,6 +113,16 @@ struct AddEditLoanView: View {
         )
     }
 
+    /// Montant personnalisé à persister sur le prêt (nil = montant suggéré).
+    private var customPaymentValue: Decimal? {
+        guard paymentIsCustom else { return nil }
+        let parsed = Decimal(string: customPaymentText
+            .replacingOccurrences(of: ",", with: ".")
+            .trimmingCharacters(in: .whitespaces))
+        if let p = parsed, p > 0 { return p }
+        return nil
+    }
+
     private var canSave: Bool {
         !label.trimmingCharacters(in: .whitespaces).isEmpty
             && principal != nil
@@ -450,10 +460,9 @@ struct AddEditLoanView: View {
         selectedAccount = loan.account
         notes = loan.notes ?? ""
         createRecurring = (loan.paymentRule != nil)
-        if let rule = loan.paymentRule, let s = suggestedPayment,
-           abs((rule.amount as NSDecimalNumber).doubleValue - (s as NSDecimalNumber).doubleValue) > 0.005 {
+        if let custom = loan.customPaymentAmount {
             paymentIsCustom = true
-            customPaymentText = decimalToText(rule.amount)
+            customPaymentText = decimalToText(custom)
         }
     }
 
@@ -485,6 +494,7 @@ struct AddEditLoanView: View {
             loan.notificationEnabled = notifEnabled
             loan.notificationDaysBefore = notifDaysBefore
             context.insert(loan)
+            loan.customPaymentAmount = customPaymentValue
 
             // Auto-create recurring transaction if requested
             if createRecurring, let calc = calculator {
@@ -543,6 +553,7 @@ struct AddEditLoanView: View {
     /// Synchronise la règle de paiement du prêt avec le formulaire à l'édition :
     /// créer, mettre à jour ou supprimer selon le toggle « créer une récurrence ».
     private func syncLoanPaymentRule(_ loan: Loan) {
+        loan.customPaymentAmount = customPaymentValue
         let trimLabel  = label.trimmingCharacters(in: .whitespaces)
         let trimLender = lenderName.trimmingCharacters(in: .whitespaces)
         if createRecurring, let calc = calculator {
@@ -558,6 +569,8 @@ struct AddEditLoanView: View {
                 rule.account = selectedAccount
                 rule.note = ruleNote
                 rule.payee = rulePayee
+                // Répercute le nouveau montant sur les paiements déjà générés.
+                RecurringTransactionManager.propagateValuesToGeneratedTransactions(rule, context: context)
             } else {
                 let rule = RecurringTransaction(
                     title: title,

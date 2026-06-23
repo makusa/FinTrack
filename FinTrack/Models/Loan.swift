@@ -155,6 +155,9 @@ struct LoanCalculator {
     let frequency: LoanPaymentFrequency
     let compounding: LoanCompounding
     let firstPaymentDate: Date
+    /// Optional manual override of the periodic payment. When set, the amortization
+    /// (schedule, payoff, interest) is computed from THIS payment instead of the formula.
+    var customPayment: Double? = nil
 
     // MARK: Periodic rate
 
@@ -189,6 +192,7 @@ struct LoanCalculator {
     /// For biweekly accelerated: payment = monthly_payment / 2.
     /// For all others: standard amortization formula.
     var paymentAmount: Double {
+        if let cp = customPayment { return cp }
         let r = periodicRate
         let n = Double(totalPayments)
         let p = principal
@@ -217,6 +221,18 @@ struct LoanCalculator {
 
     /// Actual number of payments needed (may be less than totalPayments for accelerated).
     var effectivePayments: Int {
+        // Manual payment: solve for the real number of periods to reach a zero balance.
+        if customPayment != nil {
+            let r = periodicRate
+            let m = paymentAmount
+            let p = principal
+            let cap = totalPayments * 5
+            if m <= 0 { return totalPayments }
+            if r == 0 { return min(Int(ceil(p / m)), cap) }
+            let arg = 1.0 - p * r / m
+            if arg <= 0 { return cap }                 // payment <= interest: never clears
+            return min(Int(ceil(-log(arg) / log(1.0 + r))), cap)
+        }
         if frequency != .biweeklyAccelerated { return totalPayments }
         let r = periodicRate
         let m = paymentAmount
@@ -497,6 +513,7 @@ final class Loan {
     var originalPrincipal: Decimal = 0
     var annualInterestRate: Decimal = 0    // percent, e.g. 5.5 (NOT 0.055)
     var termMonths: Int = 0
+    var customPaymentAmount: Decimal? = nil   // manual override of the periodic payment
     var frequencyRaw: String = LoanPaymentFrequency.monthly.rawValue
     var compoundingRaw: String = LoanCompounding.semiAnnual.rawValue
     var firstPaymentDate: Date = Date.now
@@ -545,7 +562,8 @@ final class Loan {
             termMonths: termMonths,
             frequency: frequency,
             compounding: compounding,
-            firstPaymentDate: firstPaymentDate
+            firstPaymentDate: firstPaymentDate,
+            customPayment: customPaymentAmount.map { ($0 as NSDecimalNumber).doubleValue }
         )
     }
 
