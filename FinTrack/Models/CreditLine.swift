@@ -134,6 +134,7 @@ final class CreditLine {
     var minimumPaymentTypeRaw: String = MinimumPaymentType.interestOnly.rawValue
     var minimumPaymentValue: Decimal = 0  // percent OR fixed amount, ignored for interestOnly
     var lastInterestAccrualDate: Date = Date.now
+    var statementDay: Int = 1            // jour du mois (1–28) où les intérêts sont facturés
     var isActive: Bool = true
     // MARK: Notification settings
     var notificationEnabled: Bool = false

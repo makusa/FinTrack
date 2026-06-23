@@ -41,6 +41,7 @@ struct AddEditCreditLineView: View {
     @State private var limitText            = ""
     @State private var rateText             = ""
     @State private var compounding          = CreditLineCompounding.daily
+    @State private var statementDay          = 1
     @State private var minPayType           = MinimumPaymentType.interestOnly
     @State private var minPayValueText      = ""
     @State private var selectedAccount: Account? = nil
@@ -167,11 +168,14 @@ struct AddEditCreditLineView: View {
 
     private var advancedSection: some View {
         Section {
-            Picker("Capitalisation", selection: $compounding) {
+            Picker(lang["cl.compounding"], selection: $compounding) {
                 ForEach(CreditLineCompounding.allCases) { c in Text(c.label).tag(c) }
             }
+            Picker(lang["cl.statementDay"], selection: $statementDay) {
+                ForEach(1...28, id: \.self) { d in Text("\(d)").tag(d) }
+            }
         } header: { Text(lang["loan.compound.section"]) } footer: {
-            Text(lang["cl.compound.daily"])
+            Text(lang["cl.statementDay.footer"])
         }
     }
 
@@ -303,6 +307,7 @@ struct AddEditCreditLineView: View {
         limitText       = decimalToText(cl.creditLimit)
         rateText        = decimalToText(cl.annualInterestRate)
         compounding     = cl.compounding
+        statementDay    = cl.statementDay
         minPayType      = cl.minimumPaymentType
         minPayValueText = (cl.minimumPaymentValue as NSDecimalNumber).doubleValue > 0
                           ? decimalToText(cl.minimumPaymentValue) : ""
@@ -335,6 +340,7 @@ struct AddEditCreditLineView: View {
             cl.notificationEnabled = notifEnabled
             cl.notificationDaysBefore = notifDaysBefore
             context.insert(cl)
+            cl.statementDay = statementDay
 
             // Initial draw entry
             if let drawAmt = parseDecimal(currentDrawText), drawAmt > 0 {
@@ -367,6 +373,7 @@ struct AddEditCreditLineView: View {
             cl.creditLimit          = lim
             cl.annualInterestRate   = r
             cl.compounding          = compounding
+            cl.statementDay         = statementDay
             cl.minimumPaymentType   = minPayType
             cl.minimumPaymentValue  = minVal
             cl.account              = selectedAccount
