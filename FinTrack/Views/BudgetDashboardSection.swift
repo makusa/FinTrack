@@ -147,6 +147,7 @@ struct CashFlowCard: View {
 // MARK: - 2. Savings Goals Card
 
 struct SavingsGoalsCard: View {
+    @Environment(LanguageManager.self) private var lang
     let projects: [SavingsProject]
     let currency: String
 
@@ -158,7 +159,7 @@ struct SavingsGoalsCard: View {
         NavigationLink(destination: SavingsProjectsView()) {
             VStack(spacing: 0) {
                 HStack {
-                    Label("Projets d'épargne", systemImage: "target")
+                    Label(lang["savings.title"], systemImage: "target")
                         .font(.subheadline.weight(.semibold))
                     Spacer()
                     Image(systemName: "chevron.right")

@@ -33,10 +33,10 @@ struct CreditLineDetailView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
                     Button { defaultEntryType = .repayment; showAddEntry = true } label: {
-                        Label("Remboursement", systemImage: "arrow.up.circle.fill")
+                        Label(lang["cl.entry.repayment"], systemImage: "arrow.up.circle.fill")
                     }
                     Button { defaultEntryType = .draw; showAddEntry = true } label: {
-                        Label("Retrait", systemImage: "arrow.down.circle.fill")
+                        Label(lang["cl.entry.draw"], systemImage: "arrow.down.circle.fill")
                     }
                     Divider()
                     Button { showEdit = true } label: {
@@ -219,14 +219,14 @@ struct CreditLineDetailView: View {
                 defaultEntryType = .repayment
                 showAddEntry = true
             } label: {
-                Label("Enregistrer un remboursement", systemImage: "arrow.up.circle.fill")
+                Label(lang["cl.recordRepayment"], systemImage: "arrow.up.circle.fill")
                     .foregroundStyle(.green)
             }
             Button {
                 defaultEntryType = .draw
                 showAddEntry = true
             } label: {
-                Label("Enregistrer un retrait", systemImage: "arrow.down.circle.fill")
+                Label(lang["cl.recordDraw"], systemImage: "arrow.down.circle.fill")
                     .foregroundStyle(.red)
             }
         }

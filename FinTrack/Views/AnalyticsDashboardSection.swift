@@ -307,7 +307,7 @@ struct BalanceProjectionCard: View {
             }
 
             if willNegative {
-                Label("Solde projeté négatif sur la période",
+                Label(lang["analytics.negativeBalance"],
                       systemImage: "exclamationmark.triangle.fill")
                     .font(.caption2.weight(.medium))
                     .foregroundStyle(.orange)

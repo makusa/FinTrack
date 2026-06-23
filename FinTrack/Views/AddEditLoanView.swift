@@ -240,7 +240,7 @@ struct AddEditLoanView: View {
             HStack {
                 Text(lang["loan.term"])
                 Spacer()
-                Picker("Années", selection: $termYears) {
+                Picker(lang["label.years"], selection: $termYears) {
                     ForEach(0...35, id: \.self) { y in
                         Text(y == 1 ? "1 an" : "\(y) ans").tag(y)
                     }
@@ -285,7 +285,7 @@ struct AddEditLoanView: View {
 
     private var advancedSection: some View {
         Section {
-            Picker("Capitalisation des intérêts", selection: $compounding) {
+            Picker(lang["loan.compounding"], selection: $compounding) {
                 ForEach(LoanCompounding.allCases) { c in Text(c.label).tag(c) }
             }
         } header: {
@@ -386,7 +386,7 @@ struct AddEditLoanView: View {
 
     private var notesSection: some View {
         Section(lang["label.notes"] + " " + lang["label.optional"]) {
-            TextField("Numéro de contrat, courtier, etc.", text: $notes, axis: .vertical)
+            TextField(lang["loan.notesPlaceholder"], text: $notes, axis: .vertical)
                 .lineLimit(2...4)
         }
     }

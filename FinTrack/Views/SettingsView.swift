@@ -253,7 +253,7 @@ struct SettingsView: View {
                 DeveloperView()
             } label: {
                 HStack {
-                    Label("Développeur", systemImage: "hammer.fill")
+                    Label(lang["settings.developer"], systemImage: "hammer.fill")
                         .foregroundStyle(.orange)
                     Spacer()
                     Text(tierName)
