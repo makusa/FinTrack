@@ -438,7 +438,7 @@ enum LocalizedStrings {
         "cl.preview":          ["fr": "Aperçu après opération",  "en": "Preview After Operation","es": "Vista previa",    "pt": "Prévia após operação"],
         "cl.newDraw":          ["fr": "Nouveau retrait",         "en": "New Draw",            "es": "Nuevo retiro",       "pt": "Novo saque"],
         "cl.newRepayment":     ["fr": "Remboursement",           "en": "Repayment",           "es": "Pago",               "pt": "Pagamento"],
-        "cl.compound.daily":   ["fr": "Quotidienne (marges CA)", "en": "Daily (CA Lines)",    "es": "Diaria (líneas CA)", "pt": "Diária (linhas CA)"],
+        "cl.compound.daily":   ["fr": "Quotidienne", "en": "Daily", "es": "Diaria", "pt": "Diária"],
         "cl.compounding":       ["fr": "Capitalisation", "en": "Compounding", "es": "Capitalización", "pt": "Capitalização"],
         "cl.statementDay":      ["fr": "Jour de relevé", "en": "Statement day", "es": "Día de facturación", "pt": "Dia da fatura"],
         "cl.statementDay.footer":["fr": "Les intérêts courus sont facturés ce jour-là chaque mois.", "en": "Accrued interest is charged on this day each month.", "es": "Los intereses acumulados se facturan este día cada mes.", "pt": "Os juros acumulados são cobrados neste dia a cada mês."],
