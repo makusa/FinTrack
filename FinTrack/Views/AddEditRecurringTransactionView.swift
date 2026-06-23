@@ -50,6 +50,8 @@ struct AddEditRecurringTransactionView: View {
     @State private var currency: String = Currencies.default
     @State private var showEditScopeConfirm = false
     @State private var showDeleteScopeConfirm = false
+    @State private var showReactivateConfirm = false
+    @State private var reactivateCatchUp: Bool? = nil
 
     @State private var notifEnabled: Bool = false
     @State private var notifDaysBefore: Int = 3
@@ -157,6 +159,18 @@ struct AddEditRecurringTransactionView: View {
                 Button(lang["action.cancel"], role: .cancel) {}
             } message: {
                 Text(lang["recurring.deleteScope.message"])
+            }
+            .confirmationDialog(lang["recurring.reactivate.title"],
+                                isPresented: $showReactivateConfirm,
+                                titleVisibility: .visible) {
+                Button(lang["recurring.reactivate.catchUp"]) { reactivateCatchUp = true }
+                Button(lang["recurring.reactivate.skip"]) { reactivateCatchUp = false }
+                Button(lang["action.cancel"], role: .cancel) {
+                    isActive = false
+                    reactivateCatchUp = nil
+                }
+            } message: {
+                Text(lang["recurring.reactivate.message"])
             }
             .onAppear {
                 guard !didInitialLoad else { return }
@@ -375,6 +389,15 @@ struct AddEditRecurringTransactionView: View {
         Section {
             Toggle(isActive ? lang["recurring.statusActive"] : lang["recurring.statusPaused"],
                    isOn: $isActive)
+                .onChange(of: isActive) { _, newValue in
+                    guard case .edit(let rule) = mode else { return }
+                    if newValue, !rule.isActive,
+                       RecurringTransactionManager.hasMissedOccurrences(rule) {
+                        showReactivateConfirm = true
+                    } else if !newValue {
+                        reactivateCatchUp = nil
+                    }
+                }
         } footer: {
             Text(isActive
                  ? lang["recurring.statusFooterActive"]
@@ -500,19 +523,27 @@ struct AddEditRecurringTransactionView: View {
                 showEditScopeConfirm = true
                 return
             }
+            let wasReactivated = !rule.isActive && isActive
             commitRuleValues(to: rule)
-            finishSaveAndDismiss()
+            if wasReactivated, reactivateCatchUp == false {
+                RecurringTransactionManager.skipMissedOccurrences(rule)
+            }
+            finishSaveAndDismiss(applyPending: wasReactivated)
         }
     }
 
     /// Applique l'édition selon la portée choisie dans le dialogue.
     private func applyEdit(scope: RecurringEditScope) {
         guard case .edit(let rule) = mode else { return }
+        let wasReactivated = !rule.isActive && isActive
         commitRuleValues(to: rule)
+        if wasReactivated, reactivateCatchUp == false {
+            RecurringTransactionManager.skipMissedOccurrences(rule)
+        }
         if scope == .allTransactions {
             RecurringTransactionManager.propagateValuesToGeneratedTransactions(rule, context: context)
         }
-        finishSaveAndDismiss()
+        finishSaveAndDismiss(applyPending: wasReactivated)
     }
 
     /// Supprime la règle selon la portée choisie.
@@ -547,9 +578,12 @@ struct AddEditRecurringTransactionView: View {
     }
 
     /// Enregistre le contexte, ferme l'écran et replanifie les notifications.
-    private func finishSaveAndDismiss() {
+    private func finishSaveAndDismiss(applyPending: Bool = false) {
         do {
             try context.save()
+            if applyPending {
+                RecurringTransactionManager.applyPending(context: context)
+            }
             dismiss()
             Task { await NotificationManager.shared.scheduleAll(context: context) }
         } catch {
