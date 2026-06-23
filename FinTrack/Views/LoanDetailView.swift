@@ -266,7 +266,7 @@ struct LoanDetailView: View {
                 loanRow(lang["loan.detail.ofInterest"],
                         value: Decimal(entry.interest).formatted(asCurrency: loan.currency),
                         color: .orange)
-                loanRow("dont capital",
+                loanRow(lang["loan.detail.ofPrincipal"],
                         value: Decimal(entry.principal).formatted(asCurrency: loan.currency),
                         color: .green)
             } else {

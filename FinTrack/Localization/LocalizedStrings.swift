@@ -359,6 +359,8 @@ enum LocalizedStrings {
         "loan.paymentNum":      ["fr": "Versement #%d",          "en": "Payment #%d",         "es": "Pago #%d",           "pt": "Pagamento #%d"],
         "loan.estimatedEnd":    ["fr": "Date de fin estimée",    "en": "Estimated End Date",  "es": "Fecha estimada de fin","pt": "Data estimada de fim"],
         "loan.savingsPayments": ["fr": "%d versements économisés","en": "%d payments saved",  "es": "%d pagos ahorrados", "pt": "%d pagamentos economizados"],
+        "loan.paymentsCount":   ["fr": "%d versements", "en": "%d payments", "es": "%d pagos", "pt": "%d pagamentos"],
+        "loan.paymentsSaved":   ["fr": "Versements économisés", "en": "Payments saved", "es": "Pagos ahorrados", "pt": "Pagamentos economizados"],
         "loan.endDateLabel":    ["fr": "Fin",                                   "en": "End",                            "es": "Fin",                           "pt": "Fim"],
                 "loan.paidOff":         ["fr": "Prêt entièrement remboursé.","en": "Loan fully paid off.","es": "Préstamo totalmente pagado.","pt": "Empréstimo totalmente pago."],
         "loan.type.mortgage":   ["fr": "Hypothèque",             "en": "Mortgage",            "es": "Hipoteca",           "pt": "Hipoteca"],
@@ -541,6 +543,7 @@ enum LocalizedStrings {
         // Loan detail (hardcoded strings fixed)
         "loan.detail.paidPct":       ["fr": "%.1f%% remboursé",                   "en": "%.1f%% paid off",               "es": "%.1f%% pagado",                 "pt": "%.1f%% pago"],
         "loan.detail.ofInterest":    ["fr": "dont intérêts",                      "en": "of which interest",             "es": "de los cuales intereses",       "pt": "dos quais juros"],
+        "loan.detail.ofPrincipal":   ["fr": "dont capital",                       "en": "of which principal",            "es": "de los cuales capital",         "pt": "dos quais principal"],
         "loan.detail.interestPct":   ["fr": "Intérêts %.0f%%",                    "en": "Interest %.0f%%",               "es": "Intereses %.0f%%",              "pt": "Juros %.0f%%"],
         "loan.detail.from":          ["fr": "· dès",                              "en": "· from",                        "es": "· desde",                       "pt": "· a partir de"],
 

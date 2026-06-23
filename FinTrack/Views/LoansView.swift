@@ -207,6 +207,7 @@ struct LoansView: View {
 
 struct LoanRow: View {
     let loan: Loan
+    @Environment(LanguageManager.self) private var lang
 
     private var calc: LoanCalculator { loan.calculator }
 
@@ -249,7 +250,7 @@ struct LoanRow: View {
                 Text(Decimal(calc.currentBalance).formatted(asCurrency: loan.currency))
                     .font(.body.weight(.semibold))
                     .foregroundStyle(.red)
-                Text("\(calc.paymentsRemaining) versements")
+                Text(lang.f("loan.paymentsCount", calc.paymentsRemaining))
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }

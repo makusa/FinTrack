@@ -328,8 +328,8 @@ struct AddEditLoanView: View {
 
                 if frequency == .biweeklyAccelerated {
                     let saved = calc.totalPayments - calc.effectivePayments
-                    summaryRow("Versements économisés",
-                               value: "\(saved) versements",
+                    summaryRow(lang["loan.paymentsSaved"],
+                               value: lang.f("loan.paymentsCount", saved),
                                color: .green)
                 }
 
