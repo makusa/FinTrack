@@ -37,6 +37,7 @@ struct AddEditTransactionView: View {
     @State private var note: String = ""
     @State private var showCategoryPicker = false
     @State private var showDeleteConfirm = false
+    @State private var statusChoice: StatusChoice = .auto
     @State private var currency: String = Currencies.default
 
     @State private var notifEnabled: Bool = false
@@ -73,6 +74,17 @@ struct AddEditTransactionView: View {
     private var editingNeedsReview: Bool {
         if case .edit(let tx) = mode { return tx.needsReview }
         return false
+    }
+
+    private var editingBankSynced: Bool {
+        if case .edit(let tx) = mode { return tx.externalId != nil }
+        return false
+    }
+
+    /// User-selectable status in the editor (manual rows only).
+    private enum StatusChoice: String, CaseIterable, Identifiable {
+        case auto, skipped, reconciled
+        var id: String { rawValue }
     }
 
     private var currencyCode: String {
@@ -288,10 +300,22 @@ struct AddEditTransactionView: View {
 
     private var statusSection: some View {
         Section {
-            HStack {
-                Text(lang["tx.status.label"])
-                Spacer()
-                TransactionStatusBadge(status: effectiveStatus, needsReview: editingNeedsReview)
+            if isEditing, !editingBankSynced {
+                Picker(lang["tx.status.label"], selection: $statusChoice) {
+                    Text(lang["tx.status.auto"]).tag(StatusChoice.auto)
+                    Text(lang["tx.status.skipped"]).tag(StatusChoice.skipped)
+                    Text(lang["tx.status.reconciled"]).tag(StatusChoice.reconciled)
+                }
+            } else {
+                HStack {
+                    Text(lang["tx.status.label"])
+                    Spacer()
+                    TransactionStatusBadge(status: effectiveStatus, needsReview: editingNeedsReview)
+                }
+            }
+        } footer: {
+            if isEditing, !editingBankSynced {
+                Text(lang["tx.status.footer"])
             }
         }
     }
@@ -351,6 +375,11 @@ struct AddEditTransactionView: View {
             date = tx.date
             payee = tx.payee ?? ""
             note = tx.note
+            switch tx.status {
+            case .skipped:    statusChoice = .skipped
+            case .reconciled: statusChoice = .reconciled
+            default:          statusChoice = .auto
+            }
         }
     }
 
@@ -374,14 +403,19 @@ struct AddEditTransactionView: View {
             )
             tx.notificationEnabled = notifEnabled
             tx.notificationDaysBefore = notifDaysBefore
+            tx.status = TransactionStatus.defaultForManual(date: date)
             context.insert(tx)
         case .edit(let tx):
             tx.amount = amount
             tx.type = type
             tx.date = date
-            // Manual lifecycle follows the date; bank-backed/special statuses stay intact.
-            if tx.status == .scheduled || tx.status == .cleared {
-                tx.status = TransactionStatus.defaultForManual(date: date)
+            // Apply the chosen status for manual rows; bank-backed rows stay automatic.
+            if tx.externalId == nil {
+                switch statusChoice {
+                case .auto:       tx.status = TransactionStatus.defaultForManual(date: date)
+                case .skipped:    tx.status = .skipped
+                case .reconciled: tx.status = .reconciled
+                }
             }
             tx.account = account
             tx.category = selectedCategory

@@ -245,3 +245,15 @@ extension RecurringTransactionManager {
         }
     }
 }
+
+extension RecurringTransactionManager {
+
+    /// Skip the next scheduled occurrence: advance `nextDueDate` one period forward
+    /// WITHOUT generating a transaction. Deactivates the rule if this passes its end date.
+    static func skipNextOccurrence(_ rule: RecurringTransaction) {
+        rule.nextDueDate = rule.frequency.nextDate(after: rule.nextDueDate)
+        if let end = rule.endDate, rule.nextDueDate > end {
+            rule.isActive = false
+        }
+    }
+}

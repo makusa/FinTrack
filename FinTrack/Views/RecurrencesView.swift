@@ -70,6 +70,14 @@ struct RecurrencesView: View {
                                     Label(lang["action.generateNow"], systemImage: "bolt.fill")
                                 }
                                 .tint(.blue)
+                                Button {
+                                    RecurringTransactionManager.skipNextOccurrence(rule)
+                                    try? context.save()
+                                    rescheduleNotifications()
+                                } label: {
+                                    Label(lang["recurring.skipNext"], systemImage: "forward.end.fill")
+                                }
+                                .tint(.orange)
                             }
                         }
                     }
