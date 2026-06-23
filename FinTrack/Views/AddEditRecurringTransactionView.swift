@@ -47,6 +47,9 @@ struct AddEditRecurringTransactionView: View {
     @State private var destinationAccount: Account? = nil
     @State private var showCategoryPicker = false
     @State private var showDeleteConfirm = false
+    @State private var currency: String = Currencies.default
+    @State private var showEditScopeConfirm = false
+    @State private var showDeleteScopeConfirm = false
 
     @State private var notifEnabled: Bool = false
     @State private var notifDaysBefore: Int = 3
@@ -63,7 +66,7 @@ struct AddEditRecurringTransactionView: View {
     }
 
     private var currencyCode: String {
-        selectedAccount?.currency ?? Currencies.default
+        currency
     }
 
     private var canSave: Bool {
@@ -76,6 +79,16 @@ struct AddEditRecurringTransactionView: View {
 
     private var applicableCategories: [Category] {
         categories.filter { $0.matches(type) }
+    }
+
+    /// Devises pour lesquelles l'utilisateur possède au moins un compte actif.
+    private var availableCurrencies: [String] {
+        Array(Set(accounts.map(\.currency))).sorted()
+    }
+
+    /// Comptes dans la devise choisie (pas de conversion de change).
+    private var accountsInCurrency: [Account] {
+        accounts.filter { $0.currency == currency }
     }
     
     // Memoized amount parsing to avoid repeated calculations
@@ -93,6 +106,7 @@ struct AddEditRecurringTransactionView: View {
                 amountSection
                 typeSection
                 scheduleSection
+                currencySection
                 accountSection
                 if isTransfer {
                     transferDestinationSection
@@ -127,6 +141,22 @@ struct AddEditRecurringTransactionView: View {
                                 isPresented: $showDeleteConfirm, titleVisibility: .visible) {
                 Button(lang["action.delete"], role: .destructive) { deleteIfEditing() }
                 Button(lang["action.cancel"], role: .cancel) {}
+            }
+            .confirmationDialog(lang["recurring.editScope.title"],
+                                isPresented: $showEditScopeConfirm, titleVisibility: .visible) {
+                Button(lang["recurring.scope.all"]) { applyEdit(scope: .allTransactions) }
+                Button(lang["recurring.scope.future"]) { applyEdit(scope: .futureOnly) }
+                Button(lang["action.cancel"], role: .cancel) {}
+            } message: {
+                Text(lang["recurring.editScope.message"])
+            }
+            .confirmationDialog(lang["recurring.deleteScope.title"],
+                                isPresented: $showDeleteScopeConfirm, titleVisibility: .visible) {
+                Button(lang["recurring.scope.all"], role: .destructive) { deleteScoped(.allTransactions) }
+                Button(lang["recurring.scope.future"]) { deleteScoped(.futureOnly) }
+                Button(lang["action.cancel"], role: .cancel) {}
+            } message: {
+                Text(lang["recurring.deleteScope.message"])
             }
             .onAppear {
                 guard !didInitialLoad else { return }
@@ -221,15 +251,39 @@ struct AddEditRecurringTransactionView: View {
         .animation(.easeInOut(duration: 0.2), value: hasEndDate)
     }
 
+    @ViewBuilder
+    private var currencySection: some View {
+        if availableCurrencies.count > 1 {
+            Section {
+                Picker(lang["label.currency"], selection: $currency) {
+                    ForEach(availableCurrencies, id: \.self) { code in
+                        Text("\(code) — \(Currencies.info(for: code).name)").tag(code)
+                    }
+                }
+                .onChange(of: currency) { _, newCode in
+                    // Pas de conversion : recadrer compte et destination sur la devise.
+                    if selectedAccount?.currency != newCode {
+                        selectedAccount = accounts.first { $0.currency == newCode }
+                    }
+                    if destinationAccount?.currency != newCode {
+                        destinationAccount = nil
+                    }
+                }
+            } footer: {
+                Text(lang.f("account.sameCurrencyOnly", currency))
+            }
+        }
+    }
+
     private var accountSection: some View {
         Section(lang["label.account"]) {
-            if accounts.isEmpty {
+            if accountsInCurrency.isEmpty {
                 Text(lang["loan.noAccount"])
                     .foregroundStyle(.secondary)
             } else {
                 Picker(lang["label.account"], selection: $selectedAccount) {
                     Text(lang["label.none"] + "…").tag(Account?.none)
-                    ForEach(accounts) { account in
+                    ForEach(accountsInCurrency) { account in
                         HStack {
                             Image(systemName: account.iconSystemName)
                                 .foregroundStyle(Color(hex: account.colorHex))
@@ -272,8 +326,9 @@ struct AddEditRecurringTransactionView: View {
     
     // Computed property for destination accounts (filters out selected account)
     private var availableDestinationAccounts: [Account] {
-        guard let selected = selectedAccount else { return accounts }
-        return accounts.filter { $0.persistentModelID != selected.persistentModelID }
+        accounts.filter {
+            $0.currency == currency && $0.persistentModelID != selectedAccount?.persistentModelID
+        }
     }
 
     private var categorySection: some View {
@@ -311,26 +366,31 @@ struct AddEditRecurringTransactionView: View {
             TextField(type == .income ? lang["tx.payeeIncome"]
                                        : lang["tx.payeeExpense"],
                       text: $payee)
-            TextField("Note", text: $note, axis: .vertical)
+            TextField(lang["label.note"], text: $note, axis: .vertical)
                 .lineLimit(1...3)
         }
     }
 
     private var statusSection: some View {
         Section {
-            Toggle(isActive ? "Récurrence active" : "Récurrence en pause",
+            Toggle(isActive ? lang["recurring.statusActive"] : lang["recurring.statusPaused"],
                    isOn: $isActive)
         } footer: {
             Text(isActive
-                 ? "Les transactions seront générées automatiquement aux échéances."
-                 : "La génération est suspendue. Aucune transaction ne sera créée jusqu'à la réactivation.")
+                 ? lang["recurring.statusFooterActive"]
+                 : lang["recurring.statusFooterPaused"])
         }
     }
 
     private var deleteSection: some View {
         Section {
             Button(role: .destructive) {
-                showDeleteConfirm = true
+                if case .edit(let rule) = mode,
+                   RecurringTransactionManager.hasGeneratedTransactions(rule) {
+                    showDeleteScopeConfirm = true
+                } else {
+                    showDeleteConfirm = true
+                }
             } label: {
                 Label(lang["recurring.deletePrompt"], systemImage: "trash")
             }
@@ -362,6 +422,7 @@ struct AddEditRecurringTransactionView: View {
         guard case .edit(let rule) = mode else {
             // Create mode: default account
             selectedAccount = accounts.first
+            currency = accounts.first?.currency ?? Currencies.default
             Task { @MainActor in
                 try? await Task.sleep(for: .milliseconds(150))
                 amountFocused = true
@@ -378,6 +439,7 @@ struct AddEditRecurringTransactionView: View {
             endDate = end
         }
         selectedAccount = rule.account
+        currency = rule.account?.currency ?? Currencies.default
         selectedCategory = rule.category
         payee = rule.payee ?? ""
         note = rule.note
@@ -431,34 +493,83 @@ struct AddEditRecurringTransactionView: View {
             }
 
         case .edit(let rule):
-            rule.title = trimmedTitle
-            rule.amount = amount
-            rule.type = type
-            rule.frequency = frequency
-            rule.startDate = startDate
-            rule.endDate = hasEndDate ? endDate : nil
-            rule.account = account
-            rule.category = selectedCategory
-            rule.note = trimmedNote
-            rule.payee = trimmedPayee.isEmpty ? nil : trimmedPayee
-            rule.isActive = isActive
-            rule.isTransfer = isTransfer
-            rule.destinationAccount = isTransfer ? destinationAccount : nil
-            rule.notificationEnabled = notifEnabled
-            rule.notificationDaysBefore = notifDaysBefore
-            
-            do {
-                try context.save()
-                dismiss()
-                
-                // Schedule notifications async after UI dismisses
-                Task {
-                    await NotificationManager.shared.scheduleAll(context: context)
-                }
-            } catch {
-                AppLogger.persistence.error("AddEditRecurringTransactionView save failed: \(error, privacy: .private)")
+            // Règle avec historique + changement de valeur → demander la portée.
+            // La fréquence/les dates restent toujours appliquées vers le futur.
+            if RecurringTransactionManager.hasGeneratedTransactions(rule),
+               valueFieldsChanged(comparedTo: rule) {
+                showEditScopeConfirm = true
+                return
             }
+            commitRuleValues(to: rule)
+            finishSaveAndDismiss()
         }
+    }
+
+    /// Applique l'édition selon la portée choisie dans le dialogue.
+    private func applyEdit(scope: RecurringEditScope) {
+        guard case .edit(let rule) = mode else { return }
+        commitRuleValues(to: rule)
+        if scope == .allTransactions {
+            RecurringTransactionManager.propagateValuesToGeneratedTransactions(rule, context: context)
+        }
+        finishSaveAndDismiss()
+    }
+
+    /// Supprime la règle selon la portée choisie.
+    private func deleteScoped(_ scope: RecurringEditScope) {
+        guard case .edit(let rule) = mode else { return }
+        RecurringTransactionManager.deleteRule(rule, scope: scope, context: context)
+        dismiss()
+        Task { await NotificationManager.shared.scheduleAll(context: context) }
+    }
+
+    /// Écrit les champs de la règle depuis l'état du formulaire.
+    private func commitRuleValues(to rule: RecurringTransaction) {
+        guard let amount = parsedAmount, let account = selectedAccount else { return }
+        let trimmedTitle = title.trimmingCharacters(in: .whitespaces)
+        let trimmedPayee = payee.trimmingCharacters(in: .whitespaces)
+        let trimmedNote  = note.trimmingCharacters(in: .whitespaces)
+        rule.title = trimmedTitle
+        rule.amount = amount
+        rule.type = type
+        rule.frequency = frequency
+        rule.startDate = startDate
+        rule.endDate = hasEndDate ? endDate : nil
+        rule.account = account
+        rule.category = selectedCategory
+        rule.note = trimmedNote
+        rule.payee = trimmedPayee.isEmpty ? nil : trimmedPayee
+        rule.isActive = isActive
+        rule.isTransfer = isTransfer
+        rule.destinationAccount = isTransfer ? destinationAccount : nil
+        rule.notificationEnabled = notifEnabled
+        rule.notificationDaysBefore = notifDaysBefore
+    }
+
+    /// Enregistre le contexte, ferme l'écran et replanifie les notifications.
+    private func finishSaveAndDismiss() {
+        do {
+            try context.save()
+            dismiss()
+            Task { await NotificationManager.shared.scheduleAll(context: context) }
+        } catch {
+            AppLogger.persistence.error("AddEditRecurringTransactionView save failed: \(error, privacy: .private)")
+        }
+    }
+
+    /// Vrai si un champ de VALEUR (propageable à l'historique) a changé.
+    /// La fréquence, les dates, le titre et l'état actif sont exclus.
+    private func valueFieldsChanged(comparedTo rule: RecurringTransaction) -> Bool {
+        if let amount = parsedAmount, amount != rule.amount { return true }
+        // Transferts : seul le montant est propagé aux deux jambes.
+        if isTransfer || rule.isTransfer { return false }
+        if type != rule.type { return true }
+        if selectedAccount?.persistentModelID != rule.account?.persistentModelID { return true }
+        if selectedCategory?.persistentModelID != rule.category?.persistentModelID { return true }
+        let p = payee.trimmingCharacters(in: .whitespaces)
+        if (p.isEmpty ? nil : p) != rule.payee { return true }
+        if note.trimmingCharacters(in: .whitespaces) != rule.note { return true }
+        return false
     }
 
     private func deleteIfEditing() {
@@ -532,7 +643,7 @@ private struct CategoryPickerSheet: View {
                 }
                 .padding()
             }
-            .navigationTitle("Catégorie")
+            .navigationTitle(lang["label.category"])
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

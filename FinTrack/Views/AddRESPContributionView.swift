@@ -36,7 +36,7 @@ struct AddRESPContributionView: View {
     private var amount: Decimal { parseDecimal(amountText) ?? 0 }
 
     private var transferableAccounts: [Account] {
-        allAccounts.filter { !$0.isArchived && $0.persistentModelID != account.persistentModelID }
+        allAccounts.filter { !$0.isArchived && $0.persistentModelID != account.persistentModelID && $0.currency == account.currency }
     }
     private var accountIsSynced: Bool {
         (account.transactions ?? []).contains { $0.externalId != nil }

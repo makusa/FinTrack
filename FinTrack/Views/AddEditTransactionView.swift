@@ -37,6 +37,7 @@ struct AddEditTransactionView: View {
     @State private var note: String = ""
     @State private var showCategoryPicker = false
     @State private var showDeleteConfirm = false
+    @State private var currency: String = Currencies.default
 
     @State private var notifEnabled: Bool = false
     @State private var notifDaysBefore: Int = 3
@@ -75,7 +76,7 @@ struct AddEditTransactionView: View {
     }
 
     private var currencyCode: String {
-        selectedAccount?.currency ?? Currencies.default
+        currency
     }
 
     private var canSave: Bool {
@@ -85,6 +86,16 @@ struct AddEditTransactionView: View {
 
     private var applicableCategories: [Category] {
         categories.filter { $0.matches(type) }
+    }
+
+    /// Devises pour lesquelles l'utilisateur possède au moins un compte actif.
+    private var availableCurrencies: [String] {
+        Array(Set(accounts.map(\.currency))).sorted()
+    }
+
+    /// Comptes dans la devise choisie (pas de conversion de change).
+    private var accountsInCurrency: [Account] {
+        accounts.filter { $0.currency == currency }
     }
 
     var body: some View {
@@ -104,6 +115,7 @@ struct AddEditTransactionView: View {
             }
             amountSection
             typeSection
+            currencySection
             accountSection
             categorySection
             detailsSection
@@ -192,15 +204,35 @@ struct AddEditTransactionView: View {
         }
     }
 
+    @ViewBuilder
+    private var currencySection: some View {
+        if availableCurrencies.count > 1 {
+            Section {
+                Picker(lang["label.currency"], selection: $currency) {
+                    ForEach(availableCurrencies, id: \.self) { code in
+                        Text("\(code) — \(Currencies.info(for: code).name)").tag(code)
+                    }
+                }
+                .onChange(of: currency) { _, newCode in
+                    // Pas de conversion : on garde le compte s'il correspond, sinon on
+                    // sélectionne le premier compte de la nouvelle devise.
+                    if selectedAccount?.currency != newCode {
+                        selectedAccount = accounts.first { $0.currency == newCode }
+                    }
+                }
+            }
+        }
+    }
+
     private var accountSection: some View {
-        Section(lang["label.account"]) {
-            if accounts.isEmpty {
-                Text(lang["label.account"])
+        Section {
+            if accountsInCurrency.isEmpty {
+                Text(lang["account.noAccounts"])
                     .foregroundStyle(.secondary)
             } else {
                 Picker(lang["label.account"], selection: $selectedAccount) {
                     Text(lang["label.none"] + "…").tag(Account?.none)
-                    ForEach(accounts) { account in
+                    ForEach(accountsInCurrency) { account in
                         HStack {
                             Image(systemName: account.iconSystemName)
                                 .foregroundStyle(Color(hex: account.colorHex))
@@ -211,6 +243,12 @@ struct AddEditTransactionView: View {
                         .tag(Optional(account))
                     }
                 }
+            }
+        } header: {
+            Text(lang["label.account"])
+        } footer: {
+            if availableCurrencies.count > 1 {
+                Text(lang.f("account.sameCurrencyOnly", currency))
             }
         }
     }
@@ -299,6 +337,7 @@ struct AddEditTransactionView: View {
             } else {
                 selectedAccount = accounts.first
             }
+            currency = selectedAccount?.currency ?? Currencies.default
             // Open the keyboard immediately so Régis can start typing the amount.
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                 amountFocused = true
@@ -307,6 +346,7 @@ struct AddEditTransactionView: View {
             type = tx.type
             amountText = decimalToText(tx.amount)
             selectedAccount = tx.account
+            currency = tx.account?.currency ?? Currencies.default
             selectedCategory = tx.category
             date = tx.date
             payee = tx.payee ?? ""

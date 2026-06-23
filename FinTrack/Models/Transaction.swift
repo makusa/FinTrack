@@ -118,6 +118,10 @@ final class Transaction {
     @Relationship(deleteRule: .nullify, inverse: \SavingsProject.generatedTransactions)
     var savingsProject: SavingsProject? = nil
 
+    /// Recurring rule that generated this entry (reliable cleanup + scoped edits).
+    @Relationship(deleteRule: .nullify, inverse: \RecurringTransaction.generatedTransactions)
+    var recurringRule: RecurringTransaction? = nil
+
     var type: TransactionType {
         get { TransactionType(rawValue: typeRaw) ?? .expense }
         set { typeRaw = newValue.rawValue }

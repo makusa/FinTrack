@@ -43,6 +43,8 @@ struct AddTransferView: View {
     private var destCurrency:   String   { destinationAccount?.currency ?? Currencies.default }
     private var isCrossCurrency: Bool    { sourceCurrency != destCurrency }
 
+    private var hasMultipleCurrencies: Bool { Set(accounts.map(\.currency)).count > 1 }
+
     /// Converted amount in destination currency for preview.
     private var convertedAmount: Decimal? {
         guard let a = amount, isCrossCurrency else { return nil }
@@ -124,11 +126,17 @@ struct AddTransferView: View {
                     // Destination
                     Picker(lang["transfer.to"], selection: $destinationAccount) {
                         Text(lang["label.none"] + "…").tag(Account?.none)
-                        ForEach(accounts.filter { $0.persistentModelID != sourceAccount?.persistentModelID }) { a in
+                        ForEach(accounts.filter { $0.currency == sourceCurrency && $0.persistentModelID != sourceAccount?.persistentModelID }) { a in
                             accountLabel(a).tag(Optional(a))
                         }
                     }
                     .onChange(of: destinationAccount) { _, _ in validateAccounts() }
+
+                    if hasMultipleCurrencies {
+                        Text(lang.f("account.sameCurrencyOnly", sourceCurrency))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
 
                     if showAmountMismatch {
                         Label(lang["transfer.sameAccount.error"], systemImage: "exclamationmark.triangle")
@@ -215,10 +223,17 @@ struct AddTransferView: View {
     // MARK: - Logic
 
     private func validateAccounts() {
-        if let s = sourceAccount, let d = destinationAccount,
-           s.persistentModelID == d.persistentModelID {
+        guard let s = sourceAccount, let d = destinationAccount else {
+            showAmountMismatch = false
+            return
+        }
+        if s.persistentModelID == d.persistentModelID {
             showAmountMismatch = true
             destinationAccount = nil
+        } else if s.currency != d.currency {
+            // Pas de conversion de change : destination forcée dans la devise source.
+            destinationAccount = nil
+            showAmountMismatch = false
         } else {
             showAmountMismatch = false
         }

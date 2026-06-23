@@ -87,6 +87,8 @@ enum RecurringTransactionManager {
                 credit.transferPairId = pairId
                 debit.savingsProject  = rule.savingsProject
                 credit.savingsProject = rule.savingsProject
+                debit.recurringRule   = rule
+                credit.recurringRule  = rule
                 context.insert(debit)
                 context.insert(credit)
             } else {
@@ -101,6 +103,7 @@ enum RecurringTransactionManager {
                     sourceRecurringId: rule.persistentModelID.hashValue  // link for traceability
                 )
                 tx.savingsProject = rule.savingsProject
+                tx.recurringRule = rule
                 context.insert(tx)
             }
             inserted = true
@@ -128,6 +131,7 @@ enum RecurringTransactionManager {
                 payee: rule.account?.name, sourceRecurringId: rule.persistentModelID.hashValue)
             credit.transferPairId = pairId
             debit.savingsProject = rule.savingsProject; credit.savingsProject = rule.savingsProject
+            debit.recurringRule = rule; credit.recurringRule = rule
             context.insert(debit); context.insert(credit)
         } else {
             let tx = Transaction(
@@ -137,6 +141,7 @@ enum RecurringTransactionManager {
                 sourceRecurringId: rule.persistentModelID.hashValue
             )
             tx.savingsProject = rule.savingsProject
+            tx.recurringRule = rule
             context.insert(tx)
         }
         // Advance the due date by one period.
@@ -147,5 +152,76 @@ enum RecurringTransactionManager {
             destination.recalculateBalance()
         }
         try? context.save()
+    }
+}
+
+
+// MARK: - Scoped edit / delete (toutes les transactions vs uniquement à venir)
+
+/// Portée d'une modification ou suppression sur une règle récurrente.
+enum RecurringEditScope {
+    case allTransactions   // applique aussi à l'historique déjà généré
+    case futureOnly        // n'affecte que la règle (occurrences futures)
+}
+
+extension RecurringTransactionManager {
+
+    /// Vrai si la règle a déjà généré au moins une transaction (donc un historique
+    /// existe et le choix « toutes / à venir » a du sens).
+    static func hasGeneratedTransactions(_ rule: RecurringTransaction) -> Bool {
+        !(rule.generatedTransactions ?? []).isEmpty
+    }
+
+    /// Réécrit les VALEURS actuelles de la règle sur toutes les transactions déjà
+    /// générées. À appeler APRÈS avoir mis à jour les champs de la règle.
+    /// Transferts : seul le montant est propagé — le sens et les comptes des deux
+    /// jambes sont structurels et restent intacts. Les dates ne sont jamais touchées.
+    static func propagateValuesToGeneratedTransactions(_ rule: RecurringTransaction,
+                                                        context: ModelContext) {
+        let txs = rule.generatedTransactions ?? []
+        guard !txs.isEmpty else { return }
+
+        for tx in txs {
+            if rule.isTransfer {
+                tx.amount = rule.amount
+            } else {
+                tx.amount   = rule.amount
+                tx.type     = rule.type
+                tx.account  = rule.account
+                tx.category = rule.category
+                tx.payee    = rule.payee
+                tx.note     = rule.note
+            }
+        }
+
+        recalculateAllAccounts(context: context)
+        try? context.save()
+    }
+
+    /// Supprime une règle et, selon la portée, ses transactions générées.
+    /// `.allTransactions` → la règle + toutes les transactions générées.
+    /// `.futureOnly`      → la règle + uniquement les transactions à venir
+    ///                      (date > maintenant) ; l'historique est conservé.
+    static func deleteRule(_ rule: RecurringTransaction,
+                           scope: RecurringEditScope,
+                           context: ModelContext) {
+        let now = Date()
+        // Capturer les transactions AVANT de supprimer la règle.
+        let txs = rule.generatedTransactions ?? []
+        for tx in txs where scope == .allTransactions || tx.date > now {
+            context.delete(tx)
+        }
+        context.delete(rule)
+        try? context.save()           // purge les suppressions, relations cohérentes
+
+        recalculateAllAccounts(context: context)
+        try? context.save()
+    }
+
+    /// Recalcule le solde caché de tous les comptes. Le faible nombre de comptes
+    /// rend l'opération triviale et garantit qu'aucun compte touché n'est oublié.
+    private static func recalculateAllAccounts(context: ModelContext) {
+        let accounts = (try? context.fetch(FetchDescriptor<Account>())) ?? []
+        for a in accounts { a.recalculateBalance() }
     }
 }

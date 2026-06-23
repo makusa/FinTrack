@@ -43,7 +43,7 @@ struct AddRegisteredEntryView: View {
 
     /// Other (non-archived) accounts this contribution/withdrawal can move cash with.
     private var transferableAccounts: [Account] {
-        allAccounts.filter { !$0.isArchived && $0.persistentModelID != account.persistentModelID }
+        allAccounts.filter { !$0.isArchived && $0.persistentModelID != account.persistentModelID && $0.currency == account.currency }
     }
     /// Heuristic: a bank-synced account already imports the cash movement, so we
     /// default the "also move the money" toggle OFF for it to avoid double counting.

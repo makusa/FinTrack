@@ -16,6 +16,8 @@ struct RecurrencesView: View {
 
     @State private var showAdd = false
     @State private var showInactive = false
+    @State private var showDeleteScopeConfirm = false
+    @State private var pendingDeleteRule: RecurringTransaction?
 
     /// True when a free-tier user has reached the 5-rule cap.
     private var isAtFreeLimit: Bool {
@@ -58,6 +60,7 @@ struct RecurrencesView: View {
                             .swipeActions(edge: .leading) {
                                 Button {
                                     RecurringTransactionManager.postNow(rule, context: context)
+                                    rescheduleNotifications()
                                 } label: {
                                     Label(lang["action.generateNow"], systemImage: "bolt.fill")
                                 }
@@ -126,6 +129,22 @@ struct RecurrencesView: View {
                 AddEditRecurringTransactionView(mode: .create)
             }
         }
+        .confirmationDialog(lang["recurring.deleteScope.title"],
+                            isPresented: $showDeleteScopeConfirm,
+                            titleVisibility: .visible,
+                            presenting: pendingDeleteRule) { rule in
+            Button(lang["recurring.scope.all"], role: .destructive) {
+                RecurringTransactionManager.deleteRule(rule, scope: .allTransactions, context: context)
+                rescheduleNotifications()
+            }
+            Button(lang["recurring.scope.future"]) {
+                RecurringTransactionManager.deleteRule(rule, scope: .futureOnly, context: context)
+                rescheduleNotifications()
+            }
+            Button(lang["action.cancel"], role: .cancel) {}
+        } message: { _ in
+            Text(lang["recurring.deleteScope.message"])
+        }
     }
 
     // MARK: - Free tier cap banner
@@ -188,11 +207,27 @@ struct RecurrencesView: View {
     private func toggleActive(_ rule: RecurringTransaction) {
         rule.isActive.toggle()
         try? context.save()
+        rescheduleNotifications()
     }
 
     private func delete(_ rule: RecurringTransaction) {
-        context.delete(rule)
-        try? context.save()
+        // Historique généré → proposer la portée (toutes vs à venir).
+        // Sinon, aucune transaction concernée : suppression directe de la règle.
+        if RecurringTransactionManager.hasGeneratedTransactions(rule) {
+            pendingDeleteRule = rule
+            showDeleteScopeConfirm = true
+        } else {
+            context.delete(rule)
+            try? context.save()
+            rescheduleNotifications()
+        }
+    }
+
+    /// Réaligne toutes les notifications planifiées sur l'état actuel des données
+    /// (annule puis reconstruit) — après suppression, pause/reprise, génération.
+    private func rescheduleNotifications() {
+        let ctx = context
+        Task { await NotificationManager.shared.scheduleAll(context: ctx) }
     }
 }
 
