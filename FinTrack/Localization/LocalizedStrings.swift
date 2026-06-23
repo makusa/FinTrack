@@ -228,6 +228,13 @@ enum LocalizedStrings {
 
         // MARK: - Transactions
         "tx.title":           ["fr": "Transactions",      "en": "Transactions",      "es": "Transacciones",   "pt": "Transações"],
+        "tx.upcoming.show":    ["fr": "Afficher à venir", "en": "Show upcoming", "es": "Mostrar próximas", "pt": "Mostrar futuras"],
+        "tx.upcoming.title":   ["fr": "À venir", "en": "Upcoming", "es": "Próximas", "pt": "Futuras"],
+        "tx.upcoming.empty":   ["fr": "Aucune occurrence à venir.", "en": "No upcoming occurrences.", "es": "Sin próximas.", "pt": "Nenhuma futura."],
+        "tx.upcoming.none":    ["fr": "Aucune", "en": "None", "es": "Ninguna", "pt": "Nenhuma"],
+        "tx.upcoming.1m":      ["fr": "1 mois", "en": "1 month", "es": "1 mes", "pt": "1 mês"],
+        "tx.upcoming.3m":      ["fr": "3 mois", "en": "3 months", "es": "3 meses", "pt": "3 meses"],
+        "tx.upcoming.1y":      ["fr": "1 an", "en": "1 year", "es": "1 año", "pt": "1 ano"],
         "tx.allAccounts":     ["fr": "Tous les comptes",  "en": "All Accounts",      "es": "Todas las cuentas","pt": "Todas as contas"],
         "tx.create":          ["fr": "Nouvelle transaction","en": "New Transaction", "es": "Nueva transacción","pt": "Nova transação"],
         "tx.edit":            ["fr": "Modifier la transaction","en": "Edit Transaction","es": "Editar transacción","pt": "Editar transação"],

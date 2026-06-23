@@ -21,6 +21,10 @@ struct TransactionsView: View {
            sort: \Transaction.date, order: .reverse)
     private var reviewTransactions: [Transaction]
 
+    @Query(filter: #Predicate<RecurringTransaction> { $0.isActive },
+           sort: \RecurringTransaction.nextDueDate, order: .forward)
+    private var activeRecurring: [RecurringTransaction]
+
     @State private var filterType: TypeFilter = .all
     @State private var filterAccount: Account? = nil
     @State private var searchText: String = ""
@@ -44,6 +48,29 @@ struct TransactionsView: View {
             }
         }
     }
+
+    enum FutureHorizon: String, CaseIterable, Identifiable {
+        case none, month1, month3, year1
+        var id: String { rawValue }
+        func label(using lang: LanguageManager) -> String {
+            switch self {
+            case .none:   return lang["tx.upcoming.none"]
+            case .month1: return lang["tx.upcoming.1m"]
+            case .month3: return lang["tx.upcoming.3m"]
+            case .year1:  return lang["tx.upcoming.1y"]
+            }
+        }
+        var endDate: Date? {
+            let cal = Calendar.current
+            switch self {
+            case .none:   return nil
+            case .month1: return cal.date(byAdding: .month, value: 1, to: .now)
+            case .month3: return cal.date(byAdding: .month, value: 3, to: .now)
+            case .year1:  return cal.date(byAdding: .year, value: 1, to: .now)
+            }
+        }
+    }
+    @State private var futureHorizon: FutureHorizon = .none
 
     private var filteredTransactions: [Transaction] {
         allTransactions.filter { tx in
@@ -79,6 +106,40 @@ struct TransactionsView: View {
         return grouped
             .map { (date: $0.key, items: $0.value) }
             .sorted { $0.date > $1.date }
+    }
+
+    private struct UpcomingItem: Identifiable {
+        let id: String
+        let rule: RecurringTransaction
+        let date: Date
+    }
+
+    /// Projected future recurring occurrences within the selected horizon.
+    private var upcomingItems: [UpcomingItem] {
+        guard let horizonEnd = futureHorizon.endDate else { return [] }
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: .now)
+        var items: [UpcomingItem] = []
+        for rule in activeRecurring {
+            switch filterType {
+            case .all: break
+            case .income:  if rule.type != .income  || rule.isTransfer { continue }
+            case .expense: if rule.type != .expense || rule.isTransfer { continue }
+            }
+            if let acc = filterAccount, rule.account?.id != acc.id { continue }
+            var d = rule.nextDueDate
+            var guardCount = 0
+            while d <= horizonEnd && guardCount < 500 {
+                if d > today {
+                    items.append(UpcomingItem(
+                        id: "\(rule.persistentModelID.hashValue)-\(Int(d.timeIntervalSince1970))",
+                        rule: rule, date: d))
+                }
+                d = rule.frequency.nextDate(after: d)
+                guardCount += 1
+            }
+        }
+        return items.sorted { $0.date < $1.date }
     }
 
     var body: some View {
@@ -161,6 +222,18 @@ struct TransactionsView: View {
                 }
                 .listRowBackground(Color.orange.opacity(0.08))
             }
+            if futureHorizon != .none {
+                Section(header: Text(lang["tx.upcoming.title"])) {
+                    if upcomingItems.isEmpty {
+                        Text(lang["tx.upcoming.empty"])
+                            .font(.callout).foregroundStyle(.secondary)
+                    } else {
+                        ForEach(upcomingItems) { item in
+                            upcomingRow(item)
+                        }
+                    }
+                }
+            }
             ForEach(groupedTransactions, id: \.date) { group in
                 Section(header: Text(headerLabel(for: group.date))) {
                     ForEach(group.items) { tx in
@@ -231,6 +304,12 @@ struct TransactionsView: View {
                     Text(a.name).tag(Optional(a))
                 }
             }
+            Divider()
+            Picker(lang["tx.upcoming.show"], selection: $futureHorizon) {
+                ForEach(FutureHorizon.allCases) { h in
+                    Text(h.label(using: lang)).tag(h)
+                }
+            }
         } label: {
             Image(systemName: hasActiveFilters
                   ? "line.3.horizontal.decrease.circle.fill"
@@ -239,7 +318,7 @@ struct TransactionsView: View {
     }
 
     private var hasActiveFilters: Bool {
-        filterType != .all || filterAccount != nil
+        filterType != .all || filterAccount != nil || futureHorizon != .none
     }
 
     private func headerLabel(for date: Date) -> String {
@@ -262,6 +341,34 @@ struct TransactionsView: View {
             acc.recalculateBalance()
         }
         try? context.save()
+    }
+
+    @ViewBuilder
+    private func upcomingRow(_ item: UpcomingItem) -> some View {
+        let rule = item.rule
+        let iconColor: Color = rule.category.map { Color(hex: $0.colorHex) } ?? .secondary
+        let code = rule.account?.currency ?? Currencies.default
+        let amountStr = rule.isTransfer
+            ? rule.amount.formatted(asCurrency: code)
+            : (rule.type == .income ? "+" : "−") + rule.amount.formatted(asCurrency: code)
+        let amountColor: Color = rule.isTransfer ? .secondary : (rule.type == .income ? .green : .primary)
+        HStack(spacing: 12) {
+            ZStack {
+                Circle().fill(iconColor.opacity(0.12)).frame(width: 36, height: 36)
+                Image(systemName: rule.isTransfer
+                      ? "arrow.left.arrow.right"
+                      : (rule.category?.iconSystemName ?? "clock.arrow.circlepath"))
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(iconColor)
+            }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(rule.displayTitle).font(.body.weight(.medium)).lineLimit(1)
+                Text(item.date.appFormatted()).font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Text(amountStr).font(.body.weight(.medium)).foregroundStyle(amountColor)
+        }
+        .opacity(0.7)
     }
 }
 
