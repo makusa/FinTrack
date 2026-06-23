@@ -81,7 +81,9 @@ struct DashboardView: View {
 
     private var upcomingRecurrences: [RecurringTransaction] {
         let horizon = Calendar.current.date(byAdding: .day, value: 30, to: .now) ?? .now
-        return Array(activeRecurring.filter { $0.nextDueDate <= horizon }.prefix(5))
+        return Array(activeRecurring.filter {
+            !$0.isLoanPayment && !$0.isCreditLinePayment && $0.nextDueDate <= horizon
+        }.prefix(5))
     }
 
     private var dominantCurrency: String? {

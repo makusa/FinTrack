@@ -11,7 +11,10 @@ struct RecurrencesView: View {
     @Environment(LanguageManager.self) private var lang
     @Environment(EntitlementManager.self) private var entitlements
 
-    @Query(sort: \RecurringTransaction.nextDueDate, order: .forward)
+    // Les paiements de prêt/marge sont des générateurs internes (gérés via leurs
+    // propres écrans) : on les exclut de la liste des récurrences génériques.
+    @Query(filter: #Predicate<RecurringTransaction> { !$0.isLoanPayment && !$0.isCreditLinePayment },
+           sort: \RecurringTransaction.nextDueDate, order: .forward)
     private var allRules: [RecurringTransaction]
 
     @State private var showAdd = false
