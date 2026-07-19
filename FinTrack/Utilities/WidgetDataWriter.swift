@@ -141,7 +141,8 @@ enum WidgetDataWriter {
                 spent: NSDecimalNumber(decimal: spent).doubleValue,
                 limit: NSDecimalNumber(decimal: b.limitAmount).doubleValue,
                 currency: b.currency,
-                colorHex: b.colorHex
+                colorHex: b.colorHex,
+                icon: b.iconSystemName
             )
         }
 

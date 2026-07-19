@@ -270,9 +270,43 @@ private struct BudgetsList: View {
     }
 }
 
+// Small is too tight for names + full amounts, so it shows just the budget's
+// icon and the abbreviated amount spent, with its progress bar.
 struct SmallBudgetsView: View {
     let data: FinTrackWidgetData
-    var body: some View { BudgetsList(data: data, maxCount: 3, showLimit: false) }
+    private var accent: Color { data.budgets.contains(where: { $0.isOver }) ? .red : .green }
+    var body: some View {
+        HStack(spacing: 0) {
+            SideAccent(color: accent)
+            VStack(alignment: .leading, spacing: 7) {
+                WidgetCaption(text: data.str("budgets"))
+                if data.budgets.isEmpty {
+                    Spacer()
+                    Text(data.str("noData")).font(.caption2).foregroundStyle(.secondary)
+                    Spacer()
+                } else {
+                    ForEach(data.budgets.prefix(3)) { b in
+                        VStack(spacing: 3) {
+                            HStack {
+                                Image(systemName: b.icon).font(.caption)
+                                    .foregroundStyle(b.isOver ? .red : Color(widgetHex: b.colorHex))
+                                Spacer()
+                                Text(data.formattedShortMoney(b.spent, currency: b.currency))
+                                    .font(.system(.caption, design: .rounded).weight(.bold))
+                                    .foregroundStyle(b.isOver ? .red : .primary)
+                                    .lineLimit(1).minimumScaleFactor(0.8)
+                            }
+                            ProgressView(value: b.fraction).tint(b.isOver ? .red : Color(widgetHex: b.colorHex))
+                        }
+                    }
+                    Spacer(minLength: 0)
+                }
+            }
+            .padding(.leading, 11)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        }
+        .padding(14)
+    }
 }
 
 struct MediumBudgetsView: View {
@@ -457,9 +491,43 @@ private struct SavingsList: View {
     }
 }
 
+// Small is too tight for names + full amounts, so it shows just the project's
+// icon and an abbreviated amount (e.g. "4,5k $ CA") with its progress bar.
 struct SmallSavingsView: View {
     let data: FinTrackWidgetData
-    var body: some View { SavingsList(data: data, maxCount: 3, showTarget: false) }
+    var body: some View {
+        HStack(spacing: 0) {
+            SideAccent(color: .green)
+            VStack(alignment: .leading, spacing: 7) {
+                WidgetCaption(text: data.str("savings"))
+                if data.savings.isEmpty {
+                    Spacer()
+                    Text(data.str("noData")).font(.caption2).foregroundStyle(.secondary)
+                    Spacer()
+                } else {
+                    ForEach(data.savings.prefix(3)) { p in
+                        VStack(spacing: 3) {
+                            HStack {
+                                Image(systemName: p.icon).font(.caption)
+                                    .foregroundStyle(Color(widgetHex: p.colorHex))
+                                Spacer()
+                                Text(data.formattedShortMoney(p.current, currency: p.currency))
+                                    .font(.system(.caption, design: .rounded).weight(.bold))
+                                    .lineLimit(1).minimumScaleFactor(0.8)
+                            }
+                            if p.hasTarget {
+                                ProgressView(value: p.fraction).tint(Color(widgetHex: p.colorHex))
+                            }
+                        }
+                    }
+                    Spacer(minLength: 0)
+                }
+            }
+            .padding(.leading, 11)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        }
+        .padding(14)
+    }
 }
 
 struct MediumSavingsView: View {

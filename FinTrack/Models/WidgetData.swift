@@ -79,6 +79,7 @@ struct FinTrackWidgetData: Codable {
         let limit: Double
         let currency: String
         let colorHex: String
+        let icon: String
         var fraction: Double { limit > 0 ? Swift.min(spent / limit, 1) : 0 }
         var isOver: Bool { spent > limit }
     }
@@ -200,6 +201,13 @@ struct FinTrackWidgetData: Codable {
         fmt.maximumFractionDigits = 2
         let n = fmt.string(from: NSNumber(value: amount)) ?? String(format: "%.2f", amount)
         return "\(n) \(sym)"
+    }
+
+    /// Abbreviated money (k/M) with the currency symbol — for tight spots like the
+    /// Small savings view (e.g. "4,5k $ CA"). Magnitude only.
+    func formattedShortMoney(_ amount: Double, currency: String) -> String {
+        let sym = balances.first(where: { $0.currency == currency })?.symbol ?? currency
+        return "\(formattedShort(amount)) \(sym)"
     }
 
     // MARK: - Localised widget labels (keyed by in-app language)
