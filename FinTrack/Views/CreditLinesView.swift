@@ -12,7 +12,8 @@ struct CreditLinesView: View {
     @Environment(EntitlementManager.self) private var entitlements
 
     @Query(filter: #Predicate<CreditLine> { $0.isActive },
-           sort: \CreditLine.createdAt, order: .forward)
+           sort: [SortDescriptor(\CreditLine.sortIndex, order: .forward),
+                  SortDescriptor(\CreditLine.createdAt, order: .forward)])
     private var activeLines: [CreditLine]
 
     @Query(filter: #Predicate<CreditLine> { !$0.isActive },
@@ -73,6 +74,7 @@ struct CreditLinesView: View {
                             .tint(.orange)
                         }
                     }
+                    .onMove(perform: moveCreditLines)
                 }
             }
 
@@ -105,6 +107,9 @@ struct CreditLinesView: View {
         }
         .navigationTitle(lang["cl.title"])
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                if activeLines.count > 1 { EditButton() }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showAdd = true } label: {
                     Image(systemName: "plus.circle.fill").font(.title3)
@@ -179,6 +184,17 @@ struct CreditLinesView: View {
     }
 
     // MARK: - Actions
+
+    /// Réordonne les marges actives et persiste le nouvel ordre dans `sortIndex`.
+    /// Les 3 premières de cet ordre alimentent le widget du Dashboard.
+    private func moveCreditLines(from source: IndexSet, to destination: Int) {
+        var reordered = activeLines
+        reordered.move(fromOffsets: source, toOffset: destination)
+        for (index, cl) in reordered.enumerated() {
+            cl.sortIndex = index
+        }
+        try? context.save()
+    }
 
     private func archive(_ cl: CreditLine) { cl.isActive.toggle(); try? context.save() }
     private func delete(_ cl: CreditLine)  { context.delete(cl); try? context.save() }

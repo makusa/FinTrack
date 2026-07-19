@@ -15,7 +15,8 @@ struct SavingsProjectsView: View {
     @Environment(EntitlementManager.self) private var entitlements
 
     @Query(filter: #Predicate<SavingsProject> { $0.isActive },
-           sort: \SavingsProject.createdAt, order: .forward)
+           sort: [SortDescriptor(\SavingsProject.sortIndex, order: .forward),
+                  SortDescriptor(\SavingsProject.createdAt, order: .forward)])
     private var activeProjects: [SavingsProject]
 
     @Query(filter: #Predicate<SavingsProject> { !$0.isActive },
@@ -74,6 +75,7 @@ struct SavingsProjectsView: View {
                             .tint(.orange)
                         }
                     }
+                    .onMove(perform: moveProjects)
                 }
             }
 
@@ -105,6 +107,9 @@ struct SavingsProjectsView: View {
         }
         .navigationTitle(lang["savings.title"])
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                if activeProjects.count > 1 { EditButton() }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showAdd = true } label: {
                     Image(systemName: "plus.circle.fill").font(.title3)
@@ -178,6 +183,15 @@ struct SavingsProjectsView: View {
     private func delete(_ p: SavingsProject)  {
         SavingsTransferService.cleanupOnDelete(p, removeGenerated: false, context: context)
         context.delete(p)
+        try? context.save()
+    }
+
+    private func moveProjects(from source: IndexSet, to destination: Int) {
+        var reordered = activeProjects
+        reordered.move(fromOffsets: source, toOffset: destination)
+        for (index, p) in reordered.enumerated() {
+            p.sortIndex = index
+        }
         try? context.save()
     }
 }

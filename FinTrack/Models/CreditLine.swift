@@ -139,6 +139,9 @@ final class CreditLine {
     var lastInterestAccrualDate: Date = Date.now
     var statementDay: Int = 1            // jour du mois (1–28) où les intérêts sont facturés
     var isActive: Bool = true
+    /// Ordre manuel (glisser-déposer dans CreditLinesView). Détermine aussi quelles
+    /// marges — et dans quel ordre — apparaissent dans le widget du Dashboard.
+    var sortIndex: Int = 0
     // MARK: Notification settings
     var notificationEnabled: Bool = false
     var notificationDaysBefore: Int = 3

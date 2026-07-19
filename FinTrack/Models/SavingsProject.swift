@@ -37,6 +37,8 @@ final class SavingsProject {
     var notes: String?
     var isActive: Bool = true
     var createdAt: Date = Date.now
+    /// Position dans l'ordre manuel (réordonnancement du widget et de la liste).
+    var sortIndex: Int = 0
 
     /// Optional savings account (e.g., a dedicated TFSA or FHSA).
     @Relationship(deleteRule: .nullify, inverse: \Account.savingsProjects)

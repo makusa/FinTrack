@@ -40,6 +40,15 @@ enum AccountType: String, CaseIterable, Identifiable {
         case .other:      return "wallet.pass.fill"
         }
     }
+
+    /// Comptes de trésorerie (liquidités) — base de la projection de fin de mois
+    /// dans le widget de flux. Exclut crédit (dette) et placement.
+    var isTreasury: Bool {
+        switch self {
+        case .checking, .savings, .cash:    return true
+        case .credit, .investment, .other:  return false
+        }
+    }
 }
 
 @Model
@@ -68,9 +77,6 @@ final class Account {
     // Registered-account (CELI/CELIAPP/REER) metadata + contribution/withdrawal log.
     @Relationship(deleteRule: .cascade, inverse: \RegisteredAccountProfile.account)
     var registeredProfile: RegisteredAccountProfile? = nil
-
-    @Relationship(deleteRule: .cascade, inverse: \RegisteredEntry.account)
-    var registeredEntries: [RegisteredEntry]? = []
 
     // REEE/RESP (Option A): 1:1 beneficiary profile + grant-eligible contributions.
     @Relationship(deleteRule: .cascade, inverse: \RESPProfile.account)

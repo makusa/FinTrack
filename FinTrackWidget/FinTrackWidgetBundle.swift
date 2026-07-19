@@ -8,5 +8,6 @@ struct FinTrackWidgetBundle: WidgetBundle {
     var body: some Widget {
         FinTrackBalanceWidget()
         FinTrackAccessoryWidget()
+        FinTrackRoomWidget()
     }
 }

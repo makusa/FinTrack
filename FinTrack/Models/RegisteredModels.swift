@@ -6,10 +6,12 @@
 //  for the (pure) RegisteredType. The contribution-room MATH lives in
 //  RegisteredRoom.swift; these types only store data and bridge to it.
 //
-//  Three pieces:
+//  Two SwiftData models + a bridging service:
 //   • RegisteredAccountProfile — 1:1 tag on an Account (this is a CELI/CELIAPP…).
 //   • RegisteredRoomPlan       — the per-type anchor (room is per person per type).
-//   • RegisteredEntry          — a contribution or withdrawal (like CreditLineEntry).
+//  Contributions/withdrawals are NOT a separate model: room is derived from each
+//  account's Transactions (income = contribution, expense = withdrawal) by
+//  RegisteredRoomService, which feeds the pure calculator in RegisteredRoom.swift.
 //
 
 import Foundation
@@ -32,22 +34,6 @@ extension RegisteredType {
         case .celi:    return "CELI"
         case .celiapp: return "CELIAPP"
         case .reer:    return "REER"
-        }
-    }
-}
-
-// MARK: - Entry kind
-
-enum RegisteredEntryKind: String, CaseIterable, Identifiable {
-    case contribution
-    case withdrawal
-
-    var id: String { rawValue }
-
-    var label: String {
-        switch self {
-        case .contribution: return LanguageManager.shared["reg.entry.contribution"]
-        case .withdrawal:   return LanguageManager.shared["reg.entry.withdrawal"]
         }
     }
 }
@@ -110,42 +96,6 @@ final class RegisteredRoomPlan {
     }
 }
 
-// MARK: - Contribution / withdrawal entry
-
-@Model
-final class RegisteredEntry {
-    var kindRaw: String = RegisteredEntryKind.contribution.rawValue
-    var amount: Decimal = 0   // always positive
-    var date: Date = Date.now
-    var note: String = ""
-    var createdAt: Date = Date.now
-
-    /// Links the cash transfer (Transaction.transferPairId) this entry created,
-    /// if the user chose to also move the money. nil = room-only entry.
-    var transferPairId: UUID? = nil
-
-    // inverse + cascade declared on Account.registeredEntries.
-    var account: Account?
-
-    var kind: RegisteredEntryKind {
-        get { RegisteredEntryKind(rawValue: kindRaw) ?? .contribution }
-        set { kindRaw = newValue.rawValue }
-    }
-
-    /// Plain value for the pure RegisteredRoomCalculator.
-    var asData: RegisteredEntryData {
-        RegisteredEntryData(date: date, amount: amount, isContribution: kind == .contribution)
-    }
-
-    init(kind: RegisteredEntryKind, amount: Decimal, date: Date = .now, note: String = "") {
-        self.kindRaw = kind.rawValue
-        self.amount = amount
-        self.date = date
-        self.note = note
-        self.createdAt = .now
-    }
-}
-
 // MARK: - Aggregation service (bridges @Model data to the pure calculator)
 
 enum RegisteredRoomService {
@@ -154,8 +104,9 @@ enum RegisteredRoomService {
     static func entries(forType type: RegisteredType, in accounts: [Account]) -> [RegisteredEntryData] {
         accounts
             .filter { $0.registeredProfile?.registeredType == type }
-            .flatMap { $0.registeredEntries ?? [] }
-            .map { $0.asData }
+            .flatMap { $0.transactions ?? [] }
+            .filter { !$0.excludedFromRegisteredRoom && $0.status.countsTowardBalance }
+            .map { RegisteredEntryData(date: $0.date, amount: $0.amount, isContribution: $0.type == .income) }
     }
 
     /// Available room for `type` given its plan + all accounts, as of `asOf`.

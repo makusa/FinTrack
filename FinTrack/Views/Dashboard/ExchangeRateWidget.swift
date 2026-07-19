@@ -2,9 +2,10 @@
 //  ExchangeRateWidget.swift
 //  FinTrack
 //
-//  Shows live exchange rates for currency pairs relevant to the user.
-//  Pairs are auto-detected from the user's accounts + key pairs for
-//  Régis's corridor (XAF, USD, EUR against CAD).
+//  Live exchange rates between the user's chosen display currency and each
+//  currency they track in Settings. Available to all tiers; the rows are
+//  driven entirely by the tracked-currency list (rates.activeCurrencies),
+//  and every rate is expressed relative to the display currency.
 //
 
 import SwiftUI
@@ -12,58 +13,15 @@ import SwiftUI
 struct ExchangeRateWidget: View {
     @Environment(LanguageManager.self) private var lang
     @Environment(ExchangeRateManager.self) private var rates
-    @Environment(EntitlementManager.self) private var entitlements
 
-    /// Currency codes used in the user's accounts.
-    let accountCurrencies: [String]
-
-    // Priority pairs differ by tier
-    private var priorityPairs: [(from: String, to: String)] {
-        if entitlements.hasPaidTier {
-            // Pro: full corridor CAD/XAF/USD/EUR
-            return [
-                ("CAD", "USD"),
-                ("CAD", "EUR"),
-                ("CAD", "XAF"),
-                ("USD", "XAF"),
-            ]
-        } else {
-            // Courant: CAD and USD only
-            return [
-                ("CAD", "USD"),
-                ("USD", "CAD"),
-            ]
-        }
-    }
-
-    /// Deduplicated pairs: priority first, then account-derived extras.
-    private var pairs: [(from: String, to: String)] {
-        var seen  = Set<String>()
-        var result: [(from: String, to: String)] = []
-
-        func add(_ pair: (from: String, to: String)) {
-            let key = "\(pair.from)/\(pair.to)"
-            guard !seen.contains(key), pair.from != pair.to else { return }
-            seen.insert(key); result.append(pair)
-        }
-
-        // Priority corridor pairs first
-        for p in priorityPairs { add(p) }
-
-        // Extra pairs from account currencies (Pro only — free tier stays CAD/USD)
-        if entitlements.hasPaidTier {
-            let display = rates.displayCurrency
-            for cur in accountCurrencies where cur != display && cur != "CAD" {
-                add((from: "CAD", to: cur))
-            }
-        }
-
-        return Array(result.prefix(6))   // max 6 rows
+    /// Tracked currencies (managed in Settings), minus the display currency
+    /// itself — each row shows 1 displayCurrency = X targetCurrency.
+    private var targetCurrencies: [String] {
+        rates.activeCurrencies.filter { $0 != rates.displayCurrency }
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            // Header
             HStack {
                 Text(lang["widget.fx.title"])
                     .font(.subheadline.weight(.medium))
@@ -72,8 +30,7 @@ struct ExchangeRateWidget: View {
                 if rates.isLoading {
                     ProgressView().scaleEffect(0.7)
                 } else if let updated = rates.lastUpdated {
-                    Text(lang.f("fx.updated",
-                                updated.appFormattedRelative()))
+                    Text(lang.f("fx.updated", updated.appFormattedRelative()))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -87,32 +44,39 @@ struct ExchangeRateWidget: View {
             }
             .padding(.horizontal)
 
-            // Rate rows
-            VStack(spacing: 0) {
-                ForEach(Array(pairs.enumerated()), id: \.offset) { idx, pair in
-                    rateRow(from: pair.from, to: pair.to)
-                    if idx < pairs.count - 1 {
-                        Divider().padding(.leading, 16)
+            if targetCurrencies.isEmpty {
+                Text(lang["widget.fx.empty"])
+                    .font(.caption).foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 20).padding(.horizontal)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(Array(targetCurrencies.enumerated()), id: \.offset) { idx, cur in
+                        rateRow(to: cur)
+                        if idx < targetCurrencies.count - 1 {
+                            Divider().padding(.leading, 16)
+                        }
                     }
                 }
+                .background(Color(.secondarySystemBackground),
+                            in: RoundedRectangle(cornerRadius: 12))
+                .padding(.horizontal)
             }
-            .background(Color(.secondarySystemBackground),
-                        in: RoundedRectangle(cornerRadius: 12))
-            .padding(.horizontal)
         }
         .task { await rates.refreshIfNeeded() }
     }
 
-    // MARK: - Rate row
+    // MARK: - Rate row (1 displayCurrency = X target, plus inverse)
 
-    private func rateRow(from: String, to: String) -> some View {
+    private func rateRow(to: String) -> some View {
+        let from      = rates.displayCurrency
         let rate      = rates.convert(1, from: from, to: to)
         let rateInv   = rates.convert(1, from: to, to: from)
         let fromInfo  = Currencies.info(for: from)
         let toInfo    = Currencies.info(for: to)
 
         return HStack(spacing: 10) {
-            // Currency pair
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 4) {
                     Text(from).font(.callout.weight(.bold))
@@ -120,13 +84,12 @@ struct ExchangeRateWidget: View {
                         .font(.caption2).foregroundStyle(.secondary)
                     Text(to).font(.callout.weight(.bold))
                 }
-                Text(fromInfo.name.prefix(20) + "")
+                Text(toInfo.name.prefix(24) + "")
                     .font(.caption2).foregroundStyle(.secondary)
             }
 
             Spacer()
 
-            // Rate + inverse
             VStack(alignment: .trailing, spacing: 2) {
                 if rates.rates.isEmpty {
                     Text(lang["fx.unavailable"])
@@ -141,20 +104,5 @@ struct ExchangeRateWidget: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 11)
-    }
-}
-
-// MARK: - Decimal formatting for rates (more decimal places)
-
-private extension Decimal {
-    func formattedAsRate(currency: String) -> String {
-        let info = Currencies.info(for: currency)
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.locale = LanguageManager.shared.locale
-        formatter.minimumFractionDigits = currency == "JPY" || currency == "XAF" ? 0 : 4
-        formatter.maximumFractionDigits = currency == "JPY" || currency == "XAF" ? 0 : 4
-        let str = formatter.string(from: self as NSDecimalNumber) ?? "\(self)"
-        return "\(str) \(info.symbol)"
     }
 }

@@ -26,7 +26,6 @@ struct AnalyticsDashboardSection: View {
     let accounts: [Account]
     let transactions: [Transaction]
     let activeRecurring: [RecurringTransaction]
-    let currency: String
     var visibleWidgets: Set<DashboardWidgetID> = [.balanceProjection, .incomeVsExpenses, .categoryBreakdown]
 
     var body: some View {
@@ -40,17 +39,16 @@ struct AnalyticsDashboardSection: View {
                 BalanceProjectionCard(
                     accounts: accounts,
                     transactions: transactions,
-                    activeRecurring: activeRecurring,
-                    currency: currency
+                    activeRecurring: activeRecurring
                 )
             }
 
             if visibleWidgets.contains(.incomeVsExpenses) {
-                IncomeExpenseCard(transactions: transactions, currency: currency)
+                IncomeExpenseCard(transactions: transactions)
             }
 
             if visibleWidgets.contains(.categoryBreakdown) {
-                CategoryBreakdownCard(transactions: transactions, currency: currency)
+                CategoryBreakdownCard(transactions: transactions)
             }
         }
     }
@@ -97,11 +95,13 @@ private struct RangePill: View {
 struct BalanceProjectionCard: View {
     @Environment(LanguageManager.self) private var lang
     @Environment(EntitlementManager.self) private var entitlements
+    @Environment(ExchangeRateManager.self) private var rates
 
     let accounts: [Account]
     let transactions: [Transaction]
     let activeRecurring: [RecurringTransaction]
-    let currency: String
+    /// Display currency chosen in Settings; every amount is converted into it.
+    private var currency: String { rates.displayCurrency }
     var visibleWidgets: Set<DashboardWidgetID> = [.balanceProjection, .incomeVsExpenses, .categoryBreakdown]
 
     // MARK: Time range
@@ -151,15 +151,18 @@ struct BalanceProjectionCard: View {
     }
 
     // MARK: State
+    // Default range = 3 months for every user (free or paid). The free tier cannot
+    // switch (other pills are locked); paid users may change it within the session.
     @State private var selectedRange: Range = .threeMonths
-    // selectedRange is enforced to .threeMonths for Courant in onAppear
     @State private var selectedDate: Date?  = nil
     @State private var selectedBalance: Double? = nil
 
     // MARK: Current balance
     private var currentBalance: Decimal {
-        accounts.filter { $0.currency == currency }
-                .reduce(Decimal(0)) { $0 + $1.balance }
+        let display = rates.displayCurrency
+        return accounts.reduce(Decimal(0)) {
+            $0 + rates.convert($1.balance, from: $1.currency, to: display)
+        }
     }
 
     // MARK: Historical points
@@ -168,16 +171,20 @@ struct BalanceProjectionCard: View {
         let today = cal.startOfDay(for: .now)
         let start = cal.date(byAdding: .day, value: -historyDays, to: today)!
 
+        let display = rates.displayCurrency
         let relevant = transactions
-            .filter { $0.account?.currency == currency && $0.date >= start }
+            .filter { $0.date >= start && $0.status.countsTowardBalance }
             .sorted { $0.date < $1.date }
 
-        let windowSum = relevant.reduce(Decimal(0)) { $0 + $1.signedAmount }
+        func conv(_ tx: Transaction) -> Decimal {
+            rates.convert(tx.signedAmount, from: tx.account?.currency ?? display, to: display)
+        }
+        let windowSum = relevant.reduce(Decimal(0)) { $0 + conv($1) }
         var running   = currentBalance - windowSum
 
         var byDay: [Date: Decimal] = [:]
         for tx in relevant {
-            byDay[cal.startOfDay(for: tx.date), default: 0] += tx.signedAmount
+            byDay[cal.startOfDay(for: tx.date), default: 0] += conv(tx)
         }
 
         var pts: [Point] = []
@@ -196,14 +203,31 @@ struct BalanceProjectionCard: View {
         let today   = cal.startOfDay(for: .now)
         let horizon = cal.date(byAdding: .day, value: days, to: today)!
 
+        let display = rates.displayCurrency
         var events: [Date: Decimal] = [:]
-        for rule in activeRecurring where rule.account?.currency == currency {
+
+        // Recurring rules — exclude transfers (neutral on the aggregate balance),
+        // bound each series by its endDate. Loan/credit-line payments are included.
+        // Each amount is converted into the display currency.
+        for rule in activeRecurring where !rule.isTransfer {
+            let cur = rule.account?.currency ?? display
             var d = cal.startOfDay(for: rule.nextDueDate)
             while d <= horizon {
+                if let end = rule.endDate, d > cal.startOfDay(for: end) { break }
                 let signed = rule.type == .income ? rule.amount : -rule.amount
-                events[d, default: 0] += signed
+                events[d, default: 0] += rates.convert(signed, from: cur, to: display)
                 d = cal.startOfDay(for: rule.frequency.nextDate(after: d))
             }
+        }
+
+        // Scheduled one-off transactions already entered for this horizon,
+        // excluding transfer legs (neutral intra-currency).
+        for tx in transactions
+        where tx.status == .scheduled
+            && tx.transferPairId == nil
+            && tx.date > today && tx.date <= horizon {
+            let cur = tx.account?.currency ?? display
+            events[cal.startOfDay(for: tx.date), default: 0] += rates.convert(tx.signedAmount, from: cur, to: display)
         }
 
         var running = currentBalance
@@ -457,9 +481,11 @@ struct BalanceProjectionCard: View {
 struct IncomeExpenseCard: View {
     @Environment(LanguageManager.self) private var lang
     @Environment(EntitlementManager.self) private var entitlements
+    @Environment(ExchangeRateManager.self) private var rates
 
     let transactions: [Transaction]
-    let currency: String
+    /// Display currency chosen in Settings; amounts are converted into it.
+    private var currency: String { rates.displayCurrency }
 
     enum Window: String, CaseIterable {
         case threeMonths = "3m"
@@ -487,7 +513,9 @@ struct IncomeExpenseCard: View {
         var net: Double { income - expense }
     }
 
-    @State private var selectedWindow: Window = .sixMonths
+    // Default window = 3 months for every user (free or paid), consistent with the
+    // balance projection. The free tier cannot switch (6m and 1a are locked).
+    @State private var selectedWindow: Window = .threeMonths
     @State private var selectedMonth: MonthSummary? = nil
 
     private func buildData() -> (bars: [BarData], summaries: [MonthSummary], labels: [String]) {
@@ -506,12 +534,18 @@ struct IncomeExpenseCard: View {
             let label = fmt.string(from: interval.start).capitalized
             labels.append(label)
 
+            let display = rates.displayCurrency
+            // Exclude transfers (neither income nor expense) and non-realized
+            // statuses (scheduled/skipped). Convert every amount into the display currency.
             let monthTx = transactions.filter {
-                $0.account?.currency == currency &&
+                $0.transferPairId == nil && $0.status.countsTowardBalance &&
                 $0.date >= interval.start && $0.date < interval.end
             }
-            let income  = monthTx.filter { $0.type == .income  }.reduce(Decimal(0)) { $0 + $1.amount }.chartDouble
-            let expense = monthTx.filter { $0.type == .expense }.reduce(Decimal(0)) { $0 + $1.amount }.chartDouble
+            func conv(_ tx: Transaction) -> Decimal {
+                rates.convert(tx.amount, from: tx.account?.currency ?? display, to: display)
+            }
+            let income  = monthTx.filter { $0.type == .income  }.reduce(Decimal(0)) { $0 + conv($1) }.chartDouble
+            let expense = monthTx.filter { $0.type == .expense }.reduce(Decimal(0)) { $0 + conv($1) }.chartDouble
 
             bars.append(BarData(monthLabel: label, monthDate: interval.start, kind: "Revenus",  amount: income))
             bars.append(BarData(monthLabel: label, monthDate: interval.start, kind: "Dépenses", amount: expense))
@@ -558,12 +592,6 @@ struct IncomeExpenseCard: View {
                 }
             }
             .animation(.easeInOut(duration: 0.15), value: selectedMonth?.id)
-            .onAppear {
-                // Courant: force 3-month window — 6m and 1a are locked
-                if !entitlements.hasPaidTier {
-                    selectedWindow = .threeMonths
-                }
-            }
 
             // ── Range picker ───────────────────────────────────────────────
             HStack(spacing: 6) {
@@ -656,9 +684,11 @@ struct IncomeExpenseCard: View {
 struct CategoryBreakdownCard: View {
     @Environment(LanguageManager.self) private var lang
     @Environment(EntitlementManager.self) private var entitlements
+    @Environment(ExchangeRateManager.self) private var rates
 
     let transactions: [Transaction]
-    let currency: String
+    /// Display currency chosen in Settings; expense amounts are converted into it.
+    private var currency: String { rates.displayCurrency }
 
     struct Slice: Identifiable {
         var id: String { name }
@@ -673,20 +703,27 @@ struct CategoryBreakdownCard: View {
     private var slices: [Slice] {
         let cal = Calendar.current
         guard let interval = cal.dateInterval(of: .month, for: .now) else { return [] }
+        let display = rates.displayCurrency
+        // Exclude transfers (a transfer is not a category expense) and non-realized
+        // statuses (scheduled/skipped). Convert each amount into the display currency.
         let monthExpenses = transactions.filter {
-            $0.type == .expense && $0.account?.currency == currency &&
+            $0.type == .expense && $0.transferPairId == nil && $0.status.countsTowardBalance &&
             $0.date >= interval.start && $0.date < interval.end
         }
-        let total = monthExpenses.reduce(Decimal(0)) { $0 + $1.amount }
+        func conv(_ tx: Transaction) -> Decimal {
+            rates.convert(tx.amount, from: tx.account?.currency ?? display, to: display)
+        }
+        let total = monthExpenses.reduce(Decimal(0)) { $0 + conv($1) }
         guard total > 0 else { return [] }
 
         var dict: [String: (colorHex: String, localizedName: String, amount: Decimal)] = [:]
         var uncategorized: Decimal = 0
         for tx in monthExpenses {
+            let amt = conv(tx)
             if let cat = tx.category {
                 if dict[cat.name] == nil { dict[cat.name] = (cat.colorHex, cat.localizedName, 0) }
-                dict[cat.name]!.amount += tx.amount
-            } else { uncategorized += tx.amount }
+                dict[cat.name]!.amount += amt
+            } else { uncategorized += amt }
         }
         let grouped = dict.map { ($0.value.localizedName, $0.value.colorHex, $0.value.amount) }
             .sorted { $0.2 > $1.2 }

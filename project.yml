@@ -58,6 +58,8 @@ targets:
           - iCloud.ca.regis.fintrack
         com.apple.developer.icloud-services:
           - CloudKit
+        com.apple.security.application-groups:
+          - group.ca.regis.fintrack
     dependencies:
       - target: FinTrackWidget
         embed: true
@@ -70,6 +72,9 @@ targets:
       - path: FinTrack/Models/WidgetData.swift
     entitlements:
       path: FinTrackWidget/FinTrackWidget.entitlements
+      properties:
+        com.apple.security.application-groups:
+          - group.ca.regis.fintrack
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: ca.regis.fintrack.widget

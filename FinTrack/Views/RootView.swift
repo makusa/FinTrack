@@ -68,6 +68,10 @@ struct RootView: View {
             // Sync widget data on first launch
             WidgetDataWriter.write(context: context)
         }
+        .onChange(of: lang.current) {
+            // Re-sync so the widget picks up the new in-app language right away.
+            WidgetDataWriter.write(context: context)
+        }
         .task {
             // Clean duplicate system categories left by the seed/CloudKit race.
             _ = CategoryDeduplicator.dedupeSystemCategories(context: context)
@@ -83,6 +87,9 @@ struct RootView: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
             lockManager.handleBackground()
+            // Refresh widget data on the way out so it reflects the latest state
+            // (language, budgets, edits) next time the Home screen is shown.
+            WidgetDataWriter.write(context: context)
         }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
             lockManager.handleForeground()

@@ -12,7 +12,9 @@ struct BudgetsView: View {
     @Environment(\.modelContext) private var context
     @Environment(EntitlementManager.self) private var entitlements
 
-    @Query(filter: #Predicate<Budget> { $0.isActive }, sort: \Budget.createdAt)
+    @Query(filter: #Predicate<Budget> { $0.isActive },
+           sort: [SortDescriptor(\Budget.sortIndex, order: .forward),
+                  SortDescriptor(\Budget.createdAt, order: .forward)])
     private var activeBudgets: [Budget]
 
     @Query(filter: #Predicate<Budget> { !$0.isActive }, sort: \Budget.createdAt)
@@ -42,6 +44,9 @@ struct BudgetsView: View {
         }
         .navigationTitle(lang["budget.title"])
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                if activeBudgets.count > 1 { EditButton() }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
                     showAdd = true
@@ -166,6 +171,7 @@ struct BudgetsView: View {
                             .tint(.orange)
                         }
                 }
+                .onMove(perform: moveBudgets)
                 if !isAtFreeLimit {
                     Button {
                         showAdd = true
@@ -210,6 +216,16 @@ struct BudgetsView: View {
 
     private func deleteBudget(_ b: Budget) {
         context.delete(b)
+        try? context.save()
+    }
+
+    /// Réordonne les budgets actifs et persiste le nouvel ordre dans `sortIndex`.
+    private func moveBudgets(from source: IndexSet, to destination: Int) {
+        var reordered = activeBudgets
+        reordered.move(fromOffsets: source, toOffset: destination)
+        for (index, b) in reordered.enumerated() {
+            b.sortIndex = index
+        }
         try? context.save()
     }
 }

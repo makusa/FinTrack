@@ -2,174 +2,96 @@
 //  CashFlowView.swift
 //  FinTrack
 //
+//  Detailed end-of-month projection: realized so far + still to come,
+//  building toward the projected treasury position.
+//
 
 import SwiftUI
 
 struct CashFlowView: View {
     @Environment(LanguageManager.self) private var lang
-
     let summary: CashFlowSummary
+
+    private var approx: String { summary.hasConversion ? "≈ " : "" }
 
     var body: some View {
         List {
-            // ── Income ──────────────────────────────────────────────────────
-            if !summary.incomeLines.isEmpty {
-                Section {
-                    ForEach(summary.incomeLines) { line in
-                        amountRow(label: line.label, sublabel: line.sublabel,
-                                  amount: line.amount, currency: summary.currency,
-                                  color: .green, sign: "+")
-                    }
-                    totalRow(label: lang["cashflow.totalIncome"], amount: summary.monthlyIncome,
-                             currency: summary.currency, color: .green)
-                } header: {
-                    Label(lang["cashflow.monthlyIncome"], systemImage: "arrow.down.left.circle.fill")
-                        .foregroundStyle(.green)
-                }
-            }
-
-            // ── Expenses ─────────────────────────────────────────────────────
-            if !summary.expenseLines.isEmpty {
-                Section {
-                    ForEach(summary.expenseLines) { line in
-                        amountRow(label: line.label, sublabel: line.sublabel,
-                                  amount: line.amount, currency: summary.currency,
-                                  color: .primary, sign: "−")
-                    }
-                    totalRow(label: lang["cashflow.totalExp"], amount: summary.monthlyExpenses,
-                             currency: summary.currency, color: .red)
-                } header: {
-                    Label(lang["cashflow.recurringExp"], systemImage: "arrow.up.right.circle.fill")
-                        .foregroundStyle(.red)
-                }
-            }
-
-            // ── Loans ────────────────────────────────────────────────────────
-            if !summary.loanLines.isEmpty {
-                Section {
-                    ForEach(summary.loanLines) { line in
-                        amountRow(label: line.label, sublabel: line.sublabel,
-                                  amount: line.amount, currency: summary.currency,
-                                  color: .primary, sign: "−")
-                    }
-                    totalRow(label: lang["cashflow.totalLoans"], amount: summary.monthlyLoanPayments,
-                             currency: summary.currency, color: .orange)
-                } header: {
-                    Label(lang["cashflow.loanPayments"], systemImage: "house.fill")
-                        .foregroundStyle(.orange)
-                }
-            }
-
-            // ── Credit lines ─────────────────────────────────────────────────
-            if !summary.creditLineLines.isEmpty {
-                Section {
-                    ForEach(summary.creditLineLines) { line in
-                        amountRow(label: line.label, sublabel: line.sublabel,
-                                  amount: line.amount, currency: summary.currency,
-                                  color: .primary, sign: "−")
-                    }
-                    totalRow(label: lang["cashflow.totalCL"], amount: summary.monthlyCreditLinePayments,
-                             currency: summary.currency, color: .red)
-                } header: {
-                    Label(lang["cashflow.clPayments"], systemImage: "creditcard.fill")
-                        .foregroundStyle(.red)
-                }
-            }
-
-            // ── Net surplus ──────────────────────────────────────────────────
-            Section {
-                HStack {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(lang["cashflow.surplus"])
-                            .font(.headline)
-                        Text(lang["cashflow.surplus.before"])
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
-                    Spacer()
-                    Text(summary.monthlySurplus.formatted(asCurrency: summary.currency))
-                        .font(.title3.weight(.bold))
-                        .foregroundStyle(summary.isPositive ? .green : .red)
-                }
-                .padding(.vertical, 4)
-
-                if !summary.isPositive {
-                    Label(lang["cashflow.warning.deficit"],
-                          systemImage: "exclamationmark.triangle.fill")
-                        .font(.caption)
-                        .foregroundStyle(.orange)
-                }
-            } header: {
-                Label(lang["cashflow.netResult"], systemImage: "equal.circle.fill")
-            }
-
-            // ── Project allocations ──────────────────────────────────────────
-            if !summary.projectLines.isEmpty {
-                Section {
-                    ForEach(summary.projectLines) { line in
-                        amountRow(label: line.label, sublabel: line.sublabel,
-                                  amount: line.amount, currency: summary.currency,
-                                  color: .primary, sign: "−")
-                    }
-                    Divider()
-                    HStack {
-                        Text(lang["cashflow.free"])
-                            .font(.subheadline.weight(.semibold))
-                        Spacer()
-                        Text(summary.monthlyFree.formatted(asCurrency: summary.currency))
-                            .font(.subheadline.weight(.bold))
-                            .foregroundStyle(summary.isCovered ? .green : .red)
-                    }
-                    if !summary.isCovered {
-                        Label(lang["cashflow.warning.overAllocated"],
-                              systemImage: "exclamationmark.triangle.fill")
-                            .font(.caption)
-                            .foregroundStyle(.red)
-                    }
-                } header: {
-                    Label(lang["cashflow.allocation"], systemImage: "target")
-                }
-            }
-
-            // ── Note ─────────────────────────────────────────────────────────
-            Section {
-                Text(lang["cashflow.note"])
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+            projectionSection
+            realizedSection
+            upcomingSection
+            if summary.hasConversion { byCurrencySection }
+            noteSection
         }
-        .navigationTitle(lang["cashflow.title"])
+        .navigationTitle(lang["cashflow.projection"])
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    // MARK: Row builders
+    // MARK: - Sections
 
-    private func amountRow(label: String, sublabel: String?,
-                           amount: Decimal, currency: String,
-                           color: Color, sign: String) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 1) {
-                Text(label).font(.callout).lineLimit(1)
-                if let sub = sublabel {
-                    Text(sub).font(.caption2).foregroundStyle(.secondary)
-                }
+    private var projectionSection: some View {
+        Section(lang["cashflow.projection"]) {
+            row(lang["cashflow.currentBalance"], summary.currentTreasury)
+            row(lang["cashflow.upcomingIn"],  summary.upcomingIncome,  sign: "+", color: .green)
+            row(lang["cashflow.upcomingOut"], summary.upcomingExpense, sign: "−")
+            HStack {
+                Text(lang["cashflow.projectedBalance"]).font(.subheadline.weight(.semibold))
+                Spacer()
+                Text(approx + summary.projectedEndBalance.formatted(asCurrency: summary.displayCurrency))
+                    .font(.subheadline.weight(.bold))
+                    .foregroundStyle(summary.projectedEndBalance >= 0 ? .green : .red)
             }
-            Spacer()
-            Text("\(sign) \(amount.formatted(asCurrency: currency))")
-                .font(.callout.weight(.medium))
-                .foregroundStyle(color)
         }
     }
 
-    private func totalRow(label: String, amount: Decimal,
-                          currency: String, color: Color) -> some View {
+    private var realizedSection: some View {
+        Section(lang["cashflow.section.realized"]) {
+            row(lang["cashflow.inflows"],  summary.realizedIncome,  sign: "+", color: .green)
+            row(lang["cashflow.outflows"], summary.realizedExpense, sign: "−")
+            row(lang["cashflow.netResult"], summary.realizedNet,
+                color: summary.realizedNet >= 0 ? .green : .red)
+        }
+    }
+
+    private var upcomingSection: some View {
+        Section(lang["cashflow.section.upcoming"]) {
+            row(lang["cashflow.inflows"],  summary.upcomingIncome,  sign: "+", color: .green)
+            row(lang["cashflow.outflows"], summary.upcomingExpense, sign: "−")
+            row(lang["cashflow.netResult"], summary.upcomingNet,
+                color: summary.upcomingNet >= 0 ? .green : .red)
+        }
+    }
+
+    private var byCurrencySection: some View {
+        Section(lang["cashflow.byCurrency"]) {
+            ForEach(summary.byCurrency.filter { $0.hasUpcoming }) { r in
+                HStack {
+                    Text(r.currency).font(.subheadline.weight(.medium))
+                    Spacer()
+                    Text("+\(r.upcomingIncome.formatted(asCurrency: r.currency))")
+                        .font(.caption).foregroundStyle(.green)
+                    Text("−\(r.upcomingExpense.formatted(asCurrency: r.currency))")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+            }
+        }
+    }
+
+    private var noteSection: some View {
+        Section {
+            Text(lang["cashflow.note2"])
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    // MARK: - Helper
+
+    private func row(_ label: String, _ amount: Decimal,
+                     sign: String? = nil, color: Color = .primary) -> some View {
         HStack {
             Text(label)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
             Spacer()
-            Text(amount.formatted(asCurrency: currency))
-                .font(.subheadline.weight(.bold))
+            Text((sign ?? "") + amount.formatted(asCurrency: summary.displayCurrency))
                 .foregroundStyle(color)
         }
     }

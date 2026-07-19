@@ -9,6 +9,17 @@
 import SwiftUI
 import SwiftData
 
+/// Résumé mensuel multidevise pour le widget « Ce mois-ci ».
+/// Les totaux sont convertis dans la devise d'affichage ; `byCurrency`
+/// conserve les montants natifs pour la ventilation.
+private struct MonthSummary {
+    let convertedIncome: Decimal
+    let convertedExpense: Decimal
+    let displayCurrency: String
+    let hasConversion: Bool
+    let byCurrency: [(currency: String, income: Decimal, expense: Decimal)]
+}
+
 struct DashboardView: View {
     @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
@@ -22,14 +33,24 @@ struct DashboardView: View {
     @Query(sort: \Transaction.date, order: .reverse)
     private var allTransactions: [Transaction]
 
+    /// Transactions du mois courant — filtre SQL sur la date (voir init()).
+    /// Alimente le widget « Ce mois-ci » et se met à jour automatiquement.
+    @Query private var monthTransactions: [Transaction]
+
     @Query private var recentTransactions: [Transaction]
 
+    /// One-off transactions dated tomorrow or later (manual scheduled + transfer legs).
+    /// Drives the "next 7 days" widget alongside projected recurring occurrences.
+    @Query private var futureTransactions: [Transaction]
+
     @Query(filter: #Predicate<CreditLine> { $0.isActive },
-           sort: \CreditLine.createdAt, order: .forward)
+           sort: [SortDescriptor(\CreditLine.sortIndex, order: .forward),
+                  SortDescriptor(\CreditLine.createdAt, order: .forward)])
     private var activeCreditLines: [CreditLine]
 
     @Query(filter: #Predicate<Loan> { $0.isActive },
-           sort: \Loan.createdAt, order: .forward)
+           sort: [SortDescriptor(\Loan.sortIndex, order: .forward),
+                  SortDescriptor(\Loan.createdAt, order: .forward)])
     private var activeLoans: [Loan]
 
     @Query(filter: #Predicate<RecurringTransaction> { $0.isActive },
@@ -42,20 +63,39 @@ struct DashboardView: View {
     private var futureTransferExpenses: [Transaction]
 
     @State private var config           = DashboardConfigManager.shared
-    @State private var cachedMonthSummary: (income: Decimal, expense: Decimal, currency: String?) = (0, 0, nil)
     @State private var showAddTransaction = false
     @State private var showAddAccount     = false
     @State private var showAddTransfer    = false
     @State private var showLibrary        = false
+    @State private var editingTransaction: Transaction?
 
     // MARK: - Init (performance: limited @Query for recent transactions)
 
     init() {
+        // « Récent » = passé/présent uniquement : on exclut les transactions datées
+        // dans le futur (planifiées) pour qu'elles ne remontent pas en tête de liste.
+        let startOfTomorrow = Calendar.current.startOfDay(
+            for: Calendar.current.date(byAdding: .day, value: 1, to: .now) ?? .now
+        )
         var desc = FetchDescriptor<Transaction>(
+            predicate: #Predicate<Transaction> { $0.date < startOfTomorrow },
             sortBy: [SortDescriptor(\Transaction.date, order: .reverse)]
         )
         desc.fetchLimit = 10
         _recentTransactions = Query(desc)
+
+        // Mois courant : filtrage en SQL plutôt qu'en mémoire sur toutes les transactions.
+        let monthStart = Calendar.current.dateInterval(of: .month, for: .now)?.start ?? .now
+        _monthTransactions = Query(
+            filter: #Predicate<Transaction> { $0.date >= monthStart },
+            sort: \Transaction.date, order: .reverse
+        )
+
+        // À venir : transactions ponctuelles datées demain ou après (one-off + virements).
+        _futureTransactions = Query(
+            filter: #Predicate<Transaction> { $0.date >= startOfTomorrow },
+            sort: \Transaction.date, order: .forward
+        )
     }
 
     // MARK: - Derived data
@@ -79,25 +119,151 @@ struct DashboardView: View {
         return futureTransferExpenses.filter { $0.date > now && $0.date <= horizon }
     }
 
-    private var upcomingRecurrences: [RecurringTransaction] {
-        let horizon = Calendar.current.date(byAdding: .day, value: 30, to: .now) ?? .now
-        return Array(activeRecurring.filter {
-            !$0.isLoanPayment && !$0.isCreditLinePayment && $0.nextDueDate <= horizon
-        }.prefix(5))
+    private struct UpcomingItem: Identifiable {
+        let id: String
+        let date: Date
+        let title: String
+        let amount: Decimal        // valeur absolue
+        let currency: String
+        let isIncome: Bool
+        let isTransfer: Bool
+        let iconName: String       // SF Symbol (catégorie ou défaut ; transfert géré au rendu)
+        let colorHex: String?      // couleur de catégorie ; nil → secondaire
     }
 
-    private var dominantCurrency: String? {
-        Dictionary(grouping: accounts, by: \.currency).mapValues(\.count)
-            .max(by: { $0.value < $1.value })?.key
+    /// Échéances des 7 prochains jours, toutes sources confondues, triées par date
+    /// (symétrique de « Récent ») :
+    ///  1) récurrences (revenus, dépenses, virements) — hors paiements de prêt ;
+    ///  2) transactions ponctuelles déjà planifiées (one-off et virements) ;
+    ///  3) prochain paiement de chaque prêt, depuis son échéancier d'amortissement ;
+    ///  4) paiement minimum des marges sans remboursement récurrent configuré.
+    private var upcomingItems: [UpcomingItem] {
+        let cal = Calendar.current
+        let startOfTomorrow = cal.startOfDay(for: cal.date(byAdding: .day, value: 1, to: .now) ?? .now)
+        let horizonEnd = cal.date(byAdding: .day, value: 7, to: startOfTomorrow) ?? startOfTomorrow
+        var items: [UpcomingItem] = []
+
+        // 1) Projections des règles récurrentes (occurrences non matérialisées).
+        for rule in activeRecurring {
+            // Les paiements de prêt sont projetés depuis l'échéancier d'amortissement (plus bas),
+            // donc on les exclut ici pour éviter le double comptage. Les règles de marge
+            // (remboursement configuré) restent projetées normalement ; le paiement minimum
+            // n'est ajouté que pour les marges sans remboursement configuré (source 4).
+            if rule.isLoanPayment { continue }
+            var d = rule.nextDueDate
+            var guardCount = 0
+            while d < horizonEnd && guardCount < 100 {
+                if let end = rule.endDate, d > end { break }
+                if d >= startOfTomorrow {
+                    items.append(UpcomingItem(
+                        id: "r-\(rule.persistentModelID.hashValue)-\(Int(d.timeIntervalSince1970))",
+                        date: d,
+                        title: rule.displayTitle,
+                        amount: rule.amount,
+                        currency: rule.account?.currency ?? Currencies.default,
+                        isIncome: rule.type == .income,
+                        isTransfer: rule.isTransfer,
+                        iconName: rule.category?.iconSystemName
+                            ?? (rule.type == .income ? "arrow.down.circle" : "arrow.up.circle"),
+                        colorHex: rule.category?.colorHex))
+                }
+                d = rule.frequency.nextDate(after: d)
+                guardCount += 1
+            }
+        }
+
+        // 2) Transactions ponctuelles déjà planifiées (une seule jambe par virement).
+        for tx in futureTransactions where tx.date >= startOfTomorrow && tx.date < horizonEnd {
+            if tx.transferPairId != nil && tx.type != .expense { continue }
+            let title: String = {
+                if tx.transferPairId != nil {
+                    if let p = tx.payee, !p.isEmpty { return p }
+                    return lang["transfer.title"]
+                }
+                if let p = tx.payee, !p.isEmpty { return p }
+                if let cat = tx.category { return cat.localizedName }
+                return tx.type == .income ? lang["tx.type.income"] : lang["tx.type.expense"]
+            }()
+            items.append(UpcomingItem(
+                id: "t-\(tx.persistentModelID.hashValue)",
+                date: tx.date,
+                title: title,
+                amount: tx.amount,
+                currency: tx.account?.currency ?? Currencies.default,
+                isIncome: tx.type == .income,
+                isTransfer: tx.transferPairId != nil,
+                iconName: tx.category?.iconSystemName
+                    ?? (tx.type == .income ? "arrow.down.circle" : "arrow.up.circle"),
+                colorHex: tx.category?.colorHex))
+        }
+
+        // 3) Prochain paiement de chaque prêt actif, depuis l'échéancier d'amortissement
+        //    (source de vérité), indépendamment de la règle de paiement éventuelle.
+        for loan in activeLoans {
+            let calc = loan.calculator
+            let nextK = calc.paymentsElapsedToday + 1
+            guard nextK <= calc.effectivePayments else { continue }   // prêt soldé
+            let d = calc.paymentDate(nextK)
+            guard d >= startOfTomorrow && d < horizonEnd else { continue }
+            items.append(UpcomingItem(
+                id: "loan-\(loan.persistentModelID.hashValue)-\(Int(d.timeIntervalSince1970))",
+                date: d,
+                title: loan.label.isEmpty ? loan.type.label : loan.label,
+                amount: Decimal(calc.paymentAmount),
+                currency: loan.currency,
+                isIncome: false,
+                isTransfer: false,
+                iconName: "building.columns.fill",
+                colorHex: "#5856D6"))
+        }
+
+        // 4) Paiement minimum à la date de relevé, uniquement pour les marges SANS
+        //    remboursement récurrent configuré (sinon c'est la règle, source 1, qui
+        //    s'affiche) et avec un solde dû.
+        for line in activeCreditLines where line.currentBalance > 0 && line.paymentRule == nil {
+            var comps = cal.dateComponents([.year, .month], from: startOfTomorrow)
+            comps.day = min(max(line.statementDay, 1), 28)
+            var d = cal.date(from: comps) ?? startOfTomorrow
+            if d < startOfTomorrow { d = cal.date(byAdding: .month, value: 1, to: d) ?? d }
+            guard d < horizonEnd else { continue }
+            items.append(UpcomingItem(
+                id: "cl-\(line.persistentModelID.hashValue)-\(Int(d.timeIntervalSince1970))",
+                date: d,
+                title: line.name,
+                amount: line.estimatedMinimumPayment,
+                currency: line.currency,
+                isIncome: false,
+                isTransfer: false,
+                iconName: "creditcard.fill",
+                colorHex: "#FF9500"))
+        }
+
+        return items.sorted { $0.date < $1.date }
     }
 
-    private var thisMonthSummary: (income: Decimal, expense: Decimal, currency: String?) {
-        guard let cur = dominantCurrency else { return (0, 0, nil) }
-        let start = Calendar.current.dateInterval(of: .month, for: .now)?.start ?? .now
-        let filtered = allTransactions.filter { $0.date >= start && $0.account?.currency == cur }
-        let income  = filtered.filter { $0.type == .income  }.reduce(Decimal(0)) { $0 + $1.amount }
-        let expense = filtered.filter { $0.type == .expense }.reduce(Decimal(0)) { $0 + $1.amount }
-        return (income, expense, cur)
+    /// Liste plafonnée pour le widget du dashboard (la liste complète est dans l'écran Transactions).
+    private var upcomingItemsLimited: [UpcomingItem] { Array(upcomingItems.prefix(10)) }
+
+    private var thisMonthSummary: MonthSummary {
+        let display = rates.displayCurrency
+        // Exclut les virements (transferPairId) et les statuts qui ne comptent
+        // pas dans le solde (scheduled, skipped) — cohérent avec Account.balance.
+        let relevant = monthTransactions.filter {
+            $0.transferPairId == nil && $0.status.countsTowardBalance
+        }
+        let grouped = Dictionary(grouping: relevant) { $0.account?.currency ?? display }
+        let rows = grouped.map { (cur, txs) -> (currency: String, income: Decimal, expense: Decimal) in
+            let inc = txs.filter { $0.type == .income  }.reduce(Decimal(0)) { $0 + $1.amount }
+            let exp = txs.filter { $0.type == .expense }.reduce(Decimal(0)) { $0 + $1.amount }
+            return (currency: cur, income: inc, expense: exp)
+        }.sorted { $0.currency < $1.currency }
+
+        let income  = rows.reduce(Decimal(0)) { $0 + rates.convert($1.income,  from: $1.currency, to: display) }
+        let expense = rows.reduce(Decimal(0)) { $0 + rates.convert($1.expense, from: $1.currency, to: display) }
+        let hasConversion = rows.contains { $0.currency != display }
+        return MonthSummary(convertedIncome: income, convertedExpense: expense,
+                            displayCurrency: display, hasConversion: hasConversion,
+                            byCurrency: rows)
     }
 
     private var convertedGlobalTotal: Decimal {
@@ -144,9 +310,8 @@ struct DashboardView: View {
             .sheet(isPresented: $showAddTransfer) { AddTransferView() }
             .sheet(isPresented: $showAddAccount)   { AddEditAccountView(mode: .create) }
             .sheet(isPresented: $showLibrary)      { DashboardLibraryView() }
-            // C3 — refresh cached month summary only when transaction count changes
-            .task(id: allTransactions.count) {
-                cachedMonthSummary = thisMonthSummary
+            .sheet(item: $editingTransaction) { tx in
+                NavigationStack { AddEditTransactionView(mode: .edit(tx)) }
             }
         }
     }
@@ -221,7 +386,7 @@ struct DashboardView: View {
                 accountsCarouselWidget
 
             case .monthSummary:
-                monthSummaryWidget
+                if !accounts.isEmpty { monthSummaryWidget }
 
             case .loans:
                 if !activeLoans.isEmpty { loanWidget }
@@ -230,60 +395,57 @@ struct DashboardView: View {
                 if !activeCreditLines.isEmpty { creditLineWidget }
 
             case .cashFlow:
-                if let cur = dominantCurrency {
+                if !accounts.isEmpty {
                     BudgetDashboardSection(
+                        monthTransactions: monthTransactions,
                         recurring: activeRecurring,
-                        loans: activeLoans,
-                        currency: cur
+                        accounts: accounts,
+                        displayCurrency: rates.displayCurrency
                     )
                     .id("cashFlow")
                 }
 
             case .budgets:
-                if let cur = dominantCurrency {
-                    budgetSectionWidget(currency: cur)
-                }
+                budgetSectionWidget()
 
             case .savingsGoals:
-                if let cur = dominantCurrency {
-                    savingsWidget(currency: cur)
-                }
+                savingsWidget()
 
             case .balanceProjection, .incomeVsExpenses, .categoryBreakdown:
-                if let cur = dominantCurrency {
+                if !accounts.isEmpty {
                     AnalyticsDashboardSection(
                         accounts: accounts,
                         transactions: allTransactions,
                         activeRecurring: activeRecurring,
-                        currency: cur,
                         visibleWidgets: analyticsWidgets
                     )
                     .id("analytics")
                 }
 
             case .upcomingRecurring:
-                if !upcomingRecurrences.isEmpty { upcomingWidget }
+                if !upcomingItems.isEmpty { upcomingWidget }
 
             case .recentTransactions:
                 recentWidget
 
             case .netWorth:
                 NetWorthWidget(
-                    accounts: totalsByCurrency,
+                    accounts: accounts,
                     loans: activeLoans,
                     creditLines: activeCreditLines
                 )
 
             case .exchangeRates:
-                ExchangeRateWidget(
-                    accountCurrencies: Array(Set(accounts.map { $0.currency }))
-                )
+                ExchangeRateWidget()
 
             case .upcomingTransfers:
                 UpcomingTransfersWidget(
                     recurringTransfers: recurringTransfers,
                     futureTransferTx: upcomingTransferTx
                 )
+
+            case .registeredRoom:
+                RegisteredRoomWidget()
             }
         }
     }
@@ -373,6 +535,7 @@ struct DashboardView: View {
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(row.total >= 0 ? Color.primary : Color.red)
                             if row.currency != rates.displayCurrency,
+                               rates.showConvertedAmounts,
                                let label = rates.convertedLabel(row.total,
                                     from: row.currency, to: rates.displayCurrency) {
                                 Text(label).font(.caption2).foregroundStyle(.secondary)
@@ -414,33 +577,54 @@ struct DashboardView: View {
 
     @ViewBuilder
     private var monthSummaryWidget: some View {
-        let summary = cachedMonthSummary
-        if let cur = summary.currency {
-            VStack(alignment: .leading, spacing: 8) {
-                Text(lang["dashboard.thisMonth"] + " (\(cur))")
-                    .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
-                    .padding(.horizontal)
-                HStack(spacing: 12) {
-                    summaryTile(lang["label.incomes"],  value: summary.income,
-                                currency: cur, color: .green,
-                                icon: "arrow.down.left.circle.fill")
-                    summaryTile(lang["label.expenses"], value: summary.expense,
-                                currency: cur, color: .red,
-                                icon: "arrow.up.right.circle.fill")
+        let summary = thisMonthSummary
+        VStack(alignment: .leading, spacing: 8) {
+            Text(lang["dashboard.thisMonth"] + " (\(summary.displayCurrency))")
+                .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
+                .padding(.horizontal)
+
+            // Totaux convertis dans la devise d'affichage
+            HStack(spacing: 12) {
+                summaryTile(lang["label.incomes"],  value: summary.convertedIncome,
+                            currency: summary.displayCurrency, approx: summary.hasConversion,
+                            color: .green, icon: "arrow.down.left.circle.fill")
+                summaryTile(lang["label.expenses"], value: summary.convertedExpense,
+                            currency: summary.displayCurrency, approx: summary.hasConversion,
+                            color: .red, icon: "arrow.up.right.circle.fill")
+            }
+            .padding(.horizontal)
+
+            // Ventilation par devise (montants natifs) — si plusieurs devises ou conversion
+            if summary.byCurrency.count > 1 || summary.hasConversion {
+                VStack(spacing: 8) {
+                    ForEach(summary.byCurrency, id: \.currency) { row in
+                        HStack {
+                            Text(Currencies.info(for: row.currency).name)
+                                .font(.caption).foregroundStyle(.secondary)
+                            Spacer()
+                            Text("+ " + row.income.formatted(asCurrency: row.currency))
+                                .font(.caption.weight(.medium)).foregroundStyle(.green)
+                            Text("− " + row.expense.formatted(asCurrency: row.currency))
+                                .font(.caption.weight(.medium)).foregroundStyle(.red)
+                        }
+                    }
                 }
+                .padding(12)
+                .background(Color(.secondarySystemBackground),
+                            in: RoundedRectangle(cornerRadius: 12))
                 .padding(.horizontal)
             }
         }
     }
 
-    private func summaryTile(_ title: String, value: Decimal, currency: String,
+    private func summaryTile(_ title: String, value: Decimal, currency: String, approx: Bool,
                               color: Color, icon: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {
                 Image(systemName: icon).foregroundStyle(color)
                 Text(title).font(.caption).foregroundStyle(.secondary)
             }
-            Text(value.formatted(asCurrency: currency))
+            Text((approx ? "≈ " : "") + value.formatted(asCurrency: currency))
                 .font(.headline.weight(.semibold))
                 .minimumScaleFactor(0.7).lineLimit(1)
         }
@@ -557,13 +741,13 @@ struct DashboardView: View {
                 Text(lang["dashboard.upcoming"])
                     .font(.subheadline.weight(.medium)).foregroundStyle(.secondary)
                 Spacer()
-                NavigationLink(lang["action.seeAll"]) { RecurrencesView() }.font(.caption)
+                NavigationLink(lang["action.seeAll"]) { TransactionsView() }.font(.caption)
             }
             .padding(.horizontal)
             VStack(spacing: 0) {
-                ForEach(Array(upcomingRecurrences.enumerated()), id: \.element.id) { idx, rule in
-                    upcomingRow(rule).padding(.horizontal).padding(.vertical, 10)
-                    if idx < upcomingRecurrences.count - 1 { Divider().padding(.leading, 68) }
+                ForEach(Array(upcomingItemsLimited.enumerated()), id: \.element.id) { idx, item in
+                    upcomingRow(item).padding(.horizontal).padding(.vertical, 10)
+                    if idx < upcomingItemsLimited.count - 1 { Divider().padding(.leading, 68) }
                 }
             }
             .background(Color(.secondarySystemBackground),
@@ -572,32 +756,28 @@ struct DashboardView: View {
         }
     }
 
-    private func upcomingRow(_ rule: RecurringTransaction) -> some View {
-        let iconColor: Color = rule.category.flatMap { Color(hex: $0.colorHex) }
-            ?? (rule.type == .income ? .green : .secondary)
-        let iconName = rule.category?.iconSystemName
-            ?? (rule.type == .income ? "arrow.down.circle" : "arrow.up.circle")
-        let code = rule.account?.currency ?? Currencies.default
-        let amtText = (rule.type == .income ? "+" : "−") + rule.amount.formatted(asCurrency: code)
-        let dueColor: Color = { switch rule.dueDateColor {
-            case .overdue: return .red; case .soon: return .orange; case .normal: return .secondary
-        }}()
+    private func upcomingRow(_ item: UpcomingItem) -> some View {
+        let iconColor: Color = item.colorHex.map { Color(hex: $0) }
+            ?? (item.isTransfer ? .blue : (item.isIncome ? .green : .secondary))
+        let symbol = item.isTransfer ? "arrow.left.arrow.right" : item.iconName
+        let amtText = item.isTransfer
+            ? item.amount.formatted(asCurrency: item.currency)
+            : (item.isIncome ? "+" : "−") + item.amount.formatted(asCurrency: item.currency)
+        let amtColor: AnyShapeStyle = item.isTransfer
+            ? AnyShapeStyle(.secondary)
+            : (item.isIncome ? AnyShapeStyle(Color.green) : AnyShapeStyle(.primary))
         return HStack(spacing: 12) {
             ZStack {
                 Circle().fill(iconColor.opacity(0.15)).frame(width: 40, height: 40)
-                Image(systemName: iconName).foregroundStyle(iconColor)
+                Image(systemName: symbol).foregroundStyle(iconColor)
                     .font(.system(size: 17, weight: .semibold))
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text(rule.displayTitle).font(.body.weight(.medium)).lineLimit(1)
-                Text(rule.frequency.shortLabel).font(.caption).foregroundStyle(.secondary)
+                Text(item.title).font(.body.weight(.medium)).lineLimit(1)
+                Text(item.date.appFormatted()).font(.caption).foregroundStyle(.secondary)
             }
             Spacer()
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(amtText).font(.body.weight(.semibold))
-                    .foregroundStyle(rule.type == .income ? AnyShapeStyle(Color.green) : AnyShapeStyle(.primary))
-                Text(rule.dueDateLabel).font(.caption2).foregroundStyle(dueColor)
-            }
+            Text(amtText).font(.body.weight(.semibold)).foregroundStyle(amtColor)
         }
     }
 
@@ -618,7 +798,7 @@ struct DashboardView: View {
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(recentTransactions.enumerated()), id: \.element.id) { idx, tx in
-                        NavigationLink { AddEditTransactionView(mode: .edit(tx)) } label: {
+                        Button { editingTransaction = tx } label: {
                             TransactionRow(transaction: tx)
                                 .padding(.horizontal).padding(.vertical, 6)
                         }
@@ -636,17 +816,15 @@ struct DashboardView: View {
     // MARK: Budgets widget (standalone, separate from BudgetDashboardSection)
 
     @ViewBuilder
-    private func budgetSectionWidget(currency: String) -> some View {
-        // Delegate to BudgetDashboardSection's budget-only card
-        // by wrapping it in a minimal view that only shows the budget block
-        BudgetOnlyDashboardCard(currency: currency)
+    private func budgetSectionWidget() -> some View {
+        BudgetOnlyDashboardCard()
     }
 
     // MARK: Savings widget
 
     @ViewBuilder
-    private func savingsWidget(currency: String) -> some View {
-        SavingsOnlyDashboardCard(currency: currency)
+    private func savingsWidget() -> some View {
+        SavingsOnlyDashboardCard()
     }
 }
 
@@ -654,17 +832,17 @@ struct DashboardView: View {
 
 private struct BudgetOnlyDashboardCard: View {
     @Environment(LanguageManager.self) private var lang
-    @Query(filter: #Predicate<Budget> { $0.isActive }, sort: \Budget.createdAt)
+    @Query(filter: #Predicate<Budget> { $0.isActive },
+           sort: [SortDescriptor(\Budget.sortIndex, order: .forward),
+                  SortDescriptor(\Budget.createdAt, order: .forward)])
     private var activeBudgets: [Budget]
     @Query(sort: \Transaction.date, order: .reverse) private var allTransactions: [Transaction]
-    let currency: String
 
     var body: some View {
+        // Tous les budgets actifs (toutes devises) dans l'ordre manuel ; max 3.
         let statuses = activeBudgets
-            .filter { $0.currency == currency }
+            .prefix(3)
             .map { BudgetStatus(budget: $0, spent: BudgetCalculator.spent(for: $0, in: allTransactions)) }
-            .sorted { $0.fraction > $1.fraction }
-            .prefix(3).map { $0 }
         if !statuses.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
@@ -683,12 +861,13 @@ private struct BudgetOnlyDashboardCard: View {
 private struct SavingsOnlyDashboardCard: View {
     @Environment(LanguageManager.self) private var lang
     @Query(filter: #Predicate<SavingsProject> { $0.isActive },
-           sort: \SavingsProject.createdAt) private var projects: [SavingsProject]
-    let currency: String
+           sort: [SortDescriptor(\SavingsProject.sortIndex, order: .forward),
+                  SortDescriptor(\SavingsProject.createdAt, order: .forward)])
+    private var projects: [SavingsProject]
 
     var body: some View {
-        let filtered = projects.filter { $0.currency == currency }
-        if !filtered.isEmpty {
+        // Tous les projets actifs (toutes devises) dans l'ordre manuel ; max 3 (géré par la carte).
+        if !projects.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Text(lang["savings.title"])
@@ -697,7 +876,7 @@ private struct SavingsOnlyDashboardCard: View {
                     NavigationLink(lang["action.seeAll"]) { SavingsProjectsView() }.font(.caption)
                 }
                 .padding(.horizontal)
-                SavingsGoalsCard(projects: filtered, currency: currency)
+                SavingsGoalsCard(projects: projects)
             }
         }
     }

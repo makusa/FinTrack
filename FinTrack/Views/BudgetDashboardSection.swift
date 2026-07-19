@@ -15,26 +15,31 @@ import Charts
 
 struct BudgetDashboardSection: View {
     @Environment(LanguageManager.self) private var lang
+    @Environment(ExchangeRateManager.self) private var rates
 
+    let monthTransactions: [Transaction]
     let recurring: [RecurringTransaction]
-    let loans: [Loan]
-    let currency: String
+    let accounts: [Account]
+    let displayCurrency: String
 
-    @Query(filter: #Predicate<CreditLine> { $0.isActive },
-           sort: \CreditLine.createdAt, order: .forward)
-    private var activeCreditLines: [CreditLine]
-
-    @Query(filter: #Predicate<SavingsProject> { $0.isActive },
-           sort: \SavingsProject.createdAt, order: .forward)
-    private var projects: [SavingsProject]
+    /// Trésorerie : comptes liquides uniquement (chèque, épargne, espèces).
+    private var treasuryAccounts: [Account] {
+        accounts.filter { $0.type.isTreasury }
+    }
 
     private var summary: CashFlowSummary {
-        CashFlowCalculator.summary(
-            currency: currency,
+        let now = Date()
+        let interval = Calendar.current.dateInterval(of: .month, for: now)
+        let monthStart = interval?.start ?? now
+        let monthEnd   = interval?.end ?? now
+        return CashFlowCalculator.summary(
+            displayCurrency: displayCurrency,
+            monthTransactions: monthTransactions,
             recurring: recurring,
-            loans: loans,
-            projects: projects,
-            creditLines: activeCreditLines
+            treasuryAccounts: treasuryAccounts,
+            monthStart: monthStart,
+            monthEnd: monthEnd,
+            convert: { rates.convert($0, from: $1, to: $2) }
         )
     }
 
@@ -50,12 +55,14 @@ struct CashFlowCard: View {
 
     let summary: CashFlowSummary
 
+    private var approx: String { summary.hasConversion ? "≈ " : "" }
+
     var body: some View {
         NavigationLink(destination: CashFlowView(summary: summary)) {
             VStack(spacing: 0) {
                 // Header
                 HStack {
-                    Label(lang["cashflow.estimated"], systemImage: "arrow.left.arrow.right.circle.fill")
+                    Label(lang["cashflow.projection"], systemImage: "arrow.left.arrow.right.circle.fill")
                         .font(.subheadline.weight(.semibold))
                     Spacer()
                     Image(systemName: "chevron.right")
@@ -64,59 +71,40 @@ struct CashFlowCard: View {
                 }
                 .padding(.bottom, 12)
 
-                // Breakdown rows
-                flowRow("+", label: lang["cashflow.monthlyIncome"], amount: summary.monthlyIncome,
-                        currency: summary.currency, color: .green)
-                flowRow("−", label: lang["cashflow.recurringExp"], amount: summary.monthlyExpenses,
-                        currency: summary.currency, color: .primary)
-                if summary.monthlyLoanPayments > 0 {
-                    flowRow("−", label: lang["cashflow.loanPayments"], amount: summary.monthlyLoanPayments,
-                            currency: summary.currency, color: .primary)
-                }
+                // Build-up toward the end-of-month position
+                flowRow(nil, label: lang["cashflow.currentBalance"],
+                        amount: summary.currentTreasury, color: .primary)
+                flowRow("+", label: lang["cashflow.upcomingIn"],
+                        amount: summary.upcomingIncome, color: .green)
+                flowRow("−", label: lang["cashflow.upcomingOut"],
+                        amount: summary.upcomingExpense, color: .primary)
 
                 Divider().padding(.vertical, 8)
 
-                // Net surplus
+                // Projected end-of-month position (the headline figure)
                 HStack {
-                    Text(lang["cashflow.surplus"])
+                    Text(lang["cashflow.projectedBalance"])
                         .font(.subheadline.weight(.semibold))
                     Spacer()
-                    HStack(spacing: 4) {
-                        Image(systemName: summary.isPositive ? "arrow.up.right" : "arrow.down.right")
-                        Text(summary.monthlySurplus.formatted(asCurrency: summary.currency))
-                            .font(.subheadline.weight(.bold))
-                    }
-                    .foregroundStyle(summary.isPositive ? .green : .red)
+                    Text(approx + summary.projectedEndBalance.formatted(asCurrency: summary.displayCurrency))
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(summary.projectedEndBalance >= 0 ? Color.primary : Color.red)
                 }
 
-                // Allocation sub-rows (if projects exist)
-                if summary.monthlyAllocated > 0 {
-                    Divider().padding(.vertical, 8)
-
-                    ForEach(summary.projectLines) { line in
-                        HStack {
-                            Text("· \(line.label)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
-                            Spacer()
-                            Text("−\(line.amount.formatted(asCurrency: summary.currency))")
-                                .font(.caption.weight(.medium))
-                                .foregroundStyle(.secondary)
-                        }
-                        .padding(.vertical, 1)
-                    }
-
-                    HStack {
-                        Text(lang["cashflow.free"])
-                            .font(.caption.weight(.semibold))
-                        Spacer()
-                        Text(summary.monthlyFree.formatted(asCurrency: summary.currency))
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(summary.isCovered ? .green : .red)
-                    }
-                    .padding(.top, 4)
+                // Realized so far this month (context)
+                HStack(spacing: 8) {
+                    Text(lang["cashflow.realized"])
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    Spacer()
+                    Text("+\(summary.realizedIncome.formatted(asCurrency: summary.displayCurrency))")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.green)
+                    Text("−\(summary.realizedExpense.formatted(asCurrency: summary.displayCurrency))")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
                 }
+                .padding(.top, 8)
             }
             .padding(16)
             .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
@@ -125,10 +113,9 @@ struct CashFlowCard: View {
         .buttonStyle(.plain)
     }
 
-    private func flowRow(_ sign: String, label: String, amount: Decimal,
-                         currency: String, color: Color) -> some View {
+    private func flowRow(_ sign: String?, label: String, amount: Decimal, color: Color) -> some View {
         HStack {
-            Text(sign)
+            Text(sign ?? " ")
                 .font(.caption.weight(.bold))
                 .foregroundStyle(.secondary)
                 .frame(width: 12, alignment: .leading)
@@ -136,7 +123,7 @@ struct CashFlowCard: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer()
-            Text(amount.formatted(asCurrency: currency))
+            Text(amount.formatted(asCurrency: summary.displayCurrency))
                 .font(.caption.weight(.medium))
                 .foregroundStyle(color)
         }
@@ -147,47 +134,35 @@ struct CashFlowCard: View {
 // MARK: - 2. Savings Goals Card
 
 struct SavingsGoalsCard: View {
-    @Environment(LanguageManager.self) private var lang
-    let projects: [SavingsProject]
-    let currency: String
+    let projects: [SavingsProject]   // tous les projets actifs, déjà triés (ordre manuel)
 
-    private var filtered: [SavingsProject] {
-        Array(projects.filter { $0.currency == currency }.prefix(3))
-    }
+    private var visible: [SavingsProject] { Array(projects.prefix(3)) }
 
     var body: some View {
-        NavigationLink(destination: SavingsProjectsView()) {
-            VStack(spacing: 0) {
-                HStack {
-                    Label(lang["savings.title"], systemImage: "target")
-                        .font(.subheadline.weight(.semibold))
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.tertiary)
-                }
-                .padding(.bottom, 12)
-
-                ForEach(Array(filtered.enumerated()), id: \.element.id) { idx, project in
+        VStack(spacing: 0) {
+            ForEach(Array(visible.enumerated()), id: \.element.id) { idx, project in
+                NavigationLink {
+                    SavingsProjectDetailView(project: project)
+                } label: {
                     projectMiniRow(project)
-                    if idx < filtered.count - 1 {
-                        Divider().padding(.vertical, 6)
-                    }
                 }
-
-                if projects.count > 3 {
-                    Text("+ \(projects.count - 3) autres projets")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding(.top, 8)
+                .buttonStyle(.plain)
+                if idx < visible.count - 1 {
+                    Divider().padding(.vertical, 6)
                 }
             }
-            .padding(16)
-            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
-            .padding(.horizontal)
+
+            if projects.count > 3 {
+                Text("+ \(projects.count - 3) autres projets")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, 8)
+            }
         }
-        .buttonStyle(.plain)
+        .padding(16)
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal)
     }
 
     private func projectMiniRow(_ p: SavingsProject) -> some View {

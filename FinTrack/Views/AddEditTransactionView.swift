@@ -43,6 +43,10 @@ struct AddEditTransactionView: View {
     @State private var notifEnabled: Bool = false
     @State private var notifDaysBefore: Int = 3
 
+    /// Comptes enregistres : une transaction compte par defaut dans les droits
+    /// (opt-out). false = exclue (interets, dividendes, gains, frais).
+    @State private var affectsRoom: Bool = true
+
     @FocusState private var amountFocused: Bool
 
     init(mode: TransactionEditorMode, preselectedAccount: Account? = nil) {
@@ -100,6 +104,14 @@ struct AddEditTransactionView: View {
         categories.filter { $0.matches(type) }
     }
 
+    // MARK: - Compte enregistré (CELI/CELIAPP/REER)
+    // Sur un compte enregistré, une transaction alimente le suivi des droits
+    // (revenu = cotisation, dépense = retrait). L'utilisateur peut l'exclure via le
+    // toggle ci-dessous pour les intérêts, dividendes, gains ou frais.
+    private var registeredTypeOfSelected: RegisteredType? {
+        selectedAccount?.registeredProfile?.registeredType
+    }
+
     /// Devises pour lesquelles l'utilisateur possède au moins un compte actif.
     private var availableCurrencies: [String] {
         Array(Set(accounts.map(\.currency))).sorted()
@@ -132,6 +144,7 @@ struct AddEditTransactionView: View {
             categorySection
             detailsSection
             statusSection
+            registeredRoomToggleSection
             notificationSection
 
             if case .edit = mode {
@@ -176,6 +189,26 @@ struct AddEditTransactionView: View {
     }
 
     // MARK: - Sections
+
+    /// Sur un compte enregistré : bascule d'inclusion dans les droits de cotisation.
+    /// Activée par défaut (la transaction compte) ; désactiver pour les intérêts,
+    /// dividendes, gains ou frais. Masquée pour les comptes non enregistrés.
+    @ViewBuilder
+    private var registeredRoomToggleSection: some View {
+        if let regType = registeredTypeOfSelected {
+            Section {
+                Toggle(isOn: $affectsRoom) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(lang["tx.registeredRoom.toggle"])
+                        Text(regType.shortName)
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+            } footer: {
+                Text(lang["tx.registeredRoom.footer"])
+            }
+        }
+    }
 
     private var amountSection: some View {
         Section {
@@ -375,6 +408,7 @@ struct AddEditTransactionView: View {
             date = tx.date
             payee = tx.payee ?? ""
             note = tx.note
+            affectsRoom = !tx.excludedFromRegisteredRoom
             switch tx.status {
             case .skipped:    statusChoice = .skipped
             case .reconciled: statusChoice = .reconciled
@@ -404,6 +438,7 @@ struct AddEditTransactionView: View {
             tx.notificationEnabled = notifEnabled
             tx.notificationDaysBefore = notifDaysBefore
             tx.status = TransactionStatus.defaultForManual(date: date)
+            tx.excludedFromRegisteredRoom = !affectsRoom
             context.insert(tx)
         case .edit(let tx):
             tx.amount = amount
@@ -423,6 +458,7 @@ struct AddEditTransactionView: View {
             tx.payee = trimmedPayee.isEmpty ? nil : trimmedPayee
             tx.notificationEnabled = notifEnabled
             tx.notificationDaysBefore = notifDaysBefore
+            tx.excludedFromRegisteredRoom = !affectsRoom
             // Garde l'entrée de marge liée synchronisée avec la transaction.
             if let entry = tx.creditLineEntry {
                 entry.amount = amount

@@ -22,7 +22,7 @@ struct BalanceCard: View {
     private var cardShadowColor: Color { Color(hex: account.colorHex).opacity(0.25) }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
                 if account.iconSystemName.isEmpty, let domain = account.bankDomain {
                     BankLogoView(domain: domain, size: 32, cornerRadius: 8)
@@ -43,6 +43,7 @@ struct BalanceCard: View {
                     .background(.white.opacity(0.2), in: Capsule())
                     .foregroundStyle(.white)
             }
+            .padding(.top, 4)
 
             Spacer(minLength: 4)
 
@@ -63,13 +64,15 @@ struct BalanceCard: View {
                 .minimumScaleFactor(0.6)
                 .lineLimit(1)
             if account.currency != rates.displayCurrency,
+               rates.showConvertedAmounts,
                let converted = rates.convertedLabel(account.balance, from: account.currency, to: rates.displayCurrency) {
                 Text(converted)
                     .font(.caption2)
                     .foregroundStyle(.white.opacity(0.7))
             }
         }
-        .padding(16)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 11)
         .frame(width: 200, height: 140)
         .background(cardGradient, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: cardShadowColor, radius: 8, x: 0, y: 4)

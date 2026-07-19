@@ -95,6 +95,7 @@ final class Budget {
     var colorHex: String = "#3478F6"
     var iconSystemName: String = "cart.fill"
     var isActive: Bool = true
+    var sortIndex: Int = 0
     var notes: String? = nil
     var createdAt: Date = Date.now
 
@@ -186,6 +187,8 @@ enum BudgetCalculator {
         return transactions
             .filter { tx in
                 guard tx.type == .expense else { return false }
+                guard tx.transferPairId == nil else { return false }       // ignore transfer legs
+                guard tx.status.countsTowardBalance else { return false }  // realized only
                 guard tx.date >= start && tx.date < end else { return false }
                 guard tx.account?.currency == budget.currency else { return false }
                 if budget.categories.isEmpty { return true } // global: all expenses in currency
@@ -223,6 +226,8 @@ enum BudgetCalculator {
             let total = transactions
                 .filter { tx in
                     guard tx.type == .expense else { return false }
+                    guard tx.transferPairId == nil else { return false }
+                    guard tx.status.countsTowardBalance else { return false }
                     guard tx.date >= start && tx.date < end else { return false }
                     guard tx.account?.currency == budget.currency else { return false }
                     if budget.categories.isEmpty { return true }

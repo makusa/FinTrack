@@ -2,7 +2,8 @@
 //  NetWorthWidget.swift
 //  FinTrack
 //
-//  Displays: total assets (accounts) − total liabilities (loans + credit lines)
+//  Displays: total assets (positive account balances) − total liabilities
+//  (negative account balances: credit cards/overdrafts, + loans + credit lines)
 //  = net worth, with a visual asset/liability breakdown.
 //
 
@@ -15,13 +16,13 @@ struct NetWorthWidget: View {
     @Environment(ExchangeRateManager.self) private var rates
 
     // Data passed from parent (already queried)
-    let accounts: [(currency: String, total: Decimal)]
+    let accounts: [Account]
     let loans: [Loan]
     let creditLines: [CreditLine]
 
     private let display: String
 
-    init(accounts: [(currency: String, total: Decimal)],
+    init(accounts: [Account],
          loans: [Loan],
          creditLines: [CreditLine]) {
         self.accounts    = accounts
@@ -32,10 +33,23 @@ struct NetWorthWidget: View {
 
     // MARK: Computed
 
+    /// Actifs = somme des comptes à solde positif (chèque, épargne, placement…),
+    /// chacun converti depuis sa propre devise.
     private var totalAssets: Decimal {
-        accounts.reduce(Decimal(0)) { sum, row in
-            sum + ExchangeRateManager.shared.convert(
-                max(row.total, 0), from: row.currency, to: display)
+        accounts.reduce(Decimal(0)) { sum, acc in
+            let bal = acc.balance
+            guard bal > 0 else { return sum }
+            return sum + ExchangeRateManager.shared.convert(bal, from: acc.currency, to: display)
+        }
+    }
+
+    /// Dette portée par les comptes eux-mêmes : cartes de crédit et découverts
+    /// (soldes négatifs), comptée en valeur absolue.
+    private var totalAccountDebt: Decimal {
+        accounts.reduce(Decimal(0)) { sum, acc in
+            let bal = acc.balance
+            guard bal < 0 else { return sum }
+            return sum + ExchangeRateManager.shared.convert(-bal, from: acc.currency, to: display)
         }
     }
 
@@ -52,14 +66,13 @@ struct NetWorthWidget: View {
         }
     }
 
-    private var totalLiabilities: Decimal { totalLoanDebt + totalCLDebt }
+    private var totalLiabilities: Decimal { totalAccountDebt + totalLoanDebt + totalCLDebt }
     private var netWorth: Decimal         { totalAssets - totalLiabilities }
 
     private var debtRatio: Double {
         guard totalAssets > 0 else { return 0 }
-        let ratio = (totalLiabilities as NSDecimalNumber).doubleValue
-                  / (totalAssets       as NSDecimalNumber).doubleValue
-        return min(ratio, 1.0)
+        return (totalLiabilities as NSDecimalNumber).doubleValue
+             / (totalAssets       as NSDecimalNumber).doubleValue
     }
 
     private var ratioColor: Color {
@@ -98,7 +111,7 @@ struct NetWorthWidget: View {
                         .lineLimit(1)
                     Spacer()
                     // Debt ratio badge
-                    if totalLiabilities > 0 {
+                    if totalLiabilities > 0 && totalAssets > 0 {
                         VStack(alignment: .trailing, spacing: 1) {
                             Text(String(format: "%.0f%%", debtRatio * 100))
                                 .font(.callout.weight(.bold))
@@ -140,6 +153,15 @@ struct NetWorthWidget: View {
                         value: totalAssets,
                         positive: true
                     )
+                    if totalAccountDebt > 0 {
+                        netWorthRow(
+                            icon: "creditcard.fill",
+                            color: .red,
+                            label: lang["widget.netWorth.cards"],
+                            value: totalAccountDebt,
+                            positive: false
+                        )
+                    }
                     if totalLoanDebt > 0 {
                         netWorthRow(
                             icon: "banknote.fill",

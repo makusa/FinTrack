@@ -110,6 +110,12 @@ struct AddEditCreditLineView: View {
                 didInitialLoad = true
                 loadIfEditing()
             }
+            .onChange(of: currency) { _, newCurrency in
+                // Un compte d'une autre devise ne peut plus être lié (pas de conversion).
+                if let acc = selectedAccount, acc.currency != newCurrency {
+                    selectedAccount = accounts.first(where: { $0.currency == newCurrency })
+                }
+            }
         }
     }
 
@@ -221,16 +227,28 @@ struct AddEditCreditLineView: View {
         }
     }
 
+    /// Comptes éligibles : uniquement ceux libellés dans la devise du produit,
+    /// pour éviter toute conversion de devise.
+    private var selectableAccounts: [Account] {
+        accounts.filter { $0.currency == currency }
+    }
+
     private var accountSection: some View {
-        Section(lang["cl.associatedAccount"]) {
+        Section {
             Picker(lang["label.account"], selection: $selectedAccount) {
                 Text(lang["label.none"]).tag(Account?.none)
-                ForEach(accounts) { acc in
+                ForEach(selectableAccounts) { acc in
                     HStack {
                         Image(systemName: acc.iconSystemName).foregroundStyle(Color(hex: acc.colorHex))
                         Text(acc.name)
                     }.tag(Optional(acc))
                 }
+            }
+        } header: {
+            Text(lang["cl.associatedAccount"])
+        } footer: {
+            if accounts.contains(where: { $0.currency != currency }) {
+                Text(lang.f("loan.accountCurrencyNote", currency))
             }
         }
     }
@@ -297,7 +315,7 @@ struct AddEditCreditLineView: View {
 
     private func loadIfEditing() {
         guard case .edit(let cl) = mode else {
-            selectedAccount = accounts.first
+            selectedAccount = accounts.first(where: { $0.currency == currency })
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { limitFocused = true }
             return
         }

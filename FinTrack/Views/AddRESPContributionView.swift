@@ -4,7 +4,7 @@
 //
 //  Logs a REEE/RESP contribution, with a live preview of the grant it earns
 //  (CESG + IQEE) and a confirm if it pushes the beneficiary past the $50,000
-//  lifetime contribution cap. Mirrors AddRegisteredEntryView.
+//  lifetime contribution cap.
 //
 //  A RESPContribution tracks the grant-eligible amount. Optionally the matching
 //  cash movement is recorded as a linked transfer (debit + credit) so balances

@@ -2,8 +2,10 @@
 //  CashFlowCalculator.swift
 //  FinTrack
 //
-//  Normalises all recurring transactions and loan payments to a monthly
-//  equivalent so the dashboard can show a single projected surplus/deficit.
+//  Projects the end-of-month treasury position by combining what has already
+//  happened this month (realized) with what is still expected before month-end
+//  (upcoming recurring occurrences + scheduled transactions). No averaging:
+//  only real amounts and real remaining occurrences, so no double-counting.
 //
 
 import Foundation
@@ -11,146 +13,157 @@ import Foundation
 // MARK: - Summary
 
 struct CashFlowSummary {
-    let currency: String
-    let monthlyIncome: Decimal
-    let monthlyExpenses: Decimal
-    let monthlyLoanPayments: Decimal
-    let monthlyCreditLinePayments: Decimal
-    let monthlySurplus: Decimal      // income − expenses − loans
-    let monthlyAllocated: Decimal    // sum of project contributions
-    let monthlyFree: Decimal         // surplus − allocated
+    let displayCurrency: String
+    let hasConversion: Bool
 
-    var isPositive: Bool { monthlySurplus >= 0 }
-    var isCovered:  Bool { monthlyFree >= 0 }   // after project allocations
+    /// Already realized since the 1st of the month (already reflected in balances).
+    let realizedIncome: Decimal
+    let realizedExpense: Decimal
 
-    // Individual line items for the detail view
-    let incomeLines:   [CashFlowLine]
-    let expenseLines:  [CashFlowLine]
-    let loanLines:       [CashFlowLine]
-    let creditLineLines: [CashFlowLine]
-    let projectLines:  [CashFlowLine]
+    /// Still expected before month-end (recurring not yet generated + scheduled).
+    let upcomingIncome: Decimal
+    let upcomingExpense: Decimal
+
+    /// Current treasury balance (checking + savings + cash), converted.
+    let currentTreasury: Decimal
+    /// currentTreasury + upcomingIncome − upcomingExpense.
+    let projectedEndBalance: Decimal
+
+    /// Native per-currency breakdown (shown when a conversion occurs).
+    let byCurrency: [CashFlowCurrencyRow]
+
+    var realizedNet: Decimal { realizedIncome - realizedExpense }
+    var upcomingNet:  Decimal { upcomingIncome - upcomingExpense }
 }
 
-struct CashFlowLine: Identifiable {
+struct CashFlowCurrencyRow: Identifiable {
     let id = UUID()
-    let label: String
-    let sublabel: String?       // e.g. frequency badge
-    let amount: Decimal         // always positive; sign is determined by context
+    let currency: String
+    let realizedIncome:  Decimal
+    let realizedExpense: Decimal
+    let upcomingIncome:  Decimal
+    let upcomingExpense: Decimal
+    let treasury:        Decimal
+
+    var hasUpcoming: Bool {
+        (upcomingIncome as NSDecimalNumber).doubleValue != 0 ||
+        (upcomingExpense as NSDecimalNumber).doubleValue != 0
+    }
 }
 
 // MARK: - Calculator
 
 enum CashFlowCalculator {
 
-    /// Build a CashFlowSummary for the given currency.
+    /// Build an end-of-month projection for the given display currency.
+    /// `convert` maps (amount, from, to) → amount; pass `rates.convert`.
     static func summary(
-        currency: String,
+        displayCurrency: String,
+        monthTransactions: [Transaction],
         recurring: [RecurringTransaction],
-        loans: [Loan],
-        projects: [SavingsProject],
-        creditLines: [CreditLine] = []
+        treasuryAccounts: [Account],
+        monthStart: Date,
+        monthEnd: Date,            // exclusive: start of next month
+        convert: (Decimal, String, String) -> Decimal
     ) -> CashFlowSummary {
 
-        // ── Income ────────────────────────────────────────────────────────
-        let incomeRules = recurring.filter {
-            $0.isActive && $0.type == .income && $0.account?.currency == currency
+        var realIncome:  [String: Decimal] = [:]
+        var realExpense: [String: Decimal] = [:]
+        var upIncome:    [String: Decimal] = [:]
+        var upExpense:   [String: Decimal] = [:]
+        var treasury:    [String: Decimal] = [:]
+
+        // ── Realized: month transactions counting toward balance, no transfers ──
+        for tx in monthTransactions
+        where tx.transferPairId == nil && tx.status.countsTowardBalance {
+            let cur = tx.account?.currency ?? displayCurrency
+            if tx.type == .income { realIncome[cur, default: 0]  += tx.amount }
+            else                  { realExpense[cur, default: 0] += tx.amount }
         }
-        let incomeLines = incomeRules.map {
-            CashFlowLine(
-                label: $0.displayTitle,
-                sublabel: $0.frequency.shortLabel,
-                amount: monthlyAmount($0.amount, frequency: $0.frequency)
+
+        // ── Upcoming (entered): scheduled transactions dated within this month ──
+        for tx in monthTransactions
+        where tx.transferPairId == nil && tx.status == .scheduled && tx.date < monthEnd {
+            let cur = tx.account?.currency ?? displayCurrency
+            if tx.type == .income { upIncome[cur, default: 0]  += tx.amount }
+            else                  { upExpense[cur, default: 0] += tx.amount }
+        }
+
+        // ── Upcoming (recurring): occurrences not yet generated, before month-end.
+        // Excludes transfers (no net flow) and savings-project contributions
+        // (internal moves). Loan/credit-line payments ARE included via their rules.
+        for rule in recurring
+        where rule.isActive && !rule.isTransfer && rule.savingsProject == nil {
+            let occ = remainingOccurrences(rule: rule, monthStart: monthStart, monthEnd: monthEnd)
+            guard occ > 0 else { continue }
+            let cur   = rule.account?.currency ?? displayCurrency
+            let total = rule.amount * Decimal(occ)
+            if rule.type == .income { upIncome[cur, default: 0]  += total }
+            else                    { upExpense[cur, default: 0] += total }
+        }
+
+        // ── Current treasury balance (checking + savings + cash) ──
+        for acc in treasuryAccounts {
+            treasury[acc.currency, default: 0] += acc.balance
+        }
+
+        // ── Per-currency rows + conversion ──
+        let currencies = Set(realIncome.keys).union(realExpense.keys)
+            .union(upIncome.keys).union(upExpense.keys).union(treasury.keys)
+
+        let rows = currencies.sorted().map { cur in
+            CashFlowCurrencyRow(
+                currency: cur,
+                realizedIncome:  realIncome[cur]  ?? 0,
+                realizedExpense: realExpense[cur] ?? 0,
+                upcomingIncome:  upIncome[cur]    ?? 0,
+                upcomingExpense: upExpense[cur]   ?? 0,
+                treasury:        treasury[cur]    ?? 0
             )
         }
-        let monthlyIncome = incomeLines.reduce(Decimal(0)) { $0 + $1.amount }
 
-        // ── Expenses ──────────────────────────────────────────────────────
-        // Exclude recurring transactions auto-generated by loans: those amounts
-        // are already counted in loanLines — including them here would double-count.
-        let expenseRules = recurring.filter {
-            $0.isActive && $0.type == .expense
-                && $0.account?.currency == currency
-                && !$0.isLoanPayment
+        func total(_ dict: [String: Decimal]) -> Decimal {
+            dict.reduce(Decimal(0)) { $0 + convert($1.value, $1.key, displayCurrency) }
         }
-        let expenseLines = expenseRules.map {
-            CashFlowLine(
-                label: $0.displayTitle,
-                sublabel: $0.frequency.shortLabel,
-                amount: monthlyAmount($0.amount, frequency: $0.frequency)
-            )
-        }
-        let monthlyExpenses = expenseLines.reduce(Decimal(0)) { $0 + $1.amount }
-
-        // ── Loan payments ─────────────────────────────────────────────────
-        let activeLoans = loans.filter { $0.isActive && $0.currency == currency }
-        let loanLines = activeLoans.map { loan -> CashFlowLine in
-            let calc = loan.calculator
-            let annualPayments = Decimal(calc.paymentAmount * Double(loan.frequency.paymentsPerYear))
-            let monthly = annualPayments / 12
-            return CashFlowLine(
-                label: loan.label.isEmpty ? loan.type.label : loan.label,
-                sublabel: loan.lenderName.isEmpty ? nil : loan.lenderName,
-                amount: monthly
-            )
-        }
-        let monthlyLoanPayments = loanLines.reduce(Decimal(0)) { $0 + $1.amount }
-
-        // ── Credit line minimum payments ──────────────────────────────────
-        // Exclude recurring transactions flagged as credit line payments
-        // (already counted here via the creditLines parameter).
-        let activeCreditLines = creditLines.filter { $0.isActive && $0.currency == currency }
-        let creditLineLines = activeCreditLines.compactMap { cl -> CashFlowLine? in
-            let minPay = cl.estimatedMinimumPayment
-            guard (minPay as NSDecimalNumber).doubleValue > 0 else { return nil }
-            return CashFlowLine(
-                label: cl.name,
-                sublabel: LanguageManager.shared["cl.minPayment"] + " · " + cl.minimumPaymentType.label,
-                amount: minPay
-            )
-        }
-        let monthlyCreditLinePayments = creditLineLines.reduce(Decimal(0)) { $0 + $1.amount }
-
-        // ── Projects allocation ───────────────────────────────────────────
-        let activeProjects = projects.filter { $0.isActive && $0.currency == currency }
-        let projectLines = activeProjects.compactMap { p -> CashFlowLine? in
-            guard (p.monthlyEquivalentContribution as NSDecimalNumber).doubleValue > 0 else { return nil }
-            return CashFlowLine(
-                label: p.name,
-                sublabel: p.projectionLabel,
-                amount: p.monthlyEquivalentContribution
-            )
-        }
-        let monthlyAllocated = projectLines.reduce(Decimal(0)) { $0 + $1.amount }
-
-        let surplus = monthlyIncome - monthlyExpenses - monthlyLoanPayments - monthlyCreditLinePayments
+        let cRealInc  = total(realIncome)
+        let cRealExp  = total(realExpense)
+        let cUpInc    = total(upIncome)
+        let cUpExp    = total(upExpense)
+        let cTreasury = total(treasury)
 
         return CashFlowSummary(
-            currency: currency,
-            monthlyIncome: monthlyIncome,
-            monthlyExpenses: monthlyExpenses,
-            monthlyLoanPayments: monthlyLoanPayments,
-            monthlyCreditLinePayments: monthlyCreditLinePayments,
-            monthlySurplus: surplus,
-            monthlyAllocated: monthlyAllocated,
-            monthlyFree: surplus - monthlyAllocated,
-            incomeLines: incomeLines,
-            expenseLines: expenseLines,
-            loanLines: loanLines,
-            creditLineLines: creditLineLines,
-            projectLines: projectLines
+            displayCurrency: displayCurrency,
+            hasConversion: currencies.contains { $0 != displayCurrency },
+            realizedIncome: cRealInc,
+            realizedExpense: cRealExp,
+            upcomingIncome: cUpInc,
+            upcomingExpense: cUpExp,
+            currentTreasury: cTreasury,
+            projectedEndBalance: cTreasury + cUpInc - cUpExp,
+            byCurrency: rows
         )
     }
 
-    // MARK: Normalise to monthly
-
-    static func monthlyAmount(_ amount: Decimal, frequency: RecurrenceFrequency) -> Decimal {
-        switch frequency {
-        case .daily:     return amount * Decimal(365) / 12
-        case .weekly:    return amount * Decimal(52) / 12
-        case .biweekly:  return amount * Decimal(26) / 12
-        case .monthly:   return amount
-        case .quarterly: return amount / 3
-        case .yearly:    return amount / 12
+    /// Number of occurrences of `rule` that fall within the current month and are
+    /// not yet generated. Counts from `nextDueDate` (the next ungenerated occurrence),
+    /// skipping any occurrence dated before the month, bounded by `endDate`.
+    static func remainingOccurrences(rule: RecurringTransaction,
+                                     monthStart: Date,
+                                     monthEnd: Date) -> Int {
+        var d = rule.nextDueDate
+        var guardCount = 0
+        // Skip occurrences dated before the current month (overdue from prior months).
+        while d < monthStart && guardCount < 2000 {
+            d = rule.frequency.nextDate(after: d)
+            guardCount += 1
         }
+        var count = 0
+        while d < monthEnd && guardCount < 2000 {
+            if let end = rule.endDate, d > end { break }
+            count += 1
+            d = rule.frequency.nextDate(after: d)
+            guardCount += 1
+        }
+        return count
     }
 }

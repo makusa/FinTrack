@@ -35,6 +35,7 @@ enum DashboardWidgetID: String, CaseIterable, Codable, Identifiable {
     case netWorth           = "netWorth"
     case exchangeRates      = "exchangeRates"
     case upcomingTransfers  = "upcomingTransfers"
+    case registeredRoom     = "registeredRoom"
 
     var id: String { rawValue }
 
@@ -44,7 +45,7 @@ enum DashboardWidgetID: String, CaseIterable, Codable, Identifiable {
     /// Courant users cannot add or view these on their dashboard.
     var requiresPro: Bool {
         switch self {
-        case .netWorth, .exchangeRates, .upcomingTransfers, .savingsGoals:
+        case .netWorth, .upcomingTransfers, .savingsGoals:
             return true
         default:
             return false
@@ -70,6 +71,7 @@ enum DashboardWidgetID: String, CaseIterable, Codable, Identifiable {
         case .netWorth:          return lang["widget.netWorth.title"]
         case .exchangeRates:     return lang["widget.fx.title"]
         case .upcomingTransfers: return lang["widget.transfers.title"]
+        case .registeredRoom:    return lang["reg.hub.title"]
         }
     }
 
@@ -91,6 +93,7 @@ enum DashboardWidgetID: String, CaseIterable, Codable, Identifiable {
         case .netWorth:          return "chart.pie"
         case .exchangeRates:     return "arrow.left.arrow.right.circle"
         case .upcomingTransfers: return "arrow.left.arrow.right"
+        case .registeredRoom:    return "leaf.fill"
         }
     }
 
@@ -113,6 +116,7 @@ enum DashboardWidgetID: String, CaseIterable, Codable, Identifiable {
         case .netWorth:          return lang["widget.desc.netWorth"]
         case .exchangeRates:     return lang["widget.desc.fx"]
         case .upcomingTransfers: return lang["widget.desc.transfers"]
+        case .registeredRoom:    return lang["widget.desc.registered"]
         }
     }
 }

@@ -173,6 +173,12 @@ struct AddEditLoanView: View {
                 frequency       = d.frequency
                 compounding     = d.compounding
             }
+            .onChange(of: currency) { _, newCurrency in
+                // Un compte d'une autre devise ne peut plus être lié (pas de conversion).
+                if let acc = selectedAccount, acc.currency != newCurrency {
+                    selectedAccount = accounts.first(where: { $0.currency == newCurrency })
+                }
+            }
         }
     }
 
@@ -295,15 +301,21 @@ struct AddEditLoanView: View {
         }
     }
 
+    /// Comptes éligibles : uniquement ceux libellés dans la devise du produit,
+    /// pour éviter toute conversion de devise.
+    private var selectableAccounts: [Account] {
+        accounts.filter { $0.currency == currency }
+    }
+
     private var accountSection: some View {
-        Section(lang["loan.debitAccount"]) {
+        Section {
             if accounts.isEmpty {
                 Text(lang["loan.noAccount"])
                     .foregroundStyle(.secondary)
             } else {
                 Picker(lang["label.account"], selection: $selectedAccount) {
                     Text(lang["loan.noAccount"]).tag(Account?.none)
-                    ForEach(accounts) { acc in
+                    ForEach(selectableAccounts) { acc in
                         HStack {
                             Image(systemName: acc.iconSystemName)
                                 .foregroundStyle(Color(hex: acc.colorHex))
@@ -312,6 +324,12 @@ struct AddEditLoanView: View {
                         .tag(Optional(acc))
                     }
                 }
+            }
+        } header: {
+            Text(lang["loan.debitAccount"])
+        } footer: {
+            if accounts.contains(where: { $0.currency != currency }) {
+                Text(lang.f("loan.accountCurrencyNote", currency))
             }
         }
     }
@@ -440,7 +458,7 @@ struct AddEditLoanView: View {
 
     private func loadIfEditing() {
         guard case .edit(let loan) = mode else {
-            selectedAccount = accounts.first
+            selectedAccount = accounts.first(where: { $0.currency == currency })
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { principalFocused = true }
             return
         }
@@ -571,6 +589,10 @@ struct AddEditLoanView: View {
                 rule.payee = rulePayee
                 // Répercute le nouveau montant sur les paiements déjà générés.
                 RecurringTransactionManager.propagateValuesToGeneratedTransactions(rule, context: context)
+                // Resynchronise la prochaine échéance sur l'échéancier d'amortissement, sinon une
+                // modification de la date de premier paiement n'est pas répercutée sur la règle.
+                let calc = loan.calculator
+                rule.nextDueDate = calc.paymentDate(calc.paymentsElapsedToday + 1)
             } else {
                 let rule = RecurringTransaction(
                     title: title,

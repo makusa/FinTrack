@@ -12,7 +12,8 @@ struct LoansView: View {
     @Environment(EntitlementManager.self) private var entitlements
 
     @Query(filter: #Predicate<Loan> { $0.isActive },
-           sort: \Loan.createdAt, order: .forward)
+           sort: [SortDescriptor(\Loan.sortIndex, order: .forward),
+                  SortDescriptor(\Loan.createdAt, order: .forward)])
     private var activeLoans: [Loan]
 
     @Query(filter: #Predicate<Loan> { !$0.isActive },
@@ -59,6 +60,7 @@ struct LoansView: View {
                             .tint(.orange)
                         }
                     }
+                    .onMove(perform: moveLoans)
                 }
             }
 
@@ -89,6 +91,9 @@ struct LoansView: View {
         }
         .navigationTitle(lang["loan.title"])
         .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                if activeLoans.count > 1 { EditButton() }
+            }
             ToolbarItem(placement: .topBarTrailing) {
                 Button { showAdd = true } label: {
                     Image(systemName: "plus.circle.fill").font(.title3)
@@ -191,6 +196,17 @@ struct LoansView: View {
     }
 
     // MARK: - Actions
+
+    /// Réordonne les prêts actifs et persiste le nouvel ordre dans `sortIndex`.
+    /// Les 3 premiers de cet ordre alimentent le widget du Dashboard.
+    private func moveLoans(from source: IndexSet, to destination: Int) {
+        var reordered = activeLoans
+        reordered.move(fromOffsets: source, toOffset: destination)
+        for (index, loan) in reordered.enumerated() {
+            loan.sortIndex = index
+        }
+        try? context.save()
+    }
 
     private func archive(_ loan: Loan) {
         loan.isActive.toggle()

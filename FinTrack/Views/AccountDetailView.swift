@@ -30,8 +30,8 @@ struct AccountDetailView: View {
     @State private var showAddTransaction = false
     @State private var showAddTransfer = false
     @State private var confirmArchive = false
-    @State private var showAddEntry = false
     @State private var showAddRESPContribution = false
+    @State private var editingTransaction: Transaction?
 
     @Query private var allPlans: [RegisteredRoomPlan]
     @Query private var allAccounts: [Account]
@@ -94,7 +94,6 @@ struct AccountDetailView: View {
 
             if let regType = account.registeredProfile?.registeredType {
                 registeredRoomSection(regType)
-                registeredEntriesSection()
             }
             if account.respProfile != nil {
                 respGrantSection()
@@ -108,11 +107,12 @@ struct AccountDetailView: View {
                         .foregroundStyle(.secondary)
                 } else {
                     ForEach(sortedTransactions) { tx in
-                        NavigationLink {
-                            AddEditTransactionView(mode: .edit(tx))
+                        Button {
+                            editingTransaction = tx
                         } label: {
                             TransactionRow(transaction: tx)
                         }
+                        .buttonStyle(.plain)
                         .swipeActions(edge: .leading, allowsFullSwipe: false) {
                             if tx.externalId == nil {
                                 Button { TransactionStatusManager.toggleSkip(tx, context: context) } label: {
@@ -177,11 +177,13 @@ struct AccountDetailView: View {
                 AddEditTransactionView(mode: .create, preselectedAccount: account)
             }
         }
+        .sheet(item: $editingTransaction) { tx in
+            NavigationStack {
+                AddEditTransactionView(mode: .edit(tx))
+            }
+        }
         .sheet(isPresented: $showAddTransfer) {
             AddTransferView(preselectedSource: account)
-        }
-        .sheet(isPresented: $showAddEntry) {
-            AddRegisteredEntryView(account: account)
         }
         .sheet(isPresented: $showAddRESPContribution) {
             AddRESPContributionView(account: account)
@@ -230,11 +232,6 @@ struct AccountDetailView: View {
                 Text(lang["reg.room.noAnchor"])
                     .font(.callout)
                     .foregroundStyle(.secondary)
-            }
-            Button {
-                showAddEntry = true
-            } label: {
-                Label(lang["reg.entry.add"], systemImage: "plus.circle")
             }
         } header: {
             Text("\(lang["reg.room.section"]) · \(type.label)")
@@ -326,45 +323,6 @@ struct AccountDetailView: View {
                 deleteLinkedTransfer(pairId)
             }
             context.delete(c)
-        }
-        try? context.save()
-    }
-
-    private var sortedRegisteredEntries: [RegisteredEntry] {
-        (account.registeredEntries ?? []).sorted { $0.date > $1.date }
-    }
-
-    @ViewBuilder
-    private func registeredEntriesSection() -> some View {
-        let entries = sortedRegisteredEntries
-        if !entries.isEmpty {
-            Section("\(lang["reg.entry.listTitle"]) (\(entries.count))") {
-                ForEach(entries) { e in
-                    HStack(spacing: 12) {
-                        Image(systemName: e.kind == .contribution ? "arrow.down.circle.fill" : "arrow.up.circle.fill")
-                            .foregroundStyle(e.kind == .contribution ? Color.green : Color.orange)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(e.kind.label)
-                            Text(e.date.formatted(.dateTime.day().month().year()))
-                                .font(.caption).foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        Text(e.amount.formatted(asCurrency: account.currency)).fontWeight(.medium)
-                    }
-                }
-                .onDelete(perform: deleteRegisteredEntries)
-            }
-        }
-    }
-
-    private func deleteRegisteredEntries(at offsets: IndexSet) {
-        let entries = sortedRegisteredEntries
-        for i in offsets {
-            let entry = entries[i]
-            if let pairId = entry.transferPairId {
-                deleteLinkedTransfer(pairId)
-            }
-            context.delete(entry)
         }
         try? context.save()
     }

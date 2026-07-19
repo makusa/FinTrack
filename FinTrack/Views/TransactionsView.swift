@@ -32,10 +32,12 @@ struct TransactionsView: View {
     @State private var debounceTask: Task<Void, Error>? = nil
     @State private var viewMode: ViewMode = .list
     @State private var showAddTransaction = false
+    @State private var editingTransaction: Transaction?
     @State private var showReview = false
 
     enum ViewMode { case list, calendar }
     @State private var showAddTransfer = false
+    @State private var showImportStatement = false
 
     enum TypeFilter: String, CaseIterable, Identifiable {
         case all, income, expense
@@ -70,7 +72,7 @@ struct TransactionsView: View {
             }
         }
     }
-    @State private var futureHorizon: FutureHorizon = .none
+    @State private var futureHorizon: FutureHorizon = .month1
 
     private var filteredTransactions: [Transaction] {
         allTransactions.filter { tx in
@@ -130,6 +132,7 @@ struct TransactionsView: View {
             var d = rule.nextDueDate
             var guardCount = 0
             while d <= horizonEnd && guardCount < 500 {
+                if let end = rule.endDate, d > end { break }
                 if d > today {
                     items.append(UpcomingItem(
                         id: "\(rule.persistentModelID.hashValue)-\(Int(d.timeIntervalSince1970))",
@@ -193,6 +196,12 @@ struct TransactionsView: View {
                         } label: {
                             Label(lang["transfer.create"], systemImage: "arrow.left.arrow.right")
                         }
+                        Divider()
+                        Button {
+                            showImportStatement = true
+                        } label: {
+                            Label(lang["import.ofx.title"], systemImage: "arrow.down.doc")
+                        }
                     } label: {
                         Image(systemName: "plus.circle.fill").font(.title3)
                     }
@@ -204,11 +213,23 @@ struct TransactionsView: View {
                     AddEditTransactionView(mode: .create)
                 }
             }
+            .sheet(isPresented: $showImportStatement) {
+                NavigationStack {
+                    ProGated(feature: .fileImport) {
+                        OFXImportView()
+                    }
+                }
+            }
             .sheet(isPresented: $showAddTransfer) {
                 AddTransferView()
             }
             .sheet(isPresented: $showReview) {
                 DuplicateReviewView()
+            }
+            .sheet(item: $editingTransaction) { tx in
+                NavigationStack {
+                    AddEditTransactionView(mode: .edit(tx))
+                }
             }
         }
     }
@@ -237,11 +258,12 @@ struct TransactionsView: View {
             ForEach(groupedTransactions, id: \.date) { group in
                 Section(header: Text(headerLabel(for: group.date))) {
                     ForEach(group.items) { tx in
-                        NavigationLink {
-                            AddEditTransactionView(mode: .edit(tx))
+                        Button {
+                            editingTransaction = tx
                         } label: {
                             TransactionRow(transaction: tx)
                         }
+                        .buttonStyle(.plain)
                         .swipeActions(edge: .leading, allowsFullSwipe: false) {
                             if tx.externalId == nil {
                                 Button { TransactionStatusManager.toggleSkip(tx, context: context) } label: {

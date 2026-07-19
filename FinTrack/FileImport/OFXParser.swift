@@ -30,6 +30,8 @@ struct OFXStatement: Equatable {
     var accountType: String?  // <ACCTTYPE> (CHECKING/SAVINGS/CREDITLINE/…)
     var transactions: [OFXTransaction]
     var source: String = "ofx"   // "ofx" | "csv" — namespace d externalId
+    var ledgerBalance: Decimal? = nil   // <LEDGERBAL><BALAMT> — solde officiel déclaré par la banque
+    var ledgerDate: Date? = nil         // <LEDGERBAL><DTASOF> — date de ce solde
 }
 
 enum OFXParseError: Error, Equatable {
@@ -59,6 +61,8 @@ enum OFXParser {
         var statement = OFXStatement(bankId: nil, currency: nil, accountId: nil,
                                      accountType: nil, transactions: [])
         var current: PartialTxn? = nil
+        var inLedgerBal = false   // BALAMT/DTASOF existent aussi sous <AVAILBAL> — on ne
+                                  // capte que ceux du bloc <LEDGERBAL> (solde officiel).
 
         for rawLine in normalized.split(separator: "\n", omittingEmptySubsequences: true) {
             let line = rawLine.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -69,6 +73,18 @@ enum OFXParser {
             case "CURDEF":   if statement.currency == nil    { statement.currency = value.nilIfEmpty }
             case "ACCTID":   if statement.accountId == nil    { statement.accountId = value.nilIfEmpty }
             case "ACCTTYPE": if statement.accountType == nil  { statement.accountType = value.nilIfEmpty }
+
+            case "LEDGERBAL":  inLedgerBal = true
+            case "/LEDGERBAL": inLedgerBal = false
+            case "AVAILBAL":   inLedgerBal = false   // robustesse si /LEDGERBAL manquant
+            case "BALAMT":
+                if inLedgerBal, statement.ledgerBalance == nil {
+                    statement.ledgerBalance = OFXAmount.parse(value)
+                }
+            case "DTASOF":
+                if inLedgerBal, statement.ledgerDate == nil {
+                    statement.ledgerDate = OFXDate.parse(value)
+                }
 
             case "STMTTRN":  current = PartialTxn()
             case "/STMTTRN":
@@ -118,20 +134,18 @@ enum OFXParser {
     // MARK: Charset-aware decoding
 
     static func decode(_ data: Data) throws -> String {
+        // 1) L'UTF-8 est auto-validant : si le fichier ENTIER se décode en UTF-8
+        //    strict, c'est de l'UTF-8 — même si l'en-tête prétend CHARSET:1252
+        //    (mensonge fréquent chez les banques). Un vrai fichier CP1252 avec
+        //    accents (ex. é = 0xE9 isolé) échoue ici et tombe sur la voie 2.
+        //    Les fichiers 100 % ASCII passent aussi ici (identiques en tout cas).
+        if let s = String(data: data, encoding: .utf8) { return s }
+
+        // 2) Pas de l'UTF-8 valide → charset mono-octet selon l'en-tête.
         let probe = String(decoding: data.prefix(256), as: UTF8.self).uppercased()
-        let encoding: String.Encoding
-        if probe.contains("CHARSET:1252") || probe.contains("WINDOWS-1252") {
-            encoding = .windowsCP1252
-        } else if probe.contains("CHARSET:UTF-8") || probe.contains("ENCODING:UTF-8") {
-            encoding = .utf8
-        } else if probe.contains("8859-1") {
-            encoding = .isoLatin1
-        } else {
-            encoding = .windowsCP1252   // OFX 1.x default in the wild
-        }
+        let encoding: String.Encoding = probe.contains("8859-1") ? .isoLatin1 : .windowsCP1252
         if let s = String(data: data, encoding: encoding) { return s }
         if let s = String(data: data, encoding: .isoLatin1) { return s }   // single-byte: never fails
-        if let s = String(data: data, encoding: .utf8) { return s }
         throw OFXParseError.undecodable
     }
 }

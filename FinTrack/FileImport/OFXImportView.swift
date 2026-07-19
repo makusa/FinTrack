@@ -37,12 +37,17 @@ struct OFXImportView: View {
     @State private var confidence: AccountSuggestion.Confidence = .none
     @State private var outcome: TransactionReconciler.Outcome?
     @State private var csvResult: CSVParseResult?
+    @State private var balanceCheck: OFXImportService.BalanceCheck?
+    @State private var adjustedViaInitialBalance: Bool? = nil   // nil = pas encore ajusté
+    @State private var showAdjustAlert = false
+    @State private var adjustAmountText = ""
 
     struct DraftRow: Identifiable {
         let id = UUID()
         let txn: OFXTransaction
         var include: Bool = true
         var category: Category? = nil
+        var transferAccount: Account? = nil   // non-nil = ligne marquée « virement » vers/depuis ce compte
     }
 
     /// .qfx / .ofx / .csv by extension; .data as a permissive fallback. The
@@ -148,6 +153,17 @@ struct OFXImportView: View {
             }
         }
         .safeAreaInset(edge: .bottom) { importBar }
+        .onChange(of: selectedUuid) {
+            // Le compte cible a changé : invalide les contreparties devenues
+            // illégales (identiques au nouveau compte cible ou autre devise).
+            guard let target = selectedAccount else { return }
+            for i in rows.indices {
+                if let acc = rows[i].transferAccount,
+                   acc.uuid == target.uuid || acc.currency != target.currency {
+                    rows[i].transferAccount = nil
+                }
+            }
+        }
     }
 
     private var accountSection: some View {
@@ -218,15 +234,58 @@ struct OFXImportView: View {
     private func categoryMenu(_ row: Binding<DraftRow>) -> some View {
         let t = row.wrappedValue.txn
         return Menu {
-            Button(lang["import.cat.none"]) { row.wrappedValue.category = nil }
+            Button(lang["import.cat.none"]) {
+                row.wrappedValue.category = nil
+                row.wrappedValue.transferAccount = nil
+            }
             Divider()
             ForEach(categoriesForRow(t)) { cat in
-                Button { row.wrappedValue.category = cat } label: {
+                Button {
+                    row.wrappedValue.category = cat
+                    row.wrappedValue.transferAccount = nil
+                } label: {
                     Label(cat.name, systemImage: cat.iconSystemName)
                 }
             }
+            if !transferCandidateAccounts.isEmpty {
+                Divider()
+                Menu {
+                    ForEach(transferCandidateAccounts) { acc in
+                        Button(acc.name) {
+                            row.wrappedValue.transferAccount = acc
+                            row.wrappedValue.category = nil
+                        }
+                    }
+                } label: {
+                    Label(lang["import.transfer.menu"], systemImage: "arrow.left.arrow.right")
+                }
+            }
         } label: {
-            categoryChipLabel(row.wrappedValue.category)
+            chipLabel(row.wrappedValue)
+        }
+    }
+
+    /// Comptes éligibles comme contrepartie de virement : même devise que le
+    /// compte cible, compte cible exclu. (v1 : virements même devise uniquement.)
+    private var transferCandidateAccounts: [Account] {
+        guard let target = selectedAccount else { return [] }
+        return accounts.filter { $0.uuid != target.uuid && $0.currency == target.currency }
+    }
+
+    @ViewBuilder
+    private func chipLabel(_ row: DraftRow) -> some View {
+        if let acc = row.transferAccount {
+            HStack(spacing: 4) {
+                Image(systemName: "arrow.left.arrow.right").font(.caption2)
+                Text("\(row.txn.amount < 0 ? "→" : "←") \(acc.name)")
+                    .font(.caption2.weight(.medium)).lineLimit(1)
+            }
+            .foregroundStyle(Color.purple)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 3)
+            .background(Color.purple.opacity(0.14), in: Capsule())
+        } else {
+            categoryChipLabel(row.category)
         }
     }
 
@@ -298,6 +357,9 @@ struct OFXImportView: View {
                 .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14))
                 .padding(.horizontal, 32)
             }
+            if balanceCheck != nil || adjustedViaInitialBalance != nil {
+                balanceGapCard
+            }
             Spacer()
             Button(lang["action.close"]) { dismiss() }
                 .buttonStyle(.borderedProminent)
@@ -313,6 +375,66 @@ struct OFXImportView: View {
             Spacer()
             Text("\(n)").fontWeight(.semibold)
         }
+    }
+
+    /// Écart entre le solde calculé et le solde bancaire déclaré (LEDGERBAL),
+    /// avec ajustement en un geste. Après ajustement, affiche la confirmation.
+    @ViewBuilder
+    private var balanceGapCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if let done = adjustedViaInitialBalance {
+                Label(done ? lang["import.ofx.balance.adjusted.initial"]
+                           : lang["import.ofx.balance.adjusted.tx"],
+                      systemImage: "checkmark.seal.fill")
+                    .font(.callout)
+                    .foregroundStyle(.green)
+            } else if let check = balanceCheck, let acc = selectedAccount {
+                Label(lang.f("import.ofx.balance.gap",
+                             check.delta.formatted(asCurrency: check.currency)),
+                      systemImage: "scalemass")
+                    .font(.callout.weight(.medium))
+                    .foregroundStyle(.orange)
+                Text(lang.f("import.ofx.balance.explain",
+                            check.ledgerBalance.formatted(asCurrency: check.currency),
+                            acc.balance.formatted(asCurrency: check.currency)))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Button {
+                    adjustAmountText = "\(check.delta)"
+                    showAdjustAlert = true
+                } label: {
+                    Text(lang["import.ofx.balance.adjust"])
+                        .font(.callout.weight(.semibold))
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14))
+        .padding(.horizontal, 32)
+        .alert(lang["import.ofx.balance.adjust"], isPresented: $showAdjustAlert) {
+            TextField(lang["import.ofx.balance.amount"], text: $adjustAmountText)
+                .keyboardType(.numbersAndPunctuation)
+            Button(lang["action.confirm"]) { confirmAdjustment() }
+            Button(lang["action.cancel"], role: .cancel) {}
+        } message: {
+            Text(lang["import.ofx.balance.amount.hint"])
+        }
+    }
+
+    /// Applique l'ajustement avec le montant saisi (prérempli avec l'écart calculé).
+    private func confirmAdjustment() {
+        guard let check = balanceCheck, let acc = selectedAccount else { return }
+        let normalized = adjustAmountText
+            .replacingOccurrences(of: ",", with: ".")
+            .replacingOccurrences(of: " ", with: "")
+        guard let amount = Decimal(string: normalized), amount != 0 else { return }
+        adjustedViaInitialBalance = OFXImportService.applyBalanceAdjustment(
+            check, account: acc, context: context,
+            adjustmentLabel: lang["import.ofx.balance.adjustment.label"],
+            customDelta: amount)
+        balanceCheck = nil
     }
 
     // MARK: - Logic
@@ -424,14 +546,33 @@ struct OFXImportView: View {
         guard let st = statement, let acc = selectedAccount else { return }
         let includedRows = rows.filter { $0.include }
         guard !includedRows.isEmpty else { return }
+
+        // Partition : lignes marquées « virement » vs lignes normales.
+        let transferRows = includedRows.filter { $0.transferAccount != nil }
+        let normalRows   = includedRows.filter { $0.transferAccount == nil }
+
         var filtered = st
-        filtered.transactions = includedRows.map(\.txn)
+        filtered.transactions = normalRows.map(\.txn)
         let categories = Dictionary(
-            includedRows.compactMap { r in r.category.map { (r.txn.fitid, $0) } },
+            normalRows.compactMap { r in r.category.map { (r.txn.fitid, $0) } },
             uniquingKeysWith: { first, _ in first }
         )
-        outcome = OFXImportService.commit(statement: filtered, into: acc,
-                                          context: context, categories: categories)
+        let base = OFXImportService.commit(statement: filtered, into: acc,
+                                           context: context, categories: categories)
+
+        let transfers = OFXImportService.commitTransfers(
+            transferRows.compactMap { r in r.transferAccount.map { (r.txn, $0) } },
+            statement: st, into: acc, context: context,
+            toLabel: lang["transfer.to.label"], fromLabel: lang["transfer.from.label"])
+
+        outcome = TransactionReconciler.Outcome(
+            added:      base.added + transfers.added,
+            reconciled: base.reconciled + transfers.adopted,
+            flagged:    base.flagged,
+            skipped:    base.skipped + transfers.skipped)
+        // Compare le solde du compte (recalculé par le commit) au solde déclaré
+        // du relevé COMPLET (st, pas filtered : exclure des lignes crée un écart réel).
+        balanceCheck = OFXImportService.balanceCheck(statement: st, account: acc)
         phase = .done
     }
 

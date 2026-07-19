@@ -518,6 +518,9 @@ final class Loan {
     var compoundingRaw: String = LoanCompounding.semiAnnual.rawValue
     var firstPaymentDate: Date = Date.now
     var isActive: Bool = true
+    /// Ordre manuel (glisser-déposer dans LoansView). Détermine aussi quels
+    /// prêts — et dans quel ordre — apparaissent dans le widget Dashboard.
+    var sortIndex: Int = 0
     // MARK: Notification settings
     var notificationEnabled: Bool = false
     var notificationDaysBefore: Int = 3
