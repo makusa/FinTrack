@@ -171,11 +171,20 @@ enum OFXImportService {
     static func balanceCheck(statement: OFXStatement, account: Account) -> BalanceCheck? {
         guard let ledger = statement.ledgerBalance else { return nil }
         if let cur = statement.currency, cur != account.currency { return nil }
-        let delta = ledger - account.balance
+        return balanceCheck(declaredBalance: ledger,
+                            declaredDate: statement.ledgerDate ?? .now,
+                            account: account)
+    }
+
+    /// Version générique : compare un solde déclaré par la source (banque via
+    /// LEDGERBAL, agrégateur Flinks…) au solde calculé du compte. Retourne nil
+    /// si ça balance. L'appelant garantit la cohérence de devise.
+    static func balanceCheck(declaredBalance: Decimal, declaredDate: Date, account: Account) -> BalanceCheck? {
+        let delta = declaredBalance - account.balance
         guard delta != 0 else { return nil }
         return BalanceCheck(delta: delta,
-                            ledgerBalance: ledger,
-                            ledgerDate: statement.ledgerDate ?? .now,
+                            ledgerBalance: declaredBalance,
+                            ledgerDate: declaredDate,
                             currency: account.currency)
     }
 
@@ -211,5 +220,16 @@ enum OFXImportService {
         account.recalculateBalance()
         try? context.save()
         return !hasManual
+    }
+
+    /// Silent anchor: shift `initialBalance` so the computed balance equals the
+    /// declared balance, WITHOUT creating any transaction. Used on a bank account's
+    /// first sync, or when re-anchoring after a long gap (where the partial history
+    /// can't reproduce the balance). Does not save — the caller persists.
+    static func anchorBalance(to declaredBalance: Decimal, account: Account) {
+        let delta = declaredBalance - account.balance
+        guard delta != 0 else { return }
+        account.initialBalance += delta
+        account.recalculateBalance()
     }
 }

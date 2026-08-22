@@ -17,12 +17,26 @@ final class PlaidSyncEngine {
 
     // MARK: - Sync all connected items
 
+    /// A per-account balance mismatch found after a (recent) sync: the computed
+    /// balance drifted from the real balance Plaid reports. Non-blocking — the UI
+    /// surfaces it and lets the user adjust.
+    struct BalanceDiscrepancy: Identifiable {
+        var id: String { accountUuid }
+        let accountUuid: String
+        let accountName: String
+        let check: OFXImportService.BalanceCheck
+    }
+
     struct SyncResult {
-        let itemId:   String
-        let added:    Int
-        let modified: Int
-        let removed:  Int
-        let error:    Error?
+        let itemId:     String
+        let added:      Int
+        let reconciled: Int   // manual rows auto-linked to a synced row (Option C)
+        let flagged:    Int   // synced rows flagged as possible duplicates (needs review)
+        let modified:   Int
+        let removed:    Int
+        let details:    [TransactionReconciler.ReconcileDetail]
+        let discrepancies: [BalanceDiscrepancy]
+        let error:      Error?
     }
 
     func syncAll(context: ModelContext) async -> [SyncResult] {
@@ -40,29 +54,36 @@ final class PlaidSyncEngine {
         do {
             let response = try await PlaidManager.shared.syncTransactions(for: item)
 
-            var addedCount   = 0
             var modifiedCount = 0
             var removedCount = 0
 
-            // ── Process added transactions ────────────────────────────────
+            // ── Added → shared reconciler (dedup + Option-C adoption + review flag),
+            //    the same pipeline as Flinks. Category is resolved here and passed
+            //    through so auto-categorisation is preserved.
+            var incoming: [IncomingBankTransaction] = []
             for plaidTx in response.added {
-                guard let fintrackAccount = resolveAccount(
-                    plaidAccountId: plaidTx.account_id,
-                    item: item,
-                    context: context
-                ) else { continue }
-
-                // Check for duplicate
-                if existingTransaction(plaidId: plaidTx.transaction_id, context: context) != nil {
-                    continue
-                }
-
-                let tx = buildTransaction(from: plaidTx,
-                                          account: fintrackAccount,
-                                          context: context)
-                context.insert(tx)
-                addedCount += 1
+                guard let account = resolveAccount(plaidAccountId: plaidTx.account_id,
+                                                   item: item, context: context) else { continue }
+                let type: TransactionType = plaidTx.amount > 0 ? .expense : .income
+                let category = matchCategory(plaidCategories: plaidTx.category ?? [],
+                                             type: type, context: context)
+                let payee = plaidTx.merchant_name ?? plaidTx.name
+                incoming.append(IncomingBankTransaction(
+                    externalId: plaidTx.transaction_id,
+                    accountKey: account.uuid,
+                    isIncome: plaidTx.amount < 0,     // Plaid: negative = credit
+                    amount: Decimal(abs(plaidTx.amount)),
+                    date: parseDate(plaidTx.date) ?? .now,
+                    payee: payee.isEmpty ? nil : payee,
+                    note: "[Plaid] \(plaidTx.name)",
+                    bankDescription: plaidTx.name,
+                    category: category
+                ))
             }
+            let outcome = TransactionReconciler.reconcile(incoming, context: context)
+            let addedCount      = outcome.added
+            let reconciledCount = outcome.reconciled
+            let flaggedCount    = outcome.flagged
 
             // ── Process modified transactions ─────────────────────────────
             for plaidTx in response.modified {
@@ -86,61 +107,85 @@ final class PlaidSyncEngine {
             let allAccounts = (try? context.fetch(FetchDescriptor<Account>())) ?? []
             allAccounts.forEach { $0.recalculateBalance() }
 
+            // ── Balance anchor (first sync / long gap) or reconcile (recent) ──
+            let discrepancies = await reconcileBalances(item: item, context: context)
+
             // Update cursor for next sync
             PlaidManager.shared.updateCursor(for: item.id, cursor: response.next_cursor)
 
             return SyncResult(itemId: item.id,
                                added: addedCount,
+                               reconciled: reconciledCount,
+                               flagged: flaggedCount,
                                modified: modifiedCount,
                                removed: removedCount,
+                               details: outcome.details,
+                               discrepancies: discrepancies,
                                error: nil)
 
         } catch PlaidError.reAuthRequired {
             // Mark item as needing re-auth — UI will show a banner
             return SyncResult(itemId: item.id,
-                               added: 0, modified: 0, removed: 0,
+                               added: 0, reconciled: 0, flagged: 0, modified: 0, removed: 0,
+                               details: [],
+                               discrepancies: [],
                                error: PlaidError.reAuthRequired(itemId: item.id))
         } catch {
             return SyncResult(itemId: item.id,
-                               added: 0, modified: 0, removed: 0,
+                               added: 0, reconciled: 0, flagged: 0, modified: 0, removed: 0,
+                               details: [],
+                               discrepancies: [],
                                error: error)
         }
     }
 
-    // MARK: - Transaction building
+    // MARK: - Balance anchoring / reconciliation
 
-    private func buildTransaction(from plaidTx: PlaidTransaction,
-                                  account: Account,
-                                  context: ModelContext) -> Transaction {
-        // Plaid: positive amount = money leaving account (debit)
-        //        negative amount = money entering account (credit)
-        let isDebit  = plaidTx.amount > 0
-        let type:    TransactionType = isDebit ? .expense : .income
-        let absAmount = Decimal(abs(plaidTx.amount))
+    /// After importing transactions, reconcile each mapped account's balance with
+    /// the real balance Plaid reports:
+    ///  - first sync (lastBankSyncAt == nil) or gap > 30 days → silent (re)anchor
+    ///    (`initialBalance` shifted so the computed balance equals `current`),
+    ///  - otherwise → compare; a gap is real drift → surfaced as a discrepancy.
+    /// Credit cards flip the sign (Plaid: amount owed positive; FinTrack: negative).
+    private func reconcileBalances(item: PlaidConnectedItem,
+                                   context: ModelContext) async -> [BalanceDiscrepancy] {
+        guard let balances = try? await PlaidManager.shared.fetchBalances(for: item) else { return [] }
+        let accounts = (try? context.fetch(FetchDescriptor<Account>())) ?? []
+        var discrepancies: [BalanceDiscrepancy] = []
+        let now = Date.now
+        var didChange = false
 
-        let date = parseDate(plaidTx.date) ?? .now
+        for accBal in balances.accounts {
+            guard let meta = item.accounts.first(where: { $0.id == accBal.account_id }),
+                  let ftId = meta.fintrackAccountId,
+                  let account = accounts.first(where: { $0.uuid == ftId })
+            else { continue }
+            // Skip if Plaid reports a currency that differs from the account.
+            if let cur = accBal.balances.iso_currency_code, cur != account.currency { continue }
+            guard let currentRaw = accBal.balances.current else { continue }
 
-        let payee = plaidTx.merchant_name ?? plaidTx.name
+            // Double → Decimal at 2 decimals; flip sign for credit cards.
+            let declaredMag = Decimal(string: String(format: "%.2f", currentRaw)) ?? Decimal(currentRaw)
+            let declared = account.type == .credit ? -declaredMag : declaredMag
 
-        // Try to match a FinTrack category
-        let category = matchCategory(plaidCategories: plaidTx.category ?? [],
-                                     type: type,
-                                     context: context)
+            let daysSince = account.lastBankSyncAt.map { now.timeIntervalSince($0) / 86_400 }
+            let anchor = account.lastBankSyncAt == nil || (daysSince ?? .infinity) > 30
 
-        let tx = Transaction(
-            amount:   absAmount,
-            type:     type,
-            date:     date,
-            account:  account,
-            category: category,
-            note:     "[Plaid] \(plaidTx.name)",
-            payee:    payee.isEmpty ? nil : payee
-        )
-        // Tag with Plaid transaction ID for deduplication + updates
-        tx.externalId = plaidTx.transaction_id
-
-        return tx
+            if anchor {
+                OFXImportService.anchorBalance(to: declared, account: account)   // silent
+            } else if let check = OFXImportService.balanceCheck(declaredBalance: declared,
+                                                                declaredDate: now, account: account) {
+                discrepancies.append(BalanceDiscrepancy(accountUuid: account.uuid,
+                                                        accountName: account.name, check: check))
+            }
+            account.lastBankSyncAt = now
+            didChange = true
+        }
+        if didChange { try? context.save() }
+        return discrepancies
     }
+
+    // MARK: - Transaction updates
 
     private func applyUpdate(plaidTx: PlaidTransaction,
                               to existing: Transaction,

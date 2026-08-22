@@ -21,6 +21,8 @@ struct BankSyncView: View {
     @State private var showConnect = false
     @State private var syncMessage: String? = nil
     @State private var loginToDelete: FlinksConnectedLogin? = nil
+    @State private var discrepancies: [FlinksSyncEngine.BalanceDiscrepancy] = []
+    @State private var discrepancyToAdjust: FlinksSyncEngine.BalanceDiscrepancy? = nil
 
     var body: some View {
         List {
@@ -70,6 +72,34 @@ struct BankSyncView: View {
                         .foregroundStyle(.secondary)
                 }
             }
+
+            if !discrepancies.isEmpty {
+                Section {
+                    ForEach(discrepancies) { d in
+                        VStack(alignment: .leading, spacing: 6) {
+                            Label(d.accountName, systemImage: "exclamationmark.triangle.fill")
+                                .font(.callout.weight(.medium))
+                                .foregroundStyle(.orange)
+                            Text("\(lang["flinks.balance.bankSays"]) : \(d.check.ledgerBalance.formatted(asCurrency: d.check.currency))")
+                                .font(.caption).foregroundStyle(.secondary)
+                            Text("\(lang["flinks.balance.gap"]) : \(d.check.delta.formatted(asCurrency: d.check.currency))")
+                                .font(.caption).foregroundStyle(.secondary)
+                            Button {
+                                discrepancyToAdjust = d
+                            } label: {
+                                Label(lang["flinks.balance.adjust"], systemImage: "equal.circle")
+                            }
+                            .buttonStyle(.borderless)
+                            .padding(.top, 2)
+                        }
+                        .padding(.vertical, 2)
+                    }
+                } header: {
+                    Text(lang["flinks.balance.section"])
+                } footer: {
+                    Text(lang["flinks.balance.explain"])
+                }
+            }
         }
         .navigationTitle(lang["flinks.title"])
         .sheet(isPresented: $showConnect) {
@@ -99,6 +129,15 @@ struct BankSyncView: View {
                 loginToDelete = nil
             }
             Button(lang["action.cancel"], role: .cancel) { loginToDelete = nil }
+        }
+        .alert(lang["flinks.balance.adjust.confirm.title"],
+               isPresented: Binding(get: { discrepancyToAdjust != nil },
+                                    set: { if !$0 { discrepancyToAdjust = nil } }),
+               presenting: discrepancyToAdjust) { d in
+            Button(lang["flinks.balance.adjust"]) { adjust(d) }
+            Button(lang["action.cancel"], role: .cancel) { discrepancyToAdjust = nil }
+        } message: { d in
+            Text(String(format: lang["flinks.balance.adjust.confirm.msg"], d.accountName))
         }
     }
 
@@ -170,10 +209,21 @@ struct BankSyncView: View {
         let added = results.reduce(0) { $0 + $1.added }
         let reconciled = results.reduce(0) { $0 + $1.reconciled }
         let flagged = results.reduce(0) { $0 + $1.flagged }
+        discrepancies = results.flatMap { $0.discrepancies }
         var msg = "\(lang["flinks.sync.done"]) \(added)"
         if reconciled > 0 { msg += " · \(reconciled) \(lang["flinks.sync.reconciled"])" }
         if flagged > 0 { msg += " · \(flagged) \(lang["flinks.sync.review"])" }
         syncMessage = msg
+    }
+
+    /// Cale le solde du compte sur le solde réel Flinks (transaction de correction
+    /// ou solde d'ouverture, décidé par OFXImportService selon l'historique).
+    private func adjust(_ d: FlinksSyncEngine.BalanceDiscrepancy) {
+        let accounts = (try? context.fetch(FetchDescriptor<Account>())) ?? []
+        guard let account = accounts.first(where: { $0.uuid == d.accountUuid }) else { return }
+        OFXImportService.applyBalanceAdjustment(d.check, account: account, context: context,
+                                                adjustmentLabel: lang["flinks.balance.adjustment.label"])
+        discrepancies.removeAll { $0.id == d.id }
     }
 }
 

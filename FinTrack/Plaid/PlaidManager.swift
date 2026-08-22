@@ -290,6 +290,35 @@ final class PlaidManager {
         return try JSONDecoder().decode(PlaidBalancesResponse.self, from: data)
     }
 
+    #if DEBUG
+    /// Debug-only: fetch ALL transactions from an empty cursor, paginating, WITHOUT
+    /// persisting any cursor — so it never disturbs the real incremental sync.
+    func debugFetchAllTransactions(for item: PlaidConnectedItem) async throws -> [PlaidTransaction] {
+        guard let accessToken = KeychainHelper.string(forKey: "plaid_token_\(item.id)") else {
+            throw PlaidError.missingAccessToken
+        }
+        var all: [PlaidTransaction] = []
+        var cursor: String? = nil
+        for _ in 0..<10 {   // safety cap on pagination
+            var body: [String: Any] = ["access_token": accessToken]
+            if let c = cursor, !c.isEmpty { body["cursor"] = c }
+            let url = URL(string: "\(PlaidConfig.baseURL)/sync_transactions")!
+            var req = URLRequest(url: url, timeoutInterval: 30)
+            req.httpMethod = "POST"
+            req.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            req.setValue(PlaidConfig.apiKey, forHTTPHeaderField: "X-API-Key")
+            req.httpBody = try JSONSerialization.data(withJSONObject: body)
+            let (data, response) = try await URLSession.shared.data(for: req)
+            try validateResponse(response)
+            let resp = try JSONDecoder().decode(PlaidSyncResponse.self, from: data)
+            all.append(contentsOf: resp.added)
+            cursor = resp.next_cursor
+            if !resp.has_more { break }
+        }
+        return all
+    }
+    #endif
+
     // MARK: - Disconnect
 
     func disconnect(item: PlaidConnectedItem) async throws {

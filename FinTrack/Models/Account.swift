@@ -106,6 +106,11 @@ final class Account {
     /// Updated by recalculateBalance() on every transaction write.
     var cachedBalance: Decimal = 0
 
+    /// Timestamp of the last bank-sync balance anchor/reconcile for this account.
+    /// nil = never bank-synced. Drives first-sync anchoring vs. drift reconciliation,
+    /// and re-anchoring when the gap since last sync exceeds the retention window.
+    var lastBankSyncAt: Date?
+
     /// O(1) read — returns the cached value.
     var balance: Decimal { cachedBalance }
 

@@ -30,6 +30,9 @@ struct ConnectedAccountsView: View {
     @State private var itemToMap:         PlaidConnectedItem? = nil
     @State private var itemToDisconnect:  PlaidConnectedItem? = nil
     @State private var errorMessage:      String? = nil
+    @State private var discrepancies:     [PlaidSyncEngine.BalanceDiscrepancy] = []
+    @State private var discrepancyToAdjust: PlaidSyncEngine.BalanceDiscrepancy? = nil
+    @State private var showReview         = false
 
     var body: some View {
         NavigationStack {
@@ -77,6 +80,44 @@ struct ConnectedAccountsView: View {
                         ForEach(syncResults, id: \.itemId) { result in
                             syncResultRow(result)
                         }
+                        let toReview = syncResults.reduce(0) { $0 + $1.flagged }
+                        if toReview > 0 {
+                            Button {
+                                showReview = true
+                            } label: {
+                                Label("\(toReview) \(lang["flinks.sync.review"])", systemImage: "checklist")
+                                    .foregroundStyle(.orange)
+                            }
+                        }
+                    }
+                }
+
+                // ── Balance discrepancies (drift detected on a recent sync) ─
+                if !discrepancies.isEmpty {
+                    Section {
+                        ForEach(discrepancies) { d in
+                            VStack(alignment: .leading, spacing: 6) {
+                                Label(d.accountName, systemImage: "exclamationmark.triangle.fill")
+                                    .font(.callout.weight(.medium))
+                                    .foregroundStyle(.orange)
+                                Text("\(lang["flinks.balance.bankSays"]) : \(d.check.ledgerBalance.formatted(asCurrency: d.check.currency))")
+                                    .font(.caption).foregroundStyle(.secondary)
+                                Text("\(lang["flinks.balance.gap"]) : \(d.check.delta.formatted(asCurrency: d.check.currency))")
+                                    .font(.caption).foregroundStyle(.secondary)
+                                Button {
+                                    discrepancyToAdjust = d
+                                } label: {
+                                    Label(lang["flinks.balance.adjust"], systemImage: "equal.circle")
+                                }
+                                .buttonStyle(.borderless)
+                                .padding(.top, 2)
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    } header: {
+                        Text(lang["flinks.balance.section"])
+                    } footer: {
+                        Text(lang["flinks.balance.explain"])
                     }
                 }
 
@@ -86,6 +127,18 @@ struct ConnectedAccountsView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
+
+                #if DEBUG
+                Section {
+                    NavigationLink {
+                        PlaidDebugView()
+                    } label: {
+                        Label("Débogage : données Plaid", systemImage: "ladybug")
+                    }
+                } footer: {
+                    Text("Affiche les soldes bruts renvoyés par Plaid (build debug uniquement).")
+                }
+                #endif
             }
             .navigationTitle(lang["plaid.title"])
             .navigationBarTitleDisplayMode(.inline)
@@ -130,6 +183,18 @@ struct ConnectedAccountsView: View {
                 Button(lang["action.cancel"], role: .cancel) { itemToDisconnect = nil }
             } message: {
                 Text(lang["plaid.disconnect.message"])
+            }
+            .alert(lang["flinks.balance.adjust.confirm.title"],
+                   isPresented: Binding(get: { discrepancyToAdjust != nil },
+                                        set: { if !$0 { discrepancyToAdjust = nil } }),
+                   presenting: discrepancyToAdjust) { d in
+                Button(lang["flinks.balance.adjust"]) { adjust(d) }
+                Button(lang["action.cancel"], role: .cancel) { discrepancyToAdjust = nil }
+            } message: { d in
+                Text(String(format: lang["flinks.balance.adjust.confirm.msg"], d.accountName))
+            }
+            .sheet(isPresented: $showReview) {
+                DuplicateReviewView()
             }
             }
         }
@@ -279,6 +344,16 @@ struct ConnectedAccountsView: View {
                     Text(summary)
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                    if result.reconciled > 0 {
+                        Text("\(result.reconciled) \(lang["flinks.sync.reconciled"])")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                    }
+                    if result.flagged > 0 {
+                        Text("\(result.flagged) \(lang["flinks.sync.review"])")
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(.orange)
+                    }
                 }
             }
         }
@@ -287,8 +362,19 @@ struct ConnectedAccountsView: View {
     private func syncAll() async {
         isSyncing = true
         syncResults = await PlaidSyncEngine.shared.syncAll(context: context)
+        discrepancies = syncResults.flatMap { $0.discrepancies }
         isSyncing = false
         showSyncSummary = true
+    }
+
+    /// Aligns the account balance on the real bank balance (correction transaction
+    /// or opening-balance shift, decided by OFXImportService).
+    private func adjust(_ d: PlaidSyncEngine.BalanceDiscrepancy) {
+        let accounts = (try? context.fetch(FetchDescriptor<Account>())) ?? []
+        guard let account = accounts.first(where: { $0.uuid == d.accountUuid }) else { return }
+        OFXImportService.applyBalanceAdjustment(d.check, account: account, context: context,
+                                                adjustmentLabel: lang["flinks.balance.adjustment.label"])
+        discrepancies.removeAll { $0.id == d.id }
     }
 
     private func accountIcon(type: String) -> String {
@@ -615,10 +701,142 @@ struct AccountMappingView: View {
     }
 
     private func compatibleAccounts(for plaidAcc: PlaidAccountMeta) -> [Account] {
+        // Only propose FinTrack accounts of the same currency — mapping a CAD bank
+        // account onto a USD account would corrupt balances. When Plaid reports no
+        // currency, fall back to no currency filter (best effort).
+        let sameCurrency: (Account) -> Bool = { acc in
+            guard let cur = plaidAcc.currencyCode else { return true }
+            return acc.currency == cur
+        }
         switch plaidAcc.type.lowercased() {
-        case "credit": return fintrackAccounts.filter { $0.type == .credit }
-        case "loan":   return fintrackAccounts.filter { $0.type == .investment || $0.type == .other }
-        default:       return fintrackAccounts.filter { $0.type != .credit }
+        case "credit": return fintrackAccounts.filter { $0.type == .credit && sameCurrency($0) }
+        case "loan":   return fintrackAccounts.filter { ($0.type == .investment || $0.type == .other) && sameCurrency($0) }
+        default:       return fintrackAccounts.filter { $0.type != .credit && sameCurrency($0) }
         }
     }
 }
+#if DEBUG
+// MARK: - Developer: raw Plaid balances
+
+struct PlaidDebugView: View {
+    @Environment(\.modelContext) private var context
+    @State private var plaid = PlaidManager.shared
+    @State private var output: String = ""
+    @State private var loading = false
+    @State private var txOutput: String = ""
+    @State private var txLoading = false
+
+    var body: some View {
+        List {
+            Section {
+                Button {
+                    Task { await fetchAll() }
+                } label: {
+                    HStack {
+                        Label("Récupérer les soldes Plaid", systemImage: "arrow.down.circle")
+                        if loading { Spacer(); ProgressView() }
+                    }
+                }
+                .disabled(loading)
+                Button {
+                    Task { await fetchTransactions() }
+                } label: {
+                    HStack {
+                        Label("Récupérer les transactions", systemImage: "list.bullet.rectangle")
+                        if txLoading { Spacer(); ProgressView() }
+                    }
+                }
+                .disabled(txLoading)
+            } footer: {
+                Text("Sans effet de bord : les transactions sont relues depuis zéro sans avancer le curseur de synchronisation.")
+            }
+            if !output.isEmpty {
+                Section("Soldes (/get_balances)") {
+                    Text(output)
+                        .font(.system(.caption2, design: .monospaced))
+                        .textSelection(.enabled)
+                }
+            }
+            if !txOutput.isEmpty {
+                Section("Transactions (/sync_transactions)") {
+                    Text(txOutput)
+                        .font(.system(.caption2, design: .monospaced))
+                        .textSelection(.enabled)
+                }
+            }
+        }
+        .navigationTitle("Données Plaid")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func fetchAll() async {
+        loading = true
+        defer { loading = false }
+        guard !plaid.connectedItems.isEmpty else {
+            output = "Aucun établissement connecté."
+            return
+        }
+        let accounts = (try? context.fetch(FetchDescriptor<Account>())) ?? []
+        var lines: [String] = []
+        for item in plaid.connectedItems {
+            lines.append("═══ \(item.institutionName) ═══")
+            do {
+                let resp = try await plaid.fetchBalances(for: item)
+                for acc in resp.accounts {
+                    lines.append("• \(acc.name)  [\(acc.type)/\(acc.subtype ?? "—")]")
+                    lines.append("   account_id: \(acc.account_id)")
+                    if let m = acc.mask { lines.append("   mask: ••\(m)") }
+                    lines.append("   current:   \(acc.balances.current.map { String($0) } ?? "nil")")
+                    lines.append("   available: \(acc.balances.available.map { String($0) } ?? "nil")")
+                    lines.append("   limit:     \(acc.balances.limit.map { String($0) } ?? "nil")")
+                    lines.append("   devise:    \(acc.balances.iso_currency_code ?? "nil")")
+                    if let mappedId = item.accounts.first(where: { $0.id == acc.account_id })?.fintrackAccountId,
+                       let ftAcc = accounts.first(where: { $0.uuid == mappedId }) {
+                        lines.append("   → mappé: \(ftAcc.name) — solde app: \(ftAcc.balance)")
+                    } else {
+                        lines.append("   → non mappé")
+                    }
+                    lines.append("")
+                }
+            } catch {
+                lines.append("⚠️ Erreur: \(error)")
+                lines.append("")
+            }
+        }
+        output = lines.joined(separator: "\n")
+    }
+
+    private func fetchTransactions() async {
+        txLoading = true
+        defer { txLoading = false }
+        guard !plaid.connectedItems.isEmpty else {
+            txOutput = "Aucun établissement connecté."
+            return
+        }
+        var lines: [String] = []
+        for item in plaid.connectedItems {
+            lines.append("═══ \(item.institutionName) ═══")
+            do {
+                let txs = try await plaid.debugFetchAllTransactions(for: item)
+                lines.append("\(txs.count) transactions (added, curseur vide)")
+                // Convention Plaid : amount positif = débit (sortie).
+                let byAccount = Dictionary(grouping: txs, by: { $0.account_id })
+                for (accId, group) in byAccount.sorted(by: { $0.key < $1.key }) {
+                    let sum = group.reduce(0.0) { $0 + $1.amount }
+                    lines.append("  …\(accId.suffix(6)) : \(group.count) tx · somme débits \(sum)")
+                }
+                lines.append("")
+                for t in txs.sorted(by: { $0.date > $1.date }) {
+                    let sign = t.amount >= 0 ? "−" : "+"   // +amount Plaid = débit
+                    let pend = t.pending ? "  ⏳" : ""
+                    lines.append("\(t.date)  \(sign)\(abs(t.amount)) \(t.iso_currency_code ?? "?")  \(t.name)\(pend)")
+                }
+            } catch {
+                lines.append("⚠️ Erreur: \(error)")
+            }
+            lines.append("")
+        }
+        txOutput = lines.joined(separator: "\n")
+    }
+}
+#endif

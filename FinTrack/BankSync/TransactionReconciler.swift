@@ -29,11 +29,28 @@ struct IncomingBankTransaction {
 
 enum TransactionReconciler {
 
+    /// One line of detail about what happened to an incoming row — for a rich
+    /// post-sync summary. Value type (no SwiftData refs), safe to hand to the UI.
+    struct ReconcileDetail: Identifiable {
+        enum Kind { case added, adopted, flagged }
+        let id = UUID()
+        let kind: Kind
+        let payee: String
+        let amount: Decimal
+        let isIncome: Bool
+        let date: Date
+        let accountName: String
+        let currency: String
+        let categoryName: String?
+        let matchedManualPayee: String?   // adopted: the manual row it linked to
+    }
+
     struct Outcome {
         let added: Int        // new synced rows with no manual match
         let reconciled: Int   // manual rows auto-linked to a synced row (Option C)
         let flagged: Int      // synced rows flagged as possible duplicates
         let skipped: Int      // already-synced (dedup) or unresolvable account
+        var details: [ReconcileDetail] = []
     }
 
     /// Reconcile a batch of incoming bank transactions against the store:
@@ -76,6 +93,7 @@ enum TransactionReconciler {
         var affected: Set<PersistentIdentifier> = []
 
         var added = 0, reconciled = 0, flagged = 0, skipped = 0
+        var details: [ReconcileDetail] = []
 
         for inc in incoming {
             guard !knownIds.contains(inc.externalId) else { skipped += 1; continue }
@@ -102,6 +120,12 @@ enum TransactionReconciler {
                     knownIds.insert(inc.externalId)
                     if let a = manual.account { affected.insert(a.persistentModelID) }
                     reconciled += 1
+                    details.append(ReconcileDetail(
+                        kind: .adopted, payee: inc.payee ?? inc.bankDescription ?? "—",
+                        amount: inc.amount, isIncome: inc.isIncome, date: inc.date,
+                        accountName: target.name, currency: target.currency,
+                        categoryName: manual.category?.localizedName,
+                        matchedManualPayee: manual.payee ?? manual.category?.localizedName ?? manual.note))
                 }
 
             case .review:
@@ -112,6 +136,11 @@ enum TransactionReconciler {
                 knownIds.insert(inc.externalId)
                 affected.insert(target.persistentModelID)
                 flagged += 1
+                details.append(ReconcileDetail(
+                    kind: .flagged, payee: inc.payee ?? inc.bankDescription ?? "—",
+                    amount: inc.amount, isIncome: inc.isIncome, date: inc.date,
+                    accountName: target.name, currency: target.currency,
+                    categoryName: inc.category?.localizedName, matchedManualPayee: nil))
 
             case .insertNew:
                 let tx = makeRow(inc, target: target)
@@ -119,6 +148,11 @@ enum TransactionReconciler {
                 knownIds.insert(inc.externalId)
                 affected.insert(target.persistentModelID)
                 added += 1
+                details.append(ReconcileDetail(
+                    kind: .added, payee: inc.payee ?? inc.bankDescription ?? "—",
+                    amount: inc.amount, isIncome: inc.isIncome, date: inc.date,
+                    accountName: target.name, currency: target.currency,
+                    categoryName: inc.category?.localizedName, matchedManualPayee: nil))
             }
         }
 
@@ -130,7 +164,7 @@ enum TransactionReconciler {
             AppLogger.persistence.error("TransactionReconciler save failed: \(error, privacy: .private)")
         }
 
-        return Outcome(added: added, reconciled: reconciled, flagged: flagged, skipped: skipped)
+        return Outcome(added: added, reconciled: reconciled, flagged: flagged, skipped: skipped, details: details)
     }
 
     /// Build a fresh synced transaction (no manual match) — reconciled, with the
