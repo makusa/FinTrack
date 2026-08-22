@@ -278,7 +278,17 @@ struct DashboardView: View {
         NavigationStack {
             Group {
                 if accounts.isEmpty { emptyState }
-                else { populated }
+                else {
+                    populated
+                        .coachMarks(tour: "dashboard", steps: [
+                            CoachStep(anchor: "dashboard.balance",
+                                      title: lang["coach.dash.balance.title"],
+                                      message: lang["coach.dash.balance.msg"]),
+                            CoachStep(anchor: "dashboard.accounts",
+                                      title: lang["coach.dash.accounts.title"],
+                                      message: lang["coach.dash.accounts.msg"]),
+                        ])
+                }
             }
             .navigationTitle(lang["dashboard.title"])
             .toolbar {
@@ -380,10 +390,10 @@ struct DashboardView: View {
         } else {
             switch id {
             case .globalBalance:
-                globalBalanceWidget
+                globalBalanceWidget.coachAnchor("dashboard.balance")
 
             case .accountsCarousel:
-                accountsCarouselWidget
+                accountsCarouselWidget.coachAnchor("dashboard.accounts")
 
             case .monthSummary:
                 if !accounts.isEmpty { monthSummaryWidget }

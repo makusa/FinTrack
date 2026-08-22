@@ -14,6 +14,7 @@ enum TransactionEditorMode {
 struct AddEditTransactionView: View {
     @Environment(\.modelContext) private var context
     @Environment(LanguageManager.self) private var lang
+    @Environment(EntitlementManager.self) private var entitlements
     @Environment(\.dismiss) private var dismiss
 
     let mode: TransactionEditorMode
@@ -32,6 +33,8 @@ struct AddEditTransactionView: View {
     @State private var amountText: String = ""
     @State private var selectedAccount: Account?
     @State private var selectedCategory: Category?
+    @State private var suggestedCategory: Category?
+    @State private var suggestTask: Task<Void, Never>?
     @State private var date: Date = .now
     @State private var payee: String = ""
     @State private var note: String = ""
@@ -141,6 +144,7 @@ struct AddEditTransactionView: View {
             typeSection
             currencySection
             accountSection
+            payeeSection
             categorySection
             detailsSection
             statusSection
@@ -185,6 +189,25 @@ struct AddEditTransactionView: View {
             guard !didInitialLoad else { return }
             didInitialLoad = true
             setupInitialValues()
+        }
+        .onChange(of: payee) { scheduleSuggestion() }
+        .onChange(of: type)  { scheduleSuggestion() }
+    }
+
+    /// On-device smart categorisation (paid tiers): suggest a category learned from
+    /// the user's own history, debounced so we don't fetch on every keystroke.
+    private func scheduleSuggestion() {
+        suggestTask?.cancel()
+        guard entitlements.hasPaidTier else { suggestedCategory = nil; return }
+        let currentPayee = payee
+        let currentType = type
+        suggestTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 350_000_000)
+            guard !Task.isCancelled else { return }
+            let sug = SmartCategorizer.suggest(payee: currentPayee, type: currentType, in: context)
+            if !Task.isCancelled {
+                withAnimation(.easeInOut) { suggestedCategory = sug }
+            }
         }
     }
 
@@ -328,6 +351,26 @@ struct AddEditTransactionView: View {
                 }
             }
             .buttonStyle(.plain)
+
+            if selectedCategory == nil, let sug = suggestedCategory {
+                Button {
+                    withAnimation(.easeInOut) { selectedCategory = sug }
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "sparkles").foregroundStyle(.purple)
+                        Text(lang["tx.suggestion"]).foregroundStyle(.secondary)
+                        Text(sug.localizedName)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(Color(hex: sug.colorHex))
+                        Spacer()
+                        Text(lang["action.apply"])
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.blue)
+                    }
+                    .font(.subheadline)
+                }
+                .buttonStyle(.plain)
+            }
         }
     }
 
@@ -353,12 +396,17 @@ struct AddEditTransactionView: View {
         }
     }
 
-    private var detailsSection: some View {
-        Section(lang["label.details"]) {
-            DatePicker(lang["label.date"], selection: $date, displayedComponents: .date)
+    private var payeeSection: some View {
+        Section {
             TextField(type == .income ? lang["tx.payeeIncome"]
                                        : lang["tx.payeeExpense"],
                       text: $payee)
+        }
+    }
+
+    private var detailsSection: some View {
+        Section(lang["label.details"]) {
+            DatePicker(lang["label.date"], selection: $date, displayedComponents: .date)
             TextField(lang["label.note"], text: $note, axis: .vertical)
                 .lineLimit(1...3)
         }

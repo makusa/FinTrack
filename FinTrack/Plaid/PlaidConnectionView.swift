@@ -76,9 +76,18 @@ struct ConnectedAccountsView: View {
 
                 // ── Sync summary ───────────────────────────────────────────
                 if showSyncSummary {
-                    Section(lang["plaid.sync.summary"]) {
+                    Section {
                         ForEach(syncResults, id: \.itemId) { result in
-                            syncResultRow(result)
+                            if result.error == nil && (!result.details.isEmpty || !result.discrepancies.isEmpty
+                                                       || result.modified > 0 || result.removed > 0) {
+                                NavigationLink {
+                                    PlaidSyncDetailView(result: result)
+                                } label: {
+                                    syncResultRow(result)
+                                }
+                            } else {
+                                syncResultRow(result)
+                            }
                         }
                         let toReview = syncResults.reduce(0) { $0 + $1.flagged }
                         if toReview > 0 {
@@ -89,6 +98,10 @@ struct ConnectedAccountsView: View {
                                     .foregroundStyle(.orange)
                             }
                         }
+                    } header: {
+                        Text(lang["plaid.sync.summary"])
+                    } footer: {
+                        Text(lang["plaid.sync.summary.hint"])
                     }
                 }
 
@@ -329,8 +342,7 @@ struct ConnectedAccountsView: View {
     private func syncResultRow(_ result: PlaidSyncEngine.SyncResult) -> some View {
         let inst = plaid.connectedItems.first { $0.id == result.itemId }?.institutionName ?? result.itemId
         let ok = result.error == nil
-        let summary = "+\(result.added) · ~\(result.modified) · -\(result.removed)"
-        HStack {
+        HStack(alignment: .top) {
             Image(systemName: ok ? "checkmark.circle.fill" : "xmark.circle.fill")
                 .foregroundStyle(ok ? .green : .red)
             VStack(alignment: .leading, spacing: 2) {
@@ -341,22 +353,33 @@ struct ConnectedAccountsView: View {
                         .font(.caption)
                         .foregroundStyle(.red)
                 } else {
-                    Text(summary)
+                    Text(neutralSummary(result))
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                    if result.reconciled > 0 {
-                        Text("\(result.reconciled) \(lang["flinks.sync.reconciled"])")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    }
                     if result.flagged > 0 {
-                        Text("\(result.flagged) \(lang["flinks.sync.review"])")
+                        Label("\(result.flagged) \(lang["flinks.sync.review"])", systemImage: "exclamationmark.circle")
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(.orange)
+                    }
+                    if !result.discrepancies.isEmpty {
+                        Label(lang["flinks.balance.section"], systemImage: "exclamationmark.triangle")
                             .font(.caption2.weight(.medium))
                             .foregroundStyle(.orange)
                     }
                 }
             }
         }
+    }
+
+    /// Human-readable count summary: "3 added · 1 reconciled · 1 modified".
+    /// Only non-zero buckets; "needs review" is shown separately in orange.
+    private func neutralSummary(_ result: PlaidSyncEngine.SyncResult) -> String {
+        var parts: [String] = []
+        if result.added > 0      { parts.append("\(result.added) \(lang["plaid.detail.added"].lowercased())") }
+        if result.reconciled > 0 { parts.append("\(result.reconciled) \(lang["flinks.sync.reconciled"])") }
+        if result.modified > 0   { parts.append("\(result.modified) \(lang["plaid.detail.modified"].lowercased())") }
+        if result.removed > 0    { parts.append("\(result.removed) \(lang["plaid.detail.removed"].lowercased())") }
+        return parts.isEmpty ? lang["plaid.detail.empty"] : parts.joined(separator: " · ")
     }
 
     private func syncAll() async {
@@ -840,3 +863,91 @@ struct PlaidDebugView: View {
     }
 }
 #endif
+
+// MARK: - Detailed sync summary
+
+struct PlaidSyncDetailView: View {
+    @Environment(LanguageManager.self) private var lang
+    let result: PlaidSyncEngine.SyncResult
+
+    private var institutionName: String {
+        PlaidManager.shared.connectedItems.first { $0.id == result.itemId }?.institutionName ?? result.itemId
+    }
+    private func rows(_ kind: TransactionReconciler.ReconcileDetail.Kind) -> [TransactionReconciler.ReconcileDetail] {
+        result.details.filter { $0.kind == kind }
+    }
+
+    var body: some View {
+        List {
+            let added   = rows(.added)
+            let adopted = rows(.adopted)
+            let flagged = rows(.flagged)
+
+            if !added.isEmpty {
+                Section("\(lang["plaid.detail.added"]) (\(added.count))") {
+                    ForEach(added) { detailRow($0) }
+                }
+            }
+            if !adopted.isEmpty {
+                Section("\(lang["plaid.detail.adopted"]) (\(adopted.count))") {
+                    ForEach(adopted) { detailRow($0) }
+                }
+            }
+            if !flagged.isEmpty {
+                Section("\(lang["plaid.detail.flagged"]) (\(flagged.count))") {
+                    ForEach(flagged) { detailRow($0) }
+                }
+            }
+            if !result.discrepancies.isEmpty {
+                Section(lang["flinks.balance.section"]) {
+                    ForEach(result.discrepancies) { d in
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(d.accountName).font(.callout.weight(.medium))
+                            Text("\(lang["flinks.balance.gap"]) : \(d.check.delta.formatted(asCurrency: d.check.currency))")
+                                .font(.caption).foregroundStyle(.orange)
+                        }
+                    }
+                }
+            }
+            if result.modified > 0 || result.removed > 0 {
+                Section {
+                    if result.modified > 0 {
+                        LabeledContent(lang["plaid.detail.modified"], value: "\(result.modified)")
+                    }
+                    if result.removed > 0 {
+                        LabeledContent(lang["plaid.detail.removed"], value: "\(result.removed)")
+                    }
+                }
+            }
+            if result.details.isEmpty && result.discrepancies.isEmpty
+                && result.modified == 0 && result.removed == 0 {
+                ContentUnavailableView(lang["plaid.detail.empty"], systemImage: "checkmark.circle")
+            }
+        }
+        .navigationTitle(institutionName)
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    @ViewBuilder
+    private func detailRow(_ d: TransactionReconciler.ReconcileDetail) -> some View {
+        HStack(alignment: .top) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(d.payee).font(.callout).lineLimit(1)
+                HStack(spacing: 4) {
+                    Text(d.date.formatted(date: .abbreviated, time: .omitted))
+                    if let cat = d.categoryName { Text("· \(cat)") }
+                    Text("· \(d.accountName)")
+                }
+                .font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+                if let manual = d.matchedManualPayee {
+                    Label(String(format: lang["plaid.detail.linkedTo"], manual), systemImage: "link")
+                        .font(.caption2).foregroundStyle(.blue).lineLimit(1)
+                }
+            }
+            Spacer()
+            Text((d.isIncome ? "+" : "−") + d.amount.formatted(asCurrency: d.currency))
+                .font(.callout.weight(.medium))
+                .foregroundStyle(d.isIncome ? .green : .primary)
+        }
+    }
+}

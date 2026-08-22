@@ -20,6 +20,7 @@ struct SettingsView: View {
     @Query(sort: \Account.createdAt) private var allAccounts: [Account]
 
     @State private var confirmReset = false
+    @State private var showGuidesResetAlert = false
 
     var body: some View {
         NavigationStack {
@@ -49,6 +50,12 @@ struct SettingsView: View {
                 Section(lang["settings.about"]) {
                     aboutRows
                     statsRows
+                    Button {
+                        OnboardingManager.shared.resetAll()
+                        showGuidesResetAlert = true
+                    } label: {
+                        Label(lang["settings.guides"], systemImage: "questionmark.circle")
+                    }
                 }
 
                 dangerZoneSection
@@ -62,6 +69,11 @@ struct SettingsView: View {
                 Button("OK", role: .cancel) {}
             } message: {
                 Text(lang["settings.cloudSync.restart.body"])
+            }
+            .alert(lang["settings.guides"], isPresented: $showGuidesResetAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(lang["settings.guides.footer"])
             }
             .confirmationDialog(
                 lang["settings.resetPrompt"],
