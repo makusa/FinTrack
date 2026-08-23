@@ -461,9 +461,20 @@ struct AddEditRecurringTransactionView: View {
             hasEndDate = true
             endDate = end
         }
-        selectedAccount = rule.account
-        currency = rule.account?.currency ?? Currencies.default
-        selectedCategory = rule.category
+        // Guard against a Picker selection that isn't in its options (archived
+        // account, hidden/deleted category) — SwiftUI can hang on out-of-options
+        // selections. Fall back to a valid, pickable value.
+        if let acc = rule.account, accounts.contains(where: { $0.persistentModelID == acc.persistentModelID }) {
+            selectedAccount = acc
+        } else {
+            selectedAccount = rule.account.flatMap { a in accounts.first { $0.currency == a.currency } } ?? accounts.first
+        }
+        currency = selectedAccount?.currency ?? Currencies.default
+        if let cat = rule.category, categories.contains(where: { $0.persistentModelID == cat.persistentModelID }) {
+            selectedCategory = cat
+        } else {
+            selectedCategory = nil
+        }
         payee = rule.payee ?? ""
         note = rule.note
         isActive = rule.isActive

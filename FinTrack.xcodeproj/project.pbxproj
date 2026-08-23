@@ -94,6 +94,7 @@
 		9CFCDC8334BB2628623BFD6D /* AddEditAccountView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AA91C436EA64527214D120E /* AddEditAccountView.swift */; };
 		9E7BA0CD12BED53BC9288C35 /* LoanDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4466ADA3E562726D19C50E11 /* LoanDetailView.swift */; };
 		A089D314380A15BDBC995CB0 /* SmartCategorizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B5C07CACAE093CFF414A177 /* SmartCategorizer.swift */; };
+		A99132E14ADB6A950508CD59 /* RecurrenceDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C5691534CF3D0C1BADB2E41 /* RecurrenceDetector.swift */; };
 		AA7DFD7A9F8BAD11D29FC5F7 /* AddCreditLineEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49EB0D66462A9846880A3D4C /* AddCreditLineEntryView.swift */; };
 		ABB383DEFBB03927D8D0FF7A /* BankPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1CF8D38D87648C662CD5F789 /* BankPicker.swift */; };
 		AD2F13F58B7E62B3FDF84F2C /* OFXImportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2051E8E3930FB97604AEC665 /* OFXImportView.swift */; };
@@ -230,6 +231,7 @@
 		5AA91C436EA64527214D120E /* AddEditAccountView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditAccountView.swift; sourceTree = "<group>"; };
 		5B5C07CACAE093CFF414A177 /* SmartCategorizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmartCategorizer.swift; sourceTree = "<group>"; };
 		5B8833492251E28C1FC5943F /* AddEditBudgetView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditBudgetView.swift; sourceTree = "<group>"; };
+		5C5691534CF3D0C1BADB2E41 /* RecurrenceDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecurrenceDetector.swift; sourceTree = "<group>"; };
 		5DDEB27E84C04561F15A5C58 /* CreditLineDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditLineDetailView.swift; sourceTree = "<group>"; };
 		5FA936A3AE8D3726969447AB /* TransactionReconciler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionReconciler.swift; sourceTree = "<group>"; };
 		606C137CA61A6F18BD8DE634 /* RegisteredModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisteredModels.swift; sourceTree = "<group>"; };
@@ -530,6 +532,7 @@
 			children = (
 				0B6EF324C8C0FF2482D6833D /* ReceiptScanner.swift */,
 				B3ED7B46ECAFCE2F20C8A5E9 /* ReceiptStore.swift */,
+				5C5691534CF3D0C1BADB2E41 /* RecurrenceDetector.swift */,
 				96C8B2A3554DF0F749ABBBB6 /* ScanReceiptView.swift */,
 				5B5C07CACAE093CFF414A177 /* SmartCategorizer.swift */,
 			);
@@ -657,7 +660,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 2600;
+				LastUpgradeCheck = 2660;
 				TargetAttributes = {
 					361AE69D7682BE959C6DD237 = {
 						DevelopmentTeam = 38N594NGP9;
@@ -809,6 +812,7 @@
 				8CA05281D4BED4A671F90656 /* RESPModels.swift in Sources */,
 				B656AFF1675CA577AE4995F1 /* ReceiptScanner.swift in Sources */,
 				9A8CD12885BA271B205A1572 /* ReceiptStore.swift in Sources */,
+				A99132E14ADB6A950508CD59 /* RecurrenceDetector.swift in Sources */,
 				6F557C03EC16CE672E209ECF /* RecurrencesView.swift in Sources */,
 				6E037B33C990E82581CD6827 /* RecurringTransaction.swift in Sources */,
 				22BB8A042D4078FF582B4766 /* RecurringTransactionManager.swift in Sources */,

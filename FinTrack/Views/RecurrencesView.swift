@@ -23,6 +23,9 @@ struct RecurrencesView: View {
     @State private var pendingDeleteRule: RecurringTransaction?
     @State private var showReactivateConfirm = false
     @State private var pendingReactivateRule: RecurringTransaction?
+    @State private var suggestions: [RecurrenceDetector.Suggestion] = []
+    @State private var dismissedSuggestions: Set<String> = []
+    private let dismissedKey = "recurring.dismissedSuggestions"
 
     /// True when a free-tier user has reached the 5-rule cap.
     private var isAtFreeLimit: Bool {
@@ -38,14 +41,15 @@ struct RecurrencesView: View {
 
     var body: some View {
         List {
-            if activeRules.isEmpty && inactiveRules.isEmpty {
+            suggestionsSection
+            if activeRules.isEmpty && inactiveRules.isEmpty && suggestions.isEmpty {
                 emptyState
             } else {
                 if !activeRules.isEmpty {
                     Section(lang.f("recurring.active", activeRules.count)) {
                         ForEach(activeRules) { rule in
                             NavigationLink {
-                                AddEditRecurringTransactionView(mode: .edit(rule))
+                                LazyView(AddEditRecurringTransactionView(mode: .edit(rule)))
                             } label: {
                                 RecurringTransactionRow(rule: rule)
                             }
@@ -88,7 +92,7 @@ struct RecurrencesView: View {
                         DisclosureGroup(isExpanded: $showInactive) {
                             ForEach(inactiveRules) { rule in
                                 NavigationLink {
-                                    AddEditRecurringTransactionView(mode: .edit(rule))
+                                    LazyView(AddEditRecurringTransactionView(mode: .edit(rule)))
                                 } label: {
                                     RecurringTransactionRow(rule: rule)
                                         .opacity(0.5)
@@ -117,6 +121,7 @@ struct RecurrencesView: View {
             }
         }
         .navigationTitle(lang["recurring.title"])
+        .onAppear { refreshSuggestions() }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
@@ -171,6 +176,90 @@ struct RecurrencesView: View {
     }
 
     // MARK: - Free tier cap banner
+
+    // MARK: - Suggestions (on-device recurrence detection)
+
+    @ViewBuilder
+    private var suggestionsSection: some View {
+        if !suggestions.isEmpty {
+            Section {
+                ForEach(suggestions) { s in
+                    suggestionRow(s)
+                }
+            } header: {
+                Label(lang["recurring.suggestions"], systemImage: "sparkles")
+            } footer: {
+                Text(lang["recurring.suggestions.footer"])
+            }
+        }
+    }
+
+    private func suggestionRow(_ s: RecurrenceDetector.Suggestion) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 12) {
+                Image(systemName: s.frequency.iconSystemName)
+                    .foregroundStyle(.purple)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(s.payee).font(.callout.weight(.medium)).lineLimit(1)
+                    Text("\(s.amount.formatted(asCurrency: s.currency)) · \(s.frequency.label)")
+                        .font(.caption).foregroundStyle(.secondary)
+                    Text(lang.f("recurring.suggestion.detected", s.count))
+                        .font(.caption2).foregroundStyle(.tertiary)
+                }
+                Spacer()
+            }
+            HStack {
+                Button {
+                    createRule(from: s)
+                } label: {
+                    Text(lang["action.create"]).frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+                Button {
+                    ignore(s)
+                } label: {
+                    Text(lang["action.ignore"]).frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+            }
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func refreshSuggestions() {
+        guard entitlements.hasPaidTier else { suggestions = []; return }
+        dismissedSuggestions = Set(UserDefaults.standard.stringArray(forKey: dismissedKey) ?? [])
+        suggestions = RecurrenceDetector.detect(in: context, dismissed: dismissedSuggestions)
+    }
+
+    private func createRule(from s: RecurrenceDetector.Suggestion) {
+        let rule = RecurringTransaction(
+            amount: s.amount,
+            type: s.type,
+            frequency: s.frequency,
+            startDate: s.lastDate,
+            account: s.account,
+            category: s.category,
+            payee: s.payee
+        )
+        // Advance the next due date into the future — past occurrences already exist
+        // as real transactions, so we must not regenerate them.
+        var next = s.frequency.nextDate(after: s.lastDate)
+        while next < Date.now { next = s.frequency.nextDate(after: next) }
+        rule.nextDueDate = next
+        context.insert(rule)
+        try? context.save()
+        suggestions.removeAll { $0.id == s.id }
+        rescheduleNotifications()
+    }
+
+    private func ignore(_ s: RecurrenceDetector.Suggestion) {
+        dismissedSuggestions.insert(s.id)
+        UserDefaults.standard.set(Array(dismissedSuggestions), forKey: dismissedKey)
+        suggestions.removeAll { $0.id == s.id }
+    }
 
     private var freeCapBanner: some View {
         HStack(spacing: 12) {
@@ -362,4 +451,16 @@ struct RecurringTransactionRow: View {
             .modelContainer(for: [Account.self, Transaction.self, Category.self,
                                    RecurringTransaction.self], inMemory: true)
     }
+}
+
+// MARK: - Lazy navigation destination
+
+/// Defers building `Content` until this view is actually rendered. Wrapping a heavy
+/// NavigationLink destination in `LazyView` stops the parent List from resolving the
+/// destination's (very deep) view type eagerly at render time — which was freezing
+/// the recurrences list the moment a first rule (and thus a first link) appeared.
+struct LazyView<Content: View>: View {
+    private let build: () -> Content
+    init(_ build: @autoclosure @escaping () -> Content) { self.build = build }
+    var body: Content { build() }
 }
