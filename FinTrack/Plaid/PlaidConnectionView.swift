@@ -386,6 +386,10 @@ struct ConnectedAccountsView: View {
         isSyncing = true
         syncResults = await PlaidSyncEngine.shared.syncAll(context: context)
         discrepancies = syncResults.flatMap { $0.discrepancies }
+        // Imported transactions may reveal a recurring pattern → in-app notification.
+        if EntitlementManager.shared.hasPaidTier {
+            AppNotificationCenter.refreshRecurrenceNotifications(in: context)
+        }
         isSyncing = false
         showSyncSummary = true
     }

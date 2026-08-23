@@ -40,7 +40,8 @@ struct FinTrackApp: App {
                                  SavingsProject.self, Budget.self,
                                  CreditCardProfile.self,
                                  RegisteredAccountProfile.self, RegisteredRoomPlan.self,
-                                 RESPProfile.self, RESPContribution.self])
+                                 RESPProfile.self, RESPContribution.self,
+                                 AppNotification.self])
 
         let cloudSyncEnabled = UserDefaults.standard.bool(forKey: "fintrack.cloudSyncEnabled")
 
@@ -170,6 +171,14 @@ struct FinTrackApp: App {
         RecurringTransactionManager.applyPending(context: modelContainer.mainContext)
         LoanPrepaymentManager.applyPending(context: modelContainer.mainContext)
         CreditLineInterestManager.applyPending(context: modelContainer.mainContext)
+
+        // Continuous on-device recurrence detection (paid tiers): surface any new
+        // suggestions in the in-app notification center. Deferred so it doesn't slow
+        // launch; deduped so relaunching never repeats a notification.
+        Task { @MainActor in
+            guard EntitlementManager.shared.hasPaidTier else { return }
+            AppNotificationCenter.refreshRecurrenceNotifications(in: modelContainer.mainContext)
+        }
     }
 
     /// Distinct ISO codes already used by any currency-bearing model. Used once

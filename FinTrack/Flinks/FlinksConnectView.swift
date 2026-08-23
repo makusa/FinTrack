@@ -206,6 +206,10 @@ struct BankSyncView: View {
         manager.isSyncing = true
         defer { manager.isSyncing = false }
         let results = await FlinksSyncEngine.shared.syncAll(context: context)
+        // Imported transactions may reveal a recurring pattern → in-app notification.
+        if EntitlementManager.shared.hasPaidTier {
+            AppNotificationCenter.refreshRecurrenceNotifications(in: context)
+        }
         let added = results.reduce(0) { $0 + $1.added }
         let reconciled = results.reduce(0) { $0 + $1.reconciled }
         let flagged = results.reduce(0) { $0 + $1.flagged }

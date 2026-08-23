@@ -601,6 +601,13 @@ struct AddEditTransactionView: View {
             dismiss()
             let ctx = context
             Task { await NotificationManager.shared.scheduleAll(context: ctx) }
+            // On-device recurrence detection → in-app notifications (paid tiers):
+            // a new transaction may complete a recurring pattern worth surfacing.
+            if entitlements.hasPaidTier {
+                Task { @MainActor in
+                    AppNotificationCenter.refreshRecurrenceNotifications(in: ctx)
+                }
+            }
         } catch {
             AppLogger.persistence.error("AddEditTransactionView save failed: \(error, privacy: .private)")
         }

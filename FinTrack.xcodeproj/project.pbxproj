@@ -41,6 +41,7 @@
 		41454B7DCF9230752D3EECCA /* RESPGrant.swift in Sources */ = {isa = PBXBuildFile; fileRef = A82B3DCEE75A144D9012217F /* RESPGrant.swift */; };
 		41FB72C571163C59D66A1D19 /* UpcomingTransfersWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA4220ADE1CE0B8E4A3C09D5 /* UpcomingTransfersWidget.swift */; };
 		435481DA3242E1DF4920732E /* LockScreenView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 488CC86C4B8E1591EEA99D01 /* LockScreenView.swift */; };
+		4404C09AD729EE968DDCEF1E /* AppNotification.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5A5135961AD78832408AD8E /* AppNotification.swift */; };
 		471D6F4D3E42D9DB98175919 /* BudgetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 207EA31CC288268AF7C04C87 /* BudgetDetailView.swift */; };
 		499FA8997EFD5F99AB992D32 /* OFXImportMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85DDEEAE12D6DB1A9D5C7F47 /* OFXImportMapper.swift */; };
 		49ADF077E7F8CC48F81428EC /* RegisteredRoom.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F99E8950A3172F5EC30E943 /* RegisteredRoom.swift */; };
@@ -55,6 +56,7 @@
 		64D3CB28CEAC3B1F014AA483 /* PlaidManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D1F885CE490AC47AB21A204 /* PlaidManager.swift */; };
 		67F8D13B1F8F3FF40DFB6143 /* SecuritySettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11560DDA34E50EFE06CF757A /* SecuritySettingsView.swift */; };
 		69378E4AEA6481AB62DCEC00 /* NetWorthWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = A8149EFC3235A7CEB256AC31 /* NetWorthWidget.swift */; };
+		693DCED4837D098BA3E7DCCF /* NotificationsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62C22F180229AD71EE5C9721 /* NotificationsView.swift */; };
 		69FB5ECFAC1B849CB1EEAA7A /* TransactionStatusManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7912B21D6B269E72FF16FF3 /* TransactionStatusManager.swift */; };
 		6AAE1E39F450F4105E684CE3 /* Budget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01D518134BA3B7424747887A /* Budget.swift */; };
 		6D2913EF9D1E6FC93EDD4478 /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56B856841A3233981584E382 /* KeychainHelper.swift */; };
@@ -236,6 +238,7 @@
 		5FA936A3AE8D3726969447AB /* TransactionReconciler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionReconciler.swift; sourceTree = "<group>"; };
 		606C137CA61A6F18BD8DE634 /* RegisteredModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisteredModels.swift; sourceTree = "<group>"; };
 		619E4BA50FD00BEA578CF0AA /* CloudDataProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudDataProbe.swift; sourceTree = "<group>"; };
+		62C22F180229AD71EE5C9721 /* NotificationsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsView.swift; sourceTree = "<group>"; };
 		630EC9B7CC2F26B3FB2ADDD2 /* FlinksManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlinksManager.swift; sourceTree = "<group>"; };
 		67FAEBACAD08ED3AFEEB2279 /* AccountsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountsView.swift; sourceTree = "<group>"; };
 		6ADBEE81E0BB4E1DD2658023 /* CSVMappingStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CSVMappingStore.swift; sourceTree = "<group>"; };
@@ -309,6 +312,7 @@
 		F1829FFD6EB0076039DC19BA /* Transaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Transaction.swift; sourceTree = "<group>"; };
 		F262FBA26B15D2C4597BBD7C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		F32B9E3CEF39A89575D3FD0F /* CreditLinesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CreditLinesView.swift; sourceTree = "<group>"; };
+		F5A5135961AD78832408AD8E /* AppNotification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppNotification.swift; sourceTree = "<group>"; };
 		FA19A380ED381C3B8F4A0057 /* AddEditLoanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditLoanView.swift; sourceTree = "<group>"; };
 		FA75C9EEFB489048F50342E4 /* FinTrackApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinTrackApp.swift; sourceTree = "<group>"; };
 		FC11FB8F7C0114F4001D83D9 /* PlaidSyncEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaidSyncEngine.swift; sourceTree = "<group>"; };
@@ -415,6 +419,7 @@
 				4C6C088621B9474C790DD73E /* LoansView.swift */,
 				D6730631F84261829C39520A /* ManageHubView.swift */,
 				36FF1DDB2D01FAA6B01A0A05 /* NotificationSettingsView.swift */,
+				62C22F180229AD71EE5C9721 /* NotificationsView.swift */,
 				79879028C8F8BC32BD5A8523 /* RecurrencesView.swift */,
 				D7FDFD2AE95DDEA5E20C5539 /* RegisteredAccountsView.swift */,
 				EA9DB9D6C2528C42A23DC965 /* RegisteredRoomPlanView.swift */,
@@ -553,6 +558,7 @@
 			isa = PBXGroup;
 			children = (
 				7F69296D8AA5AFFC56CE2664 /* Account.swift */,
+				F5A5135961AD78832408AD8E /* AppNotification.swift */,
 				01D518134BA3B7424747887A /* Budget.swift */,
 				F053C63C61980B18AA6263E4 /* Category.swift */,
 				09C6EE3A2D897F6EDFD45CDD /* CreditCardProfile.swift */,
@@ -660,7 +666,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 2660;
+				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					361AE69D7682BE959C6DD237 = {
 						DevelopmentTeam = 38N594NGP9;
@@ -737,6 +743,7 @@
 				823C8A5B06F5F888090233F7 /* AnalyticsDashboardSection.swift in Sources */,
 				EC36CC2E241DA757D690C24D /* AppLockManager.swift in Sources */,
 				7E38E29A5B5FBC0047FAEC02 /* AppLogger.swift in Sources */,
+				4404C09AD729EE968DDCEF1E /* AppNotification.swift in Sources */,
 				21AA1302B7738A6C9CA2D1E6 /* BalanceCard.swift in Sources */,
 				C75375BB13EBA078B944DBF3 /* BankDirectory.swift in Sources */,
 				ABB383DEFBB03927D8D0FF7A /* BankPicker.swift in Sources */,
@@ -793,6 +800,7 @@
 				69378E4AEA6481AB62DCEC00 /* NetWorthWidget.swift in Sources */,
 				E52A94E232681D1D5BFCFBFB /* NotificationManager.swift in Sources */,
 				3E5310FAD56F93B401C91D82 /* NotificationSettingsView.swift in Sources */,
+				693DCED4837D098BA3E7DCCF /* NotificationsView.swift in Sources */,
 				0A1D237716F98FE3EE1E7644 /* OFXAccountMatcher.swift in Sources */,
 				499FA8997EFD5F99AB992D32 /* OFXImportMapper.swift in Sources */,
 				37752CAB58A15BEB36DE0DCF /* OFXImportService.swift in Sources */,

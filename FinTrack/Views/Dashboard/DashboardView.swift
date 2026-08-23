@@ -62,9 +62,14 @@ struct DashboardView: View {
            sort: \Transaction.date, order: .forward)
     private var futureTransferExpenses: [Transaction]
 
+    @Query(filter: #Predicate<AppNotification> { !$0.isRead })
+    private var unreadNotifications: [AppNotification]
+
     @State private var config           = DashboardConfigManager.shared
     @State private var showAddTransaction = false
     @State private var showScanReceipt    = false
+    @State private var showNotifications  = false
+    @State private var pendingRecurringDeepLink = false
     @State private var showAddAccount     = false
     @State private var showAddTransfer    = false
     @State private var showLibrary        = false
@@ -301,6 +306,15 @@ struct DashboardView: View {
                             .font(.body)
                     }
                 }
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        showNotifications = true
+                    } label: {
+                        Image(systemName: unreadNotifications.isEmpty ? "bell" : "bell.badge.fill")
+                            .symbolRenderingMode(.multicolor)
+                            .font(.body)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Menu {
                         Button { showAddTransaction = true } label: {
@@ -322,6 +336,17 @@ struct DashboardView: View {
             }
             .sheet(isPresented: $showAddTransaction) {
                 NavigationStack { AddEditTransactionView(mode: .create) }
+            }
+            .sheet(isPresented: $showNotifications, onDismiss: {
+                // Fire the deep link only after the bell has fully closed, so the
+                // tab switch + navigation to Recurring aren't swallowed by the sheet.
+                if pendingRecurringDeepLink {
+                    pendingRecurringDeepLink = false
+                    NotificationCenter.default.post(name: .fintrackDeepLink, object: nil,
+                                                    userInfo: ["tab": 3, "section": "recurring"])
+                }
+            }) {
+                NotificationsView(onNavigateToRecurrences: { pendingRecurringDeepLink = true })
             }
             .sheet(isPresented: $showScanReceipt) { ScanReceiptView() }
             .sheet(isPresented: $showAddTransfer) { AddTransferView() }
