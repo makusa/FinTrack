@@ -60,14 +60,18 @@ final class PlaidSyncEngine {
             // ── Added → shared reconciler (dedup + Option-C adoption + review flag),
             //    the same pipeline as Flinks. Category is resolved here and passed
             //    through so auto-categorisation is preserved.
+            // Build the learned-category index ONCE for the whole batch.
+            let catModel = SmartCategorizer.buildModel(in: context)
             var incoming: [IncomingBankTransaction] = []
             for plaidTx in response.added {
                 guard let account = resolveAccount(plaidAccountId: plaidTx.account_id,
                                                    item: item, context: context) else { continue }
                 let type: TransactionType = plaidTx.amount > 0 ? .expense : .income
-                let category = matchCategory(plaidCategories: plaidTx.category ?? [],
-                                             type: type, context: context)
                 let payee = plaidTx.merchant_name ?? plaidTx.name
+                // Prefer what the user usually does with this merchant; fall back to
+                // Plaid's category keywords when the merchant is unknown.
+                let category = catModel.suggest(payee: payee, type: type)
+                    ?? matchCategory(plaidCategories: plaidTx.category ?? [], type: type, context: context)
                 incoming.append(IncomingBankTransaction(
                     externalId: plaidTx.transaction_id,
                     accountKey: account.uuid,
