@@ -89,13 +89,8 @@ struct ManageHubView: View {
                 default:            EmptyView()
                 }
             }
-            .onChange(of: deepLink) { _, section in
-                guard !section.isEmpty else { return }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
-                    handleDeepLink(section)
-                    deepLink = ""
-                }
-            }
+            .onChange(of: deepLink) { _, _ in processDeepLink() }
+            .onAppear { processDeepLink() }
             .fileExporter(
                 isPresented: $showExporter,
                 document: exportDocument,
@@ -109,6 +104,19 @@ struct ManageHubView: View {
                     AppLogger.export.error("CSV export failed: \(error, privacy: .private)")
                 }
             }
+        }
+    }
+
+    /// Consume the pending deep link (immediately, so onChange/onAppear can't
+    /// double-fire), then navigate once the NavigationStack is ready. Handling it
+    /// in onAppear too covers the case where this tab wasn't mounted when the deep
+    /// link was set (onChange alone misses that).
+    private func processDeepLink() {
+        let section = deepLink
+        guard !section.isEmpty else { return }
+        deepLink = ""
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            handleDeepLink(section)
         }
     }
 
