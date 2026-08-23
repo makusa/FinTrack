@@ -203,6 +203,8 @@ struct SubscriptionView: View {
             FeatureRow(name: lang["entitlement.table.dashboard"], free: false, pro: true, plaid: true),
             FeatureRow(name: lang["entitlement.table.import"], free: false, pro: true, plaid: true),
             FeatureRow(name: lang["entitlement.table.categorization"], free: false, pro: true, plaid: true),
+            FeatureRow(name: lang["entitlement.table.receipts"], free: false, pro: true, plaid: true),
+            FeatureRow(name: lang["entitlement.table.recurringDetection"], free: false, pro: true, plaid: true),
             FeatureRow(name: lang["entitlement.table.icloud"], free: false, pro: true, plaid: true),
             FeatureRow(name: lang["entitlement.table.plaid"], free: false, pro: false, plaid: true),
         ]

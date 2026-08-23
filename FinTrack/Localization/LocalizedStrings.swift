@@ -973,6 +973,8 @@ enum LocalizedStrings {
         "entitlement.table.export":     ["fr": "Export CSV",                        "en": "CSV export",                     "es": "Exportar CSV",                  "pt": "Exportar CSV"],
         "entitlement.table.import":     ["fr": "Import de relevés (OFX/CSV/PDF)", "en": "Statement import (OFX/CSV/PDF)", "es": "Importar extractos (OFX/CSV/PDF)", "pt": "Importar extratos (OFX/CSV/PDF)"],
         "entitlement.table.categorization": ["fr": "Catégorisation automatique", "en": "Automatic categorization", "es": "Categorización automática", "pt": "Categorização automática"],
+        "entitlement.table.receipts":   ["fr": "Scan de reçus (OCR)",           "en": "Receipt scanning (OCR)",         "es": "Escaneo de recibos (OCR)",      "pt": "Digitalização de recibos (OCR)"],
+        "entitlement.table.recurringDetection": ["fr": "Détection auto. de récurrences", "en": "Automatic recurrence detection", "es": "Detección auto. de recurrencias", "pt": "Detecção auto. de recorrências"],
         "entitlement.table.icloud":     ["fr": "Synchronisation iCloud", "en": "iCloud sync", "es": "Sincronización iCloud", "pt": "Sincronização iCloud"],
         "entitlement.table.plaid":      ["fr": "Sync bancaire auto",                "en": "Auto bank sync",                 "es": "Sincronización bancaria auto",  "pt": "Sincronização bancária auto"],
         "action.ok":                    ["fr": "OK",                                "en": "OK",                             "es": "OK",                            "pt": "OK"],
