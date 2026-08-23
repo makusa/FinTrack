@@ -95,6 +95,7 @@ schemes:
         FinTrack: all
     run:
       config: Debug
+      storeKitConfiguration: FinTrack.storekit
       commandLineArguments:
         "-com.apple.CoreData.Logging.stderr 1": true
         "-com.apple.CoreData.CloudKitDebug 1": true

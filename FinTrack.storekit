@@ -1,0 +1,76 @@
+{
+  "appPolicies" : {
+    "eula" : "",
+    "policies" : [ ]
+  },
+  "identifier" : "3D40AD0E-EB6D-4DFB-9A28-74C869DCEEDF",
+  "nonRenewingSubscriptions" : [ ],
+  "products" : [
+    {
+      "displayPrice" : "28.99",
+      "familyShareable" : false,
+      "internalID" : "19DEB6B6-8BA8-45FC-905E-A6B17F48D709",
+      "localizations" : [
+        {
+          "description" : "Achat unique : tout illimité, analytiques, export CSV et taux de change.",
+          "displayName" : "Épargne",
+          "locale" : "fr_CA"
+        },
+        {
+          "description" : "One-time purchase: everything unlimited, analytics, CSV export and exchange rates.",
+          "displayName" : "Épargne",
+          "locale" : "en_US"
+        }
+      ],
+      "productID" : "ca.regis.fintrack.epargne",
+      "referenceName" : "Épargne (achat unique)",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_developerTeamID" : "38N594NGP9",
+    "_failTransactionsEnabled" : false,
+    "_locale" : "fr_CA",
+    "_storefront" : "CAN",
+    "_storeKitErrors" : [ ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "9643E3F8-4B53-49D0-B61F-97E2030A6B22",
+      "localizations" : [ ],
+      "name" : "FinTrack",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [ ],
+          "codeOffers" : [ ],
+          "displayPrice" : "6.49",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "B6C667AD-2189-45BE-A0E6-603E2BE98003",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "Abonnement : tout Épargne plus la synchronisation bancaire automatique.",
+              "displayName" : "Placement",
+              "locale" : "fr_CA"
+            },
+            {
+              "description" : "Subscription: everything in Épargne plus automatic bank sync.",
+              "displayName" : "Placement",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "ca.regis.fintrack.placement",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Placement (abonnement mensuel)",
+          "subscriptionGroupID" : "9643E3F8-4B53-49D0-B61F-97E2030A6B22",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}
