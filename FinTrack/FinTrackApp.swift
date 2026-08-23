@@ -78,11 +78,23 @@ struct FinTrackApp: App {
 
         let modelContainer: ModelContainer
 
-        if cloudSyncEnabled,
-           let cloud = try? ModelContainer(
-               for: baseSchema,
-               configurations: [ModelConfiguration(schema: baseSchema,
-                                                   cloudKitDatabase: .private("iCloud.ca.regis.fintrack"))]) {
+        // Try CloudKit first if enabled — capture the REAL init error. A plain
+        // `try?` would swallow it, hiding the actual CloudKit failure reason and
+        // recording only a generic placeholder (which is what happened here).
+        var cloudContainer: ModelContainer? = nil
+        var cloudInitError: Error? = nil
+        if cloudSyncEnabled {
+            do {
+                cloudContainer = try ModelContainer(
+                    for: baseSchema,
+                    configurations: [ModelConfiguration(schema: baseSchema,
+                                                       cloudKitDatabase: .private("iCloud.ca.regis.fintrack"))])
+            } catch {
+                cloudInitError = error
+            }
+        }
+
+        if let cloud = cloudContainer {
             modelContainer = cloud
             UserDefaults.standard.set("cloud", forKey: "fintrack.activeStoreMode")
             UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.lastError")
@@ -96,7 +108,7 @@ struct FinTrackApp: App {
             modelContainer = local
             UserDefaults.standard.set("local", forKey: "fintrack.activeStoreMode")
             if cloudSyncEnabled {
-                recordCloudFailure(NSError(domain: "FinTrack", code: 1,
+                recordCloudFailure(cloudInitError ?? NSError(domain: "FinTrack", code: 1,
                                            userInfo: [NSLocalizedDescriptionKey: "CloudKit container init failed"]))
             }
             AppLogger.persistence.info("Store started: local")

@@ -101,8 +101,15 @@ final class Budget {
 
     /// Empty = applies to ALL expense categories (global spending budget).
     /// Otherwise the budget tracks expenses in ANY of these categories (many-to-many).
+    /// Stored optional because CloudKit requires all relationships to be optional;
+    /// use `categories` below, which the rest of the app treats as a plain [Category].
     @Relationship(deleteRule: .nullify, inverse: \Category.budgets)
-    var categories: [Category] = []
+    var categoriesStore: [Category]? = []
+
+    var categories: [Category] {
+        get { categoriesStore ?? [] }
+        set { categoriesStore = newValue }
+    }
 
     var period: BudgetPeriod {
         get { BudgetPeriod(rawValue: periodRaw) ?? .monthly }
@@ -132,7 +139,7 @@ final class Budget {
         self.periodRaw     = period.rawValue
         self.colorHex      = colorHex
         self.iconSystemName = iconSystemName
-        self.categories    = categories
+        self.categoriesStore = categories
         self.notes         = notes
         self.isActive      = true
         self.createdAt     = .now
