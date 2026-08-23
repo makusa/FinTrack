@@ -64,6 +64,7 @@ struct DashboardView: View {
 
     @State private var config           = DashboardConfigManager.shared
     @State private var showAddTransaction = false
+    @State private var showScanReceipt    = false
     @State private var showAddAccount     = false
     @State private var showAddTransfer    = false
     @State private var showLibrary        = false
@@ -308,6 +309,11 @@ struct DashboardView: View {
                         Button { showAddTransfer = true } label: {
                             Label(lang["transfer.create"], systemImage: "arrow.left.arrow.right")
                         }
+                        if entitlements.hasPaidTier {
+                            Button { showScanReceipt = true } label: {
+                                Label(lang["scan.title"], systemImage: "doc.text.viewfinder")
+                            }
+                        }
                     } label: {
                         Image(systemName: "plus.circle.fill").font(.title3)
                     }
@@ -317,6 +323,7 @@ struct DashboardView: View {
             .sheet(isPresented: $showAddTransaction) {
                 NavigationStack { AddEditTransactionView(mode: .create) }
             }
+            .sheet(isPresented: $showScanReceipt) { ScanReceiptView() }
             .sheet(isPresented: $showAddTransfer) { AddTransferView() }
             .sheet(isPresented: $showAddAccount)   { AddEditAccountView(mode: .create) }
             .sheet(isPresented: $showLibrary)      { DashboardLibraryView() }

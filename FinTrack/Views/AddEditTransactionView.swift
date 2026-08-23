@@ -5,10 +5,20 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 
 enum TransactionEditorMode {
     case create
     case edit(Transaction)
+}
+
+/// Values to pre-fill a new transaction with — e.g. from a scanned receipt.
+struct TransactionPrefill {
+    var amount: Decimal?
+    var date: Date?
+    var payee: String?
+    var currencyCode: String?
+    var receiptImage: UIImage?
 }
 
 struct AddEditTransactionView: View {
@@ -20,6 +30,7 @@ struct AddEditTransactionView: View {
     let mode: TransactionEditorMode
     @State private var didInitialLoad = false
     let preselectedAccount: Account?
+    let prefill: TransactionPrefill?
 
     @Query(filter: #Predicate<Account> { !$0.isArchived },
            sort: \Account.createdAt, order: .forward)
@@ -35,6 +46,8 @@ struct AddEditTransactionView: View {
     @State private var selectedCategory: Category?
     @State private var suggestedCategory: Category?
     @State private var suggestTask: Task<Void, Never>?
+    @State private var loadedReceipt: UIImage?
+    @State private var showReceiptViewer = false
     @State private var date: Date = .now
     @State private var payee: String = ""
     @State private var note: String = ""
@@ -52,9 +65,10 @@ struct AddEditTransactionView: View {
 
     @FocusState private var amountFocused: Bool
 
-    init(mode: TransactionEditorMode, preselectedAccount: Account? = nil) {
+    init(mode: TransactionEditorMode, preselectedAccount: Account? = nil, prefill: TransactionPrefill? = nil) {
         self.mode = mode
         self.preselectedAccount = preselectedAccount
+        self.prefill = prefill
     }
 
     private var isEditing: Bool {
@@ -147,6 +161,7 @@ struct AddEditTransactionView: View {
             payeeSection
             categorySection
             detailsSection
+            receiptSection
             statusSection
             registeredRoomToggleSection
             notificationSection
@@ -192,6 +207,22 @@ struct AddEditTransactionView: View {
         }
         .onChange(of: payee) { scheduleSuggestion() }
         .onChange(of: type)  { scheduleSuggestion() }
+        .fullScreenCover(isPresented: $showReceiptViewer) {
+            NavigationStack {
+                ScrollView([.horizontal, .vertical]) {
+                    if let img = loadedReceipt {
+                        Image(uiImage: img).resizable().scaledToFit()
+                    }
+                }
+                .navigationTitle(lang["label.receipt"])
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button(lang["action.done"]) { showReceiptViewer = false }
+                    }
+                }
+            }
+        }
     }
 
     /// On-device smart categorisation (paid tiers): suggest a category learned from
@@ -412,6 +443,25 @@ struct AddEditTransactionView: View {
         }
     }
 
+    @ViewBuilder
+    private var receiptSection: some View {
+        if let img = loadedReceipt {
+            Section(lang["label.receipt"]) {
+                Button {
+                    showReceiptViewer = true
+                } label: {
+                    Image(uiImage: img)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxHeight: 200)
+                        .frame(maxWidth: .infinity)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
 
     @ViewBuilder
     private var notificationSection: some View {
@@ -443,9 +493,26 @@ struct AddEditTransactionView: View {
                 selectedAccount = accounts.first
             }
             currency = selectedAccount?.currency ?? Currencies.default
-            // Open the keyboard immediately so Régis can start typing the amount.
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                amountFocused = true
+            // Apply scan/receipt pre-fill if provided.
+            if let prefill {
+                if let amt = prefill.amount { amountText = decimalToText(amt) }
+                if let d = prefill.date { date = d }
+                if let p = prefill.payee, !p.isEmpty { payee = p }
+                // Honor a detected currency ONLY if the user actually has an account
+                // in it — otherwise keep the default account and its currency, so a
+                // misread currency can never block creation.
+                if let cur = prefill.currencyCode,
+                   preselectedAccount == nil,
+                   let match = accounts.first(where: { $0.currency == cur }) {
+                    selectedAccount = match
+                    currency = cur
+                }
+            }
+            // Open the amount keyboard only when nothing was pre-filled to review.
+            if prefill?.amount == nil {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    amountFocused = true
+                }
             }
         case .edit(let tx):
             type = tx.type
@@ -457,6 +524,9 @@ struct AddEditTransactionView: View {
             payee = tx.payee ?? ""
             note = tx.note
             affectsRoom = !tx.excludedFromRegisteredRoom
+            if let name = tx.receiptFileName {
+                loadedReceipt = ReceiptStore.load(name)
+            }
             switch tx.status {
             case .skipped:    statusChoice = .skipped
             case .reconciled: statusChoice = .reconciled
@@ -485,8 +555,18 @@ struct AddEditTransactionView: View {
             )
             tx.notificationEnabled = notifEnabled
             tx.notificationDaysBefore = notifDaysBefore
-            tx.status = TransactionStatus.defaultForManual(date: date)
+            // A scanned receipt proves the transaction already happened → cleared,
+            // regardless of the (possibly mis-read) date/time on the receipt.
+            tx.status = (prefill?.receiptImage != nil)
+                ? .cleared
+                : TransactionStatus.defaultForManual(date: date)
             tx.excludedFromRegisteredRoom = !affectsRoom
+            // Attach the scanned receipt, named from the final (reviewed) values.
+            if let img = prefill?.receiptImage {
+                tx.receiptFileName = ReceiptStore.save(img, date: date,
+                                                       merchant: trimmedPayee.isEmpty ? nil : trimmedPayee,
+                                                       amount: amount)
+            }
             context.insert(tx)
         case .edit(let tx):
             tx.amount = amount
@@ -529,6 +609,8 @@ struct AddEditTransactionView: View {
     private func deleteIfEditing() {
         guard case .edit(let tx) = mode else { return }
         let acct = tx.account
+        // Remove the attached receipt image, if any, so it doesn't orphan.
+        if let name = tx.receiptFileName { ReceiptStore.delete(name) }
         context.delete(tx)
         acct?.recalculateBalance()
         try? context.save()

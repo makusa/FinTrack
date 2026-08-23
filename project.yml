@@ -44,6 +44,7 @@ targets:
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.finance
 
         INFOPLIST_KEY_NSFaceIDUsageDescription: "FinTrack utilise Face ID pour déverrouiller l'app et protéger vos données financières."
+        INFOPLIST_KEY_NSCameraUsageDescription: "FinTrack utilise l'appareil photo pour scanner vos reçus et créer des transactions automatiquement."
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         ENABLE_PREVIEWS: YES

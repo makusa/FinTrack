@@ -111,6 +111,10 @@ final class Transaction {
     /// Option C: flagged as a possible duplicate of a manual entry, pending user review.
     var needsReview: Bool = false
 
+    /// File name of the attached receipt image in Documents/Receipts/ (nil = none).
+    /// Stored locally only; the file is deleted when the transaction is deleted.
+    var receiptFileName: String? = nil
+
     /// Comptes enregistres (CELI/CELIAPP/REER) : par defaut, les transactions d'un
     /// compte enregistre alimentent le suivi des droits (revenu = cotisation,
     /// depense = retrait). Mettre a true pour exclure celle-ci (interets, dividendes,
