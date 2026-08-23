@@ -11,13 +11,13 @@ import os
 
 enum AppLogger {
     /// Persistence errors (SwiftData save/delete failures).
-    static let persistence = Logger(subsystem: "ca.regis.fintrack", category: "persistence")
+    static let persistence = Logger(subsystem: "ca.bmsk.fintrack", category: "persistence")
     /// Notification scheduling and permission errors.
-    static let notifications = Logger(subsystem: "ca.regis.fintrack", category: "notifications")
+    static let notifications = Logger(subsystem: "ca.bmsk.fintrack", category: "notifications")
     /// StoreKit / entitlement errors.
-    static let entitlements = Logger(subsystem: "ca.regis.fintrack", category: "entitlements")
+    static let entitlements = Logger(subsystem: "ca.bmsk.fintrack", category: "entitlements")
     /// CSV export operations.
-    static let export = Logger(subsystem: "ca.regis.fintrack", category: "export")
+    static let export = Logger(subsystem: "ca.bmsk.fintrack", category: "export")
     /// Seed / migration operations.
-    static let seed = Logger(subsystem: "ca.regis.fintrack", category: "seed")
+    static let seed = Logger(subsystem: "ca.bmsk.fintrack", category: "seed")
 }

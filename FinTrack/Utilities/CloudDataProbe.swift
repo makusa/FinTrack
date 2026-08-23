@@ -21,12 +21,12 @@ import UIKit
 
 enum CloudDataProbe {
 
-    static let containerID = "iCloud.ca.regis.fintrack"
+    static let containerID = "iCloud.ca.bmsk.fintrack"
 
     private static let markerRecordType = "FinTrackSyncMarker"
     private static let markerRecordName = "fintrack-sync-marker"
 
-    private static let log = Logger(subsystem: "ca.regis.fintrack", category: "cloudprobe")
+    private static let log = Logger(subsystem: "ca.bmsk.fintrack", category: "cloudprobe")
 
     /// True only when the iCloud account is available AND a FinTrack sync marker
     /// exists in the private database (i.e. there is data worth restoring).

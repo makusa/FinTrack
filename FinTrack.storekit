@@ -22,7 +22,7 @@
           "locale" : "en_US"
         }
       ],
-      "productID" : "ca.regis.fintrack.epargne",
+      "productID" : "ca.bmsk.fintrack.epargne",
       "referenceName" : "Épargne (achat unique)",
       "type" : "NonConsumable"
     }
@@ -60,7 +60,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "ca.regis.fintrack.placement",
+          "productID" : "ca.bmsk.fintrack.placement",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Placement (abonnement mensuel)",
           "subscriptionGroupID" : "9643E3F8-4B53-49D0-B61F-97E2030A6B22",

@@ -3,7 +3,7 @@
 //  FinTrack
 //
 //  Minimal, strongly-typed wrapper around Security.framework Keychain APIs.
-//  All FinTrack secrets are stored under the service "ca.regis.fintrack".
+//  All FinTrack secrets are stored under the service "ca.bmsk.fintrack".
 //
 //  `synchronizable` (default false) controls iCloud Keychain sync:
 //   - false → device-only (kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly).
@@ -22,7 +22,7 @@ import Security
 
 enum KeychainHelper {
 
-    private static let service = "ca.regis.fintrack"
+    private static let service = "ca.bmsk.fintrack"
 
     // MARK: - Write
 

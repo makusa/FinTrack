@@ -45,12 +45,12 @@ struct CloudSyncSettingsView: View {
             if accountStatus == .available {
                 Section(lang["icloud.container"]) {
                     LabeledContent("Bundle ID") {
-                        Text("ca.regis.fintrack")
+                        Text("ca.bmsk.fintrack")
                             .foregroundStyle(.secondary)
                             .font(.caption.monospaced())
                     }
                     LabeledContent("Container") {
-                        Text("iCloud.ca.regis.fintrack")
+                        Text("iCloud.ca.bmsk.fintrack")
                             .foregroundStyle(.secondary)
                             .font(.caption.monospaced())
                     }
@@ -112,7 +112,7 @@ struct CloudSyncSettingsView: View {
     private var statusSubtitle: String {
         switch accountStatus {
         case .available:
-            return "iCloud.ca.regis.fintrack"
+            return "iCloud.ca.bmsk.fintrack"
         case .noAccount:
             return lang["icloud.openSettings"]
         default:
@@ -123,7 +123,7 @@ struct CloudSyncSettingsView: View {
     @MainActor
     private func checkStatus() async {
         do {
-            accountStatus = try await CKContainer(identifier: "iCloud.ca.regis.fintrack").accountStatus()
+            accountStatus = try await CKContainer(identifier: "iCloud.ca.bmsk.fintrack").accountStatus()
         } catch {
             accountStatus = .couldNotDetermine
         }

@@ -17,7 +17,7 @@ import Foundation
 import SwiftUI
 import os
 
-private let flinksLog = Logger(subsystem: "ca.regis.fintrack", category: "flinks")
+private let flinksLog = Logger(subsystem: "ca.bmsk.fintrack", category: "flinks")
 
 // MARK: - Configuration
 

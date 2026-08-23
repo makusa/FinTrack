@@ -5,8 +5,8 @@
 //  Manages in-app purchases and subscriptions via StoreKit 2.
 //
 //  Products (configure in App Store Connect):
-//    ca.regis.fintrack.epargne   — Non-consumable, ~28,99 $ CAD (achat unique — Épargne)
-//    ca.regis.fintrack.placement — Auto-renewable subscription, ~6,49 $/mois (Placement)
+//    ca.bmsk.fintrack.epargne   — Non-consumable, ~28,99 $ CAD (achat unique — Épargne)
+//    ca.bmsk.fintrack.placement — Auto-renewable subscription, ~6,49 $/mois (Placement)
 //
 //  Tier summary:
 //    Courant   — gratuit: comptes illimités, max 5 récurrences, max 2 prêts, max 1 marge, max 2 projets, max 3 budgets
@@ -20,8 +20,8 @@ import SwiftUI
 // MARK: - Product IDs
 
 enum FinTrackProduct: String, CaseIterable {
-    case epargne         = "ca.regis.fintrack.epargne"
-    case placement = "ca.regis.fintrack.placement"
+    case epargne         = "ca.bmsk.fintrack.epargne"
+    case placement = "ca.bmsk.fintrack.placement"
 
     var displayName: String {
         switch self {

@@ -5,7 +5,7 @@ import SwiftData
 import WidgetKit
 import os
 
-private let widgetLog = Logger(subsystem: "ca.regis.fintrack", category: "widget")
+private let widgetLog = Logger(subsystem: "ca.bmsk.fintrack", category: "widget")
 
 enum WidgetDataWriter {
 
@@ -220,7 +220,7 @@ enum WidgetDataWriter {
 
         let defaults = UserDefaults(suiteName: FinTrackWidgetData.appGroupID)
         if defaults == nil {
-            widgetLog.error("App Group UserDefaults nil — group.ca.regis.fintrack not entitled. Add App Groups capability in Xcode.")
+            widgetLog.error("App Group UserDefaults nil — group.ca.bmsk.fintrack not entitled. Add App Groups capability in Xcode.")
         } else {
             widgetLog.info("Writing widget data: \(balances.count) balances, \(recent.count) tx, updatedAt \(Date.now.description)")
         }

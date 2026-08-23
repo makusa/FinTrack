@@ -12,7 +12,7 @@ import Foundation
 import SwiftData
 import os
 
-private let syncLog = Logger(subsystem: "ca.regis.fintrack", category: "flinks-sync")
+private let syncLog = Logger(subsystem: "ca.bmsk.fintrack", category: "flinks-sync")
 
 @MainActor
 final class FlinksSyncEngine {

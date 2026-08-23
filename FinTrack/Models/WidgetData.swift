@@ -1,5 +1,5 @@
 //  WidgetData.swift — Shared between main app and WidgetKit extension
-//  Serialised as JSON in App Group UserDefaults (group.ca.regis.fintrack)
+//  Serialised as JSON in App Group UserDefaults (group.ca.bmsk.fintrack)
 //
 //  The widget extension can't reach the app's LanguageManager, so the app writes
 //  the in-app language code here and the widget looks labels up in `widgetStrings`
@@ -9,7 +9,7 @@
 import Foundation
 
 struct FinTrackWidgetData: Codable {
-    static let appGroupID      = "group.ca.regis.fintrack"
+    static let appGroupID      = "group.ca.bmsk.fintrack"
     static let userDefaultsKey = "fintrack.widget.data"
 
     let primaryCurrency: String

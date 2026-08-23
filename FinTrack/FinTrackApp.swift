@@ -88,7 +88,7 @@ struct FinTrackApp: App {
                 cloudContainer = try ModelContainer(
                     for: baseSchema,
                     configurations: [ModelConfiguration(schema: baseSchema,
-                                                       cloudKitDatabase: .private("iCloud.ca.regis.fintrack"))])
+                                                       cloudKitDatabase: .private("iCloud.ca.bmsk.fintrack"))])
             } catch {
                 cloudInitError = error
             }
