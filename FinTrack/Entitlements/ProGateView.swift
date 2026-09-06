@@ -252,9 +252,11 @@ struct ProGateView: View {
                                  ? lang["entitlement.plaid.cta"]
                                  : lang["entitlement.pro.cta"])
                                 .font(.body.weight(.semibold))
-                            Text(feature.requiredProduct.price)
-                                .font(.caption)
-                                .opacity(0.85)
+                            if let product = entitlements.product(for: feature.requiredProduct) {
+                                Text(product.displayPrice + (isPlaidGate ? " / " + lang["budget.period.monthly.short"] : ""))
+                                    .font(.caption)
+                                    .opacity(0.85)
+                            }
                         }
                     }
                 }
@@ -265,13 +267,6 @@ struct ProGateView: View {
             .tint(isPlaidGate ? .teal : .orange)
             .disabled(entitlements.isLoading)
             .padding(.horizontal)
-
-            // Product loaded price (live from App Store)
-            if let product = entitlements.product(for: feature.requiredProduct) {
-                Text(product.displayPrice + (isPlaidGate ? " / " + lang["budget.period.monthly.short"] : ""))
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
         }
     }
 

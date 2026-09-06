@@ -30,13 +30,6 @@ enum FinTrackProduct: String, CaseIterable {
         }
     }
 
-    var price: String {
-        switch self {
-        case .epargne:          return "19,99 $"
-        case .placement: return "3,99 $/mois"
-        }
-    }
-
     var icon: String {
         switch self {
         case .epargne:          return "star.fill"

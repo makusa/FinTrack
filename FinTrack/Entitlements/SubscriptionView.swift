@@ -35,7 +35,12 @@ struct SubscriptionView: View {
                 Section {
                     planRow(product: .placement)
                 } footer: {
-                    Text(lang["entitlement.plaid.footer"])
+                    VStack(alignment: .leading, spacing: 2) {
+                        if let p = entitlements.product(for: .placement) {
+                            Text(p.displayPrice + lang["label.perMonth"])
+                        }
+                        Text(lang["entitlement.plaid.footer"])
+                    }
                 }
             }
 
