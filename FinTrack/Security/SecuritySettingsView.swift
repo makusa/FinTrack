@@ -151,7 +151,7 @@ struct SecuritySettingsView: View {
         .confirmationDialog(lang["security.reset"], isPresented: $confirmReset, titleVisibility: .visible) {
             Button(lang["security.reset"], role: .destructive) {
                 lockManager.resetAccount()
-                FlinksManager.shared.disconnectAll() // purge des jetons de connexion bancaire (iCloud Keychain)
+                disconnectAllBankProviders() // purge des jetons des DEUX fournisseurs (iCloud Keychain)
             }
             Button(lang["action.cancel"], role: .cancel) {}
         } message: {

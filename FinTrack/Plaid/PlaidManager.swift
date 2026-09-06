@@ -343,6 +343,17 @@ final class PlaidManager {
         await removeItem(id: item.id)
     }
 
+    /// Purges ALL Plaid connections locally (tokens + items). Used by the security
+    /// reset — best-effort and immediate, does not wait on the network.
+    @MainActor
+    func disconnectAll() {
+        for item in connectedItems {
+            KeychainHelper.delete(forKey: "plaid_token_\(item.id)")
+        }
+        connectedItems.removeAll()
+        saveItems()
+    }
+
     // MARK: - Cursor management
 
     @MainActor

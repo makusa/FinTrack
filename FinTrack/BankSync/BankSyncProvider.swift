@@ -43,3 +43,15 @@ var bankSyncProviderLabel: String {
     case .flinks: "Connexion bancaire"
     }
 }
+
+// MARK: - Provider-agnostic operations
+
+/// Purges bank connections for BOTH providers (tokens + local metadata).
+/// The security reset must clear everything regardless of which provider is
+/// active, so flipping `activeBankSyncProvider` never leaves stale tokens
+/// behind. Always call this rather than a specific provider's manager.
+@MainActor
+func disconnectAllBankProviders() {
+    PlaidManager.shared.disconnectAll()
+    FlinksManager.shared.disconnectAll()
+}
