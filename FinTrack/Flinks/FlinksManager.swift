@@ -168,6 +168,26 @@ final class FlinksManager {
         saveConnectedLogins()
     }
 
+    /// Link a bank account to a FinTrack account (UUID). Without a mapping the
+    /// sync engine skips the account entirely, so this is what actually makes
+    /// Flinks import transactions.
+    @MainActor
+    func updateAccountMapping(loginId: String, accountId: String, fintrackAccountId: String) {
+        guard let loginIdx = connectedLogins.firstIndex(where: { $0.id == loginId }),
+              let accIdx = connectedLogins[loginIdx].accounts.firstIndex(where: { $0.id == accountId })
+        else { return }
+        connectedLogins[loginIdx].accounts[accIdx].fintrackAccountId = fintrackAccountId
+        saveConnectedLogins()
+    }
+
+    func clearAccountMapping(loginId: String, accountId: String) {
+        guard let loginIdx = connectedLogins.firstIndex(where: { $0.id == loginId }),
+              let accIdx = connectedLogins[loginIdx].accounts.firstIndex(where: { $0.id == accountId })
+        else { return }
+        connectedLogins[loginIdx].accounts[accIdx].fintrackAccountId = nil
+        saveConnectedLogins()
+    }
+
     /// Removes ALL bank connections: clears in-memory logins and deletes the
     /// Keychain entry. The synced item is removed from iCloud Keychain, so this
     /// affects every device on the same iCloud account. Also drops any legacy

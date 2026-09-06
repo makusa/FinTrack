@@ -21,6 +21,7 @@ struct BankSyncView: View {
     @State private var showConnect = false
     @State private var syncMessage: String? = nil
     @State private var loginToDelete: FlinksConnectedLogin? = nil
+    @State private var loginToMap: FlinksConnectedLogin? = nil
     @State private var discrepancies: [FlinksSyncEngine.BalanceDiscrepancy] = []
     @State private var discrepancyToAdjust: FlinksSyncEngine.BalanceDiscrepancy? = nil
 
@@ -116,6 +117,9 @@ struct BankSyncView: View {
                 }
             }
         }
+        .sheet(item: $loginToMap) { login in
+            FlinksAccountMappingView(login: login)
+        }
         .confirmationDialog(
             lang["flinks.disconnect.confirm"],
             isPresented: Binding(get: { loginToDelete != nil },
@@ -150,6 +154,11 @@ struct BankSyncView: View {
                     .font(.body.weight(.medium))
                 Spacer()
                 Menu {
+                    Button {
+                        loginToMap = login
+                    } label: {
+                        Label(lang["plaid.map.accounts"], systemImage: "link")
+                    }
                     Button(role: .destructive) {
                         loginToDelete = login
                     } label: {
@@ -196,6 +205,7 @@ struct BankSyncView: View {
                 lastSyncDate: nil
             )
             manager.addLogin(login)
+            loginToMap = login   // prompt mapping — without it the sync imports nothing
             syncMessage = lang["flinks.connected.ok"]
         } catch {
             syncMessage = lang["flinks.connected.error"]
@@ -285,6 +295,155 @@ struct FlinksConnectWebView: UIViewRepresentable {
                 let institution = (payload["institution"] as? String) ?? ""
                 onSuccess(loginId, institution)
             }
+        }
+    }
+}
+
+// MARK: - Account mapping (link each Flinks account to a FinTrack account)
+
+struct FlinksAccountMappingView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
+    @Environment(LanguageManager.self) private var lang
+    @State private var manager = FlinksManager.shared
+
+    // Reactive so the list updates instantly when we create an account.
+    @Query(filter: #Predicate<Account> { !$0.isArchived }, sort: \Account.createdAt)
+    private var fintrackAccounts: [Account]
+
+    let login: FlinksConnectedLogin
+    @State private var mappings: [String: String?] = [:]
+
+    var body: some View {
+        NavigationStack {
+            List {
+                Section {
+                    Text(lang["plaid.map.subtitle"])
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                Section {
+                    ForEach(login.accounts) { acc in
+                        accountRow(acc)
+                    }
+                }
+            }
+            .navigationTitle(lang["plaid.map.title"])
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(lang["action.close"]) { dismiss() }.fontWeight(.semibold)
+                }
+            }
+            .onAppear(perform: loadMappings)
+        }
+    }
+
+    @ViewBuilder
+    private func accountRow(_ acc: FlinksAccountMeta) -> some View {
+        let currentId = mappings[acc.id] ?? acc.fintrackAccountId
+        let linked = currentId.flatMap { id in fintrackAccounts.first { $0.uuid == id } }
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(acc.title).font(.body).lineLimit(1)
+                if let num = acc.accountNumber {
+                    Text("•••\(num)").font(.caption2).foregroundStyle(.tertiary)
+                }
+            }
+            Spacer(minLength: 8)
+            destinationMenu(for: acc, linked: linked, isUnmapped: currentId == nil)
+        }
+    }
+
+    @ViewBuilder
+    private func destinationMenu(for acc: FlinksAccountMeta, linked: Account?, isUnmapped: Bool) -> some View {
+        Menu {
+            Button { setMapping(acc, to: nil) } label: {
+                Label(lang["plaid.map.none"], systemImage: "circle.slash")
+            }
+            Divider()
+            ForEach(compatibleAccounts(for: acc)) { ftAcc in
+                Button { setMapping(acc, to: ftAcc.uuid) } label: {
+                    Label(ftAcc.name, systemImage: ftAcc.iconSystemName)
+                }
+            }
+            Divider()
+            Button { createAndMap(acc) } label: {
+                Label(lang["plaid.map.create"], systemImage: "plus.circle")
+            }
+        } label: {
+            menuLabel(linked: linked, isUnmapped: isUnmapped)
+        }
+    }
+
+    @ViewBuilder
+    private func menuLabel(linked: Account?, isUnmapped: Bool) -> some View {
+        HStack(spacing: 6) {
+            if let acc = linked {
+                Circle().fill(Color(hex: acc.colorHex)).frame(width: 16, height: 16)
+                Text(acc.name).font(.subheadline.weight(.medium)).lineLimit(1)
+            } else if isUnmapped {
+                Text(lang["plaid.map.none"]).font(.subheadline).foregroundStyle(.secondary).lineLimit(1)
+            } else {
+                Text(lang["plaid.map.choose"]).font(.subheadline.weight(.medium)).foregroundStyle(.tint)
+            }
+            Image(systemName: "chevron.up.chevron.down").font(.caption2).foregroundStyle(.tertiary)
+        }
+        .padding(.horizontal, 10).padding(.vertical, 6)
+        .background(Color(.tertiarySystemFill), in: Capsule())
+        .frame(maxWidth: 170, alignment: .trailing)
+    }
+
+    private func loadMappings() {
+        for acc in login.accounts { mappings[acc.id] = acc.fintrackAccountId }
+    }
+
+    private func setMapping(_ acc: FlinksAccountMeta, to uuid: String?) {
+        mappings[acc.id] = uuid
+        if let uuid {
+            manager.updateAccountMapping(loginId: login.id, accountId: acc.id, fintrackAccountId: uuid)
+        } else {
+            manager.clearAccountMapping(loginId: login.id, accountId: acc.id)
+        }
+    }
+
+    /// Create a FinTrack account pre-filled from the Flinks account, then map to it.
+    private func createAndMap(_ acc: FlinksAccountMeta) {
+        let type = accountType(for: acc)
+        let palette = ColorPalette.accountColors
+        let color = palette[fintrackAccounts.count % palette.count]
+        let account = Account(
+            name: acc.title,
+            institution: login.institutionName,
+            type: type,
+            currency: acc.currency ?? Currencies.default,
+            initialBalance: 0,
+            colorHex: color,
+            iconSystemName: type.defaultIconSystemName,
+            notes: nil
+        )
+        context.insert(account)
+        try? context.save()
+        setMapping(acc, to: account.uuid)
+    }
+
+    /// Maps a Flinks account category to a FinTrack AccountType.
+    private func accountType(for acc: FlinksAccountMeta) -> AccountType {
+        switch (acc.category ?? "").lowercased() {
+        case "credits", "creditcard", "credit":  return .credit
+        case "savings":                          return .savings
+        case "loans", "loan":                    return .other
+        case "investments", "investment":        return .investment
+        default:                                 return .checking  // Operations, chequing…
+        }
+    }
+
+    /// Only propose FinTrack accounts of the same currency — mapping a CAD bank
+    /// account onto a USD account would corrupt balances.
+    private func compatibleAccounts(for acc: FlinksAccountMeta) -> [Account] {
+        fintrackAccounts.filter { ftAcc in
+            guard let cur = acc.currency else { return true }
+            return ftAcc.currency == cur
         }
     }
 }
