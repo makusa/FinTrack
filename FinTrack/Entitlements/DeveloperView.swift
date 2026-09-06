@@ -50,7 +50,7 @@ struct DeveloperView: View {
         ),
         TierOption(
             tier:     .epargne,
-            name:     "Épargne",
+            name:     "Pro",
             subtitle: "Achat unique",
             icon:     "star.circle.fill",
             color:    .orange,
@@ -59,11 +59,11 @@ struct DeveloperView: View {
         ),
         TierOption(
             tier:     .placement,
-            name:     "Placement",
+            name:     "Max",
             subtitle: "Abonnement mensuel",
             icon:     "building.columns.circle.fill",
             color:    .teal,
-            features: ["Tout Épargne +", "Connexion bancaire", "Sync automatique des transactions"]
+            features: ["Tout Pro +", "Connexion bancaire", "Sync automatique des transactions"]
         ),
     ]
 

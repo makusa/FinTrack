@@ -13,17 +13,17 @@
       "localizations" : [
         {
           "description" : "Achat unique : tout illimité, analytiques, export CSV et taux de change.",
-          "displayName" : "Épargne",
+          "displayName" : "Pro",
           "locale" : "fr_CA"
         },
         {
           "description" : "One-time purchase: everything unlimited, analytics, CSV export and exchange rates.",
-          "displayName" : "Épargne",
+          "displayName" : "Pro",
           "locale" : "en_US"
         }
       ],
       "productID" : "ca.bmsk.fintrack.epargne",
-      "referenceName" : "Épargne (achat unique)",
+      "referenceName" : "Pro (achat unique)",
       "type" : "NonConsumable"
     }
   ],
@@ -50,19 +50,19 @@
           "introductoryOffer" : null,
           "localizations" : [
             {
-              "description" : "Abonnement : tout Épargne plus la synchronisation bancaire automatique.",
-              "displayName" : "Placement",
+              "description" : "Abonnement : tout Pro plus la synchronisation bancaire automatique.",
+              "displayName" : "Max",
               "locale" : "fr_CA"
             },
             {
-              "description" : "Subscription: everything in Épargne plus automatic bank sync.",
-              "displayName" : "Placement",
+              "description" : "Subscription: everything in Pro plus automatic bank sync.",
+              "displayName" : "Max",
               "locale" : "en_US"
             }
           ],
           "productID" : "ca.bmsk.fintrack.placement",
           "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "Placement (abonnement mensuel)",
+          "referenceName" : "Max (abonnement mensuel)",
           "subscriptionGroupID" : "9643E3F8-4B53-49D0-B61F-97E2030A6B22",
           "type" : "RecurringSubscription"
         }
