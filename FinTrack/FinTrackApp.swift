@@ -45,6 +45,14 @@ struct FinTrackApp: App {
 
         let cloudSyncEnabled = UserDefaults.standard.bool(forKey: "fintrack.cloudSyncEnabled")
 
+        // Screenshot harness (-FTDemoMode): force a throwaway in-memory store so
+        // the demo dataset never touches the real on-disk / CloudKit data.
+        #if DEBUG
+        let demoMode = DemoMode.isActive
+        #else
+        let demoMode = false
+        #endif
+
         func recordCloudFailure(_ error: Error) {
             guard UIApplication.shared.isProtectedDataAvailable else {
                 AppLogger.persistence.info("CloudKit init skipped: prewarming")
@@ -83,7 +91,7 @@ struct FinTrackApp: App {
         // recording only a generic placeholder (which is what happened here).
         var cloudContainer: ModelContainer? = nil
         var cloudInitError: Error? = nil
-        if cloudSyncEnabled {
+        if cloudSyncEnabled && !demoMode {
             do {
                 cloudContainer = try ModelContainer(
                     for: baseSchema,
@@ -94,7 +102,16 @@ struct FinTrackApp: App {
             }
         }
 
-        if let cloud = cloudContainer {
+        if demoMode {
+            modelContainer = try! ModelContainer(
+                for: baseSchema,
+                configurations: [ModelConfiguration(schema: baseSchema,
+                                                    isStoredInMemoryOnly: true,
+                                                    cloudKitDatabase: .none)])
+            UserDefaults.standard.set("memory", forKey: "fintrack.activeStoreMode")
+            AppLogger.persistence.info("Store started: demo (in-memory)")
+
+        } else if let cloud = cloudContainer {
             modelContainer = cloud
             UserDefaults.standard.set("cloud", forKey: "fintrack.activeStoreMode")
             UserDefaults.standard.removeObject(forKey: "fintrack.cloudSync.lastError")
@@ -156,6 +173,12 @@ struct FinTrackApp: App {
         // Seed default categories on the main context.
         SeedData.seedIfNeeded(context: modelContainer.mainContext)
 
+        // Screenshot harness: populate the in-memory store with a realistic
+        // Quebec household so captures are never empty.
+        #if DEBUG
+        if demoMode { DemoData.seed(context: modelContainer.mainContext) }
+        #endif
+
         // One-time: seed the tracked-currency list (CAD+USD + any currency already
         // used by accounts/budgets/loans/credit lines/projects), so existing data
         // is never stranded when the list becomes user-managed.
@@ -168,9 +191,12 @@ struct FinTrackApp: App {
         TransactionStatusManager.sweep(context: modelContainer.mainContext)
 
         // Request notification permission and schedule all upcoming reminders
-        Task { @MainActor in
-            await NotificationManager.shared.requestPermission()
-            await NotificationManager.shared.scheduleAll(context: modelContainer.mainContext)
+        // Screenshot harness: the system permission alert would cover every capture.
+        if !demoMode {
+            Task { @MainActor in
+                await NotificationManager.shared.requestPermission()
+                await NotificationManager.shared.scheduleAll(context: modelContainer.mainContext)
+            }
         }
 
         // Refresh exchange rates

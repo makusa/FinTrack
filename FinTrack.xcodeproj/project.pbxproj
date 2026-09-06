@@ -17,6 +17,7 @@
 		0E3DF5A1A533E8A13EC3FDA2 /* CashFlowCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 383416B9543B9837F0206675 /* CashFlowCalculator.swift */; };
 		0E8507751F10281BD6923F50 /* BudgetDashboardSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 19AD119703063332E899FA3A /* BudgetDashboardSection.swift */; };
 		10EAF1229CCD09A58535D853 /* AddEditSavingsProjectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 540F38D8FDDAE86D3FB26390 /* AddEditSavingsProjectView.swift */; };
+		1249D6BD11B1F2B99A72197C /* ScreenshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDCC4F01EF3D7C41323966D7 /* ScreenshotTests.swift */; };
 		167DD8D94BD2C94A5D09FCC6 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A85E6C13F1FA6E8EA17F750A /* RootView.swift */; };
 		168D9CCEBF3CB14A8DA3A352 /* ProGateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F42BEA31DA050F765C11D84 /* ProGateView.swift */; };
 		16EEE5A4D548ECF4B02C519C /* PDFTextExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BE34C6A1056E1689B02C560 /* PDFTextExtractor.swift */; };
@@ -118,6 +119,7 @@
 		CC550BDDDA2B91B2D3B6EE8F /* FinTrackWidgetEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17B5A8A48F6F1A2A395FA28D /* FinTrackWidgetEntry.swift */; };
 		D1E5BDD3C50DC2C980F0E322 /* FinTrackRoomWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C1B606C9AFD87A55E284333 /* FinTrackRoomWidget.swift */; };
 		D253B19DD2EA070A567791C4 /* CashFlowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50DA8D0E2D302C76AD711D5E /* CashFlowView.swift */; };
+		D2C04F07B379C4F65F3BEB85 /* DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF789E616B68186B93AB9890 /* DemoData.swift */; };
 		D3EC06B348E99E3B3CD9F705 /* SavingsProject.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50BCF26C04654FA3682ABD16 /* SavingsProject.swift */; };
 		D753CFE35DD45AC52C8C7B6A /* BankSyncProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A37216610FA9A5C994EF058 /* BankSyncProvider.swift */; };
 		D7A3145152B9F43C7199EAA8 /* EntitlementManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5327B512B006990271C7E90E /* EntitlementManager.swift */; };
@@ -156,6 +158,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 361AE69D7682BE959C6DD237;
 			remoteInfo = FinTrackWidget;
+		};
+		FCEF26C5FEC008D8604EDEF5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 23BB535367AFAFB8EDD76182 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BCC9E8CE80AA63487F25327F;
+			remoteInfo = FinTrack;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -277,6 +286,7 @@
 		A85E6C13F1FA6E8EA17F750A /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		A8900D066E43A56DB2C7BEFB /* AddEditCreditLineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEditCreditLineView.swift; sourceTree = "<group>"; };
 		AC429D562A281124F93A2B8C /* WidgetDataWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDataWriter.swift; sourceTree = "<group>"; };
+		AF1049F6CBB1D3ED55BF95B9 /* FinTrackUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FinTrackUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF6B9AA36AC85C390D2C87D4 /* ExchangeRateManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExchangeRateManager.swift; sourceTree = "<group>"; };
 		B042C452FADBC3FA93CDE94E /* FinTrackWidgetIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FinTrackWidgetIntent.swift; sourceTree = "<group>"; };
 		B2D2A67F3EB43BB51719FF51 /* AddRESPContributionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddRESPContributionView.swift; sourceTree = "<group>"; };
@@ -286,6 +296,8 @@
 		B87B96BF2E0609ED423AD04C /* OFXParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OFXParser.swift; sourceTree = "<group>"; };
 		BCC83950ADBD5BFE1E289A77 /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
 		BD3CF16E621A3AE8D61CC443 /* SubscriptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionView.swift; sourceTree = "<group>"; };
+		BDCC4F01EF3D7C41323966D7 /* ScreenshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotTests.swift; sourceTree = "<group>"; };
+		BF789E616B68186B93AB9890 /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
 		C4E2865724675E96FCCA20EA /* DuplicateReviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuplicateReviewView.swift; sourceTree = "<group>"; };
 		C596428BD35BF3E6E1C9A821 /* FinTrackWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = FinTrackWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C949FFE8FA0EE096AC5BF92F /* FlinksSyncEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlinksSyncEngine.swift; sourceTree = "<group>"; };
@@ -343,6 +355,7 @@
 				619E4BA50FD00BEA578CF0AA /* CloudDataProbe.swift */,
 				D34E6F10D5FEAE7E5D0BD329 /* ColorPalette.swift */,
 				88B08DD594C51395758C470E /* CreditLineInterestManager.swift */,
+				BF789E616B68186B93AB9890 /* DemoData.swift */,
 				AF6B9AA36AC85C390D2C87D4 /* ExchangeRateManager.swift */,
 				01BA68E205C88505F80FF7A0 /* FormatterHelpers.swift */,
 				2617BEC0D63E06412E487D79 /* LoanPrepaymentManager.swift */,
@@ -369,6 +382,14 @@
 				23D1530E42347CB84E295CCF /* SetupAccountView.swift */,
 			);
 			path = Security;
+			sourceTree = "<group>";
+		};
+		1C97B692F467E0A2581043BB /* FinTrackUITests */ = {
+			isa = PBXGroup;
+			children = (
+				BDCC4F01EF3D7C41323966D7 /* ScreenshotTests.swift */,
+			);
+			path = FinTrackUITests;
 			sourceTree = "<group>";
 		};
 		3DF0B3D91019797EE1F8FC99 /* FileImport */ = {
@@ -492,6 +513,7 @@
 			isa = PBXGroup;
 			children = (
 				1AFCA16ED8DB8009BB829594 /* FinTrack.app */,
+				AF1049F6CBB1D3ED55BF95B9 /* FinTrackUITests.xctest */,
 				C596428BD35BF3E6E1C9A821 /* FinTrackWidget.appex */,
 			);
 			name = Products;
@@ -592,6 +614,7 @@
 			isa = PBXGroup;
 			children = (
 				981F1E41C2EB8703A6E1F6A0 /* FinTrack */,
+				1C97B692F467E0A2581043BB /* FinTrackUITests */,
 				5853D39005CA20F3DEDF4374 /* FinTrackWidget */,
 				8FEFFF70363081D23CE6586E /* Products */,
 			);
@@ -639,6 +662,24 @@
 			productReference = C596428BD35BF3E6E1C9A821 /* FinTrackWidget.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		56B26B2FB7B71B5552FA207F /* FinTrackUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8C891C649C41BB8B437FC1E0 /* Build configuration list for PBXNativeTarget "FinTrackUITests" */;
+			buildPhases = (
+				8F27EE3AE4BD38EA15846886 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E9709F64D4C6D2664CC3C781 /* PBXTargetDependency */,
+			);
+			name = FinTrackUITests;
+			packageProductDependencies = (
+			);
+			productName = FinTrackUITests;
+			productReference = AF1049F6CBB1D3ED55BF95B9 /* FinTrackUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		BCC9E8CE80AA63487F25327F /* FinTrack */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0B94DE84FA26B718BE5C4FA4 /* Build configuration list for PBXNativeTarget "FinTrack" */;
@@ -672,6 +713,11 @@
 						DevelopmentTeam = 38N594NGP9;
 						ProvisioningStyle = Automatic;
 					};
+					56B26B2FB7B71B5552FA207F = {
+						DevelopmentTeam = 38N594NGP9;
+						ProvisioningStyle = Automatic;
+						TestTargetID = BCC9E8CE80AA63487F25327F;
+					};
 					BCC9E8CE80AA63487F25327F = {
 						DevelopmentTeam = 38N594NGP9;
 						ProvisioningStyle = Automatic;
@@ -696,6 +742,7 @@
 			projectRoot = "";
 			targets = (
 				BCC9E8CE80AA63487F25327F /* FinTrack */,
+				56B26B2FB7B71B5552FA207F /* FinTrackUITests */,
 				361AE69D7682BE959C6DD237 /* FinTrackWidget */,
 			);
 		};
@@ -772,6 +819,7 @@
 				FD07D43882ACAA37D423BE96 /* DashboardConfigManager.swift in Sources */,
 				525B67FBACF1E15DF25D1A61 /* DashboardLibraryView.swift in Sources */,
 				E7B5241364228F8D57A97DE6 /* DashboardView.swift in Sources */,
+				D2C04F07B379C4F65F3BEB85 /* DemoData.swift in Sources */,
 				87D30D171A2A9325F689B0F5 /* DeveloperView.swift in Sources */,
 				217A7D592278AF5FBD0388B4 /* DuplicateReviewView.swift in Sources */,
 				8BB04EB7462090D56AF9C306 /* EmbeddingMatcher.swift in Sources */,
@@ -857,6 +905,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8F27EE3AE4BD38EA15846886 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1249D6BD11B1F2B99A72197C /* ScreenshotTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A973CDA7CC967CEAE49F0E60 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -879,6 +935,11 @@
 			isa = PBXTargetDependency;
 			target = 361AE69D7682BE959C6DD237 /* FinTrackWidget */;
 			targetProxy = 61E76EF7D99AADAE97EA42F3 /* PBXContainerItemProxy */;
+		};
+		E9709F64D4C6D2664CC3C781 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BCC9E8CE80AA63487F25327F /* FinTrack */;
+			targetProxy = FCEF26C5FEC008D8604EDEF5 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -987,6 +1048,48 @@
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
+		};
+		6CBA32AAA09A8C15D2616518 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ca.bmsk.fintrack.uitests;
+				PRODUCT_NAME = FinTrackUITests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = FinTrack;
+			};
+			name = Debug;
+		};
+		9138A7384E7F37E1AA61341D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = ca.bmsk.fintrack.uitests;
+				PRODUCT_NAME = FinTrackUITests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = FinTrack;
+			};
+			name = Release;
 		};
 		92F58B6FB46053210A48A5F5 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -1166,6 +1269,15 @@
 			buildConfigurations = (
 				92F58B6FB46053210A48A5F5 /* Debug */,
 				95EE88A388F9201477908CAD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		8C891C649C41BB8B437FC1E0 /* Build configuration list for PBXNativeTarget "FinTrackUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6CBA32AAA09A8C15D2616518 /* Debug */,
+				9138A7384E7F37E1AA61341D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

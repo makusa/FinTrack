@@ -24,7 +24,13 @@ final class OnboardingManager {
     /// Bumped by resetAll so tours already on screen replay immediately.
     var replayToken = 0
 
-    func hasSeen(_ tour: String) -> Bool { seen.contains(tour) }
+    func hasSeen(_ tour: String) -> Bool {
+        #if DEBUG
+        // Screenshot harness: coach marks would dim and cover every capture.
+        if DemoMode.isActive { return true }
+        #endif
+        return seen.contains(tour)
+    }
 
     func markSeen(_ tour: String) {
         guard !seen.contains(tour) else { return }

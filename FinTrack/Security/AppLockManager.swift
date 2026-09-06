@@ -71,6 +71,16 @@ final class AppLockManager {
     // MARK: - Init
 
     private init() {
+        #if DEBUG
+        // Screenshot harness: skip PIN setup and the lock screen entirely.
+        if DemoMode.isActive {
+            isSetup  = true
+            isLocked = false
+            userName = "Régis"
+            checkBiometricCapability()
+            return
+        }
+        #endif
         loadFromKeychain()
         checkBiometricCapability()
         // Lock on launch unless the user explicitly chose "never lock".

@@ -88,11 +88,34 @@ targets:
         CODE_SIGN_IDENTITY: "iPhone Developer"
         SKIP_INSTALL: YES
 
+  FinTrackUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "17.0"
+    sources:
+      - path: FinTrackUITests
+    dependencies:
+      - target: FinTrack
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: ca.bmsk.fintrack.uitests
+        PRODUCT_NAME: FinTrackUITests
+        SWIFT_VERSION: "5.9"
+        IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: FinTrack
+        CODE_SIGN_STYLE: Automatic
+
 schemes:
   FinTrack:
     build:
       targets:
         FinTrack: all
+        FinTrackUITests: [test]
+    test:
+      config: Debug
+      targets:
+        - FinTrackUITests
     run:
       config: Debug
       storeKitConfiguration: FinTrack.storekit
