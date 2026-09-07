@@ -167,6 +167,13 @@ p{max-width:63ch}
 .formulaire{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;max-width:470px;margin:0 auto}
 .formulaire input{flex:1 1 240px;padding:12px 14px;border:1px solid var(--ligne-forte);border-radius:6px;font-family:var(--sans);font-size:.9375rem;background:var(--surface);color:var(--encre)}
 .formulaire input::placeholder{color:#8B9B96}
+.formulaire button[disabled]{opacity:.55;cursor:progress}
+.hors-ecran{position:absolute;left:-9999px}
+/* piège à robots : invisible et hors du parcours clavier */
+.piege{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
+.msg-beta{margin:16px auto 0;font-size:.9375rem;font-weight:600;min-height:1.5em;max-width:48ch}
+.msg-beta.ok{color:var(--verdigris)}
+.msg-beta.ko{color:var(--cuivre)}
 
 .pied{border-top:1px solid var(--ligne);padding:34px 0 44px;font-size:.8125rem;color:var(--sourdine)}
 .pied-haut{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:22px}
@@ -426,11 +433,14 @@ p{max-width:63ch}
   <div class="zone">
     <h2 data-t="bh">La bêta ouvre bientôt sur TestFlight</h2>
     <p data-t="bp">Laissez votre courriel et vous recevrez l'invitation. Rien d'autre : pas d'infolettre, pas de partage à des tiers.</p>
-    <form class="formulaire" onsubmit="return false;">
-      <label for="courriel" data-t="blabel" style="position:absolute;left:-9999px">Adresse courriel</label>
-      <input type="email" id="courriel" data-ph="bph" placeholder="vous@exemple.ca" autocomplete="email" required>
-      <button type="submit" class="bouton" data-t="bbtn">Recevoir l'invitation</button>
+    <form class="formulaire" id="formBeta" novalidate>
+      <label for="courriel" data-t="blabel" class="hors-ecran">Adresse courriel</label>
+      <input type="email" id="courriel" name="courriel" data-ph="bph" placeholder="vous@exemple.ca" autocomplete="email" required>
+      <label for="entreprise" class="piege" aria-hidden="true">Entreprise</label>
+      <input type="text" id="entreprise" name="entreprise" class="piege" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button type="submit" class="bouton" id="btnBeta" data-t="bbtn">Recevoir l'invitation</button>
     </form>
+    <p class="msg-beta" id="msgBeta" role="status" aria-live="polite"></p>
     <p class="note-cta" data-t="bnote" style="margin-top:16px">Vous pouvez vous retirer en tout temps.</p>
   </div>
 </section>
@@ -545,6 +555,7 @@ p{max-width:63ch}
     carPrec:"Previous screen", carSuiv:"Next screen", carZone:"App screenshots"
   };
 
+  var langueActive = "fr";
   var FR = {}, titreFR = document.title, descFR = document.getElementById("metaDesc").content;
   function recolter(){
     document.querySelectorAll("[data-t]").forEach(function(el){ FR[el.dataset.t] = el.innerHTML; });
@@ -555,6 +566,7 @@ p{max-width:63ch}
   recolter();
 
   function appliquer(code){
+    langueActive = (code === "en") ? "en" : "fr";
     var d = (code === "en") ? EN : FR;
     document.querySelectorAll("[data-t]").forEach(function(el){
       if (d[el.dataset.t] !== undefined) el.innerHTML = d[el.dataset.t];
@@ -594,6 +606,60 @@ p{max-width:63ch}
     b.addEventListener("click", function(){ appliquer(b.dataset.langue); });
   });
   appliquer(choisie);
+
+  /* ─────────── Inscription à la bêta ─────────── */
+  var MSG = {
+    fr: {
+      envoi:    "Envoi…",
+      succes:   "C'est noté. Vous recevrez l'invitation TestFlight par courriel.",
+      deja:     "Cette adresse est déjà sur la liste.",
+      invalide: "Cette adresse ne semble pas valide.",
+      erreur:   "L'inscription n'a pas fonctionné. Réessayez dans un moment."
+    },
+    en: {
+      envoi:    "Sending…",
+      succes:   "You're on the list. The TestFlight invitation will arrive by email.",
+      deja:     "That address is already on the list.",
+      invalide: "That address doesn't look valid.",
+      erreur:   "The signup didn't go through. Try again in a moment."
+    }
+  };
+
+  var formBeta = document.getElementById("formBeta");
+  if (formBeta) {
+    var champ  = document.getElementById("courriel");
+    var btn    = document.getElementById("btnBeta");
+    var msg    = document.getElementById("msgBeta");
+    var piege  = document.getElementById("entreprise");
+    var enCours = false;
+
+    function dire(cle, ok){
+      msg.textContent = MSG[langueActive][cle];
+      msg.className = "msg-beta " + (ok ? "ok" : "ko");
+    }
+
+    formBeta.addEventListener("submit", function(e){
+      e.preventDefault();
+      if (enCours) return;
+      var courriel = champ.value.trim();
+      if (!/^[^\s@]+@[^\s@.]+\.[^\s@]{2,}$/.test(courriel)) {
+        dire("invalide", false); champ.focus(); return;
+      }
+      enCours = true; btn.disabled = true; dire("envoi", true);
+      fetch("/api/inscription", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ courriel: courriel, langue: langueActive, entreprise: piege.value })
+      })
+      .then(function(r){ return r.json().catch(function(){ return null; }); })
+      .then(function(d){
+        if (d && d.ok) { dire(d.deja ? "deja" : "succes", true); champ.value = ""; }
+        else { dire("erreur", false); }
+      })
+      .catch(function(){ dire("erreur", false); })
+      .then(function(){ enCours = false; btn.disabled = false; });
+    });
+  }
 
   /* ─────────── Filet de progression et parallaxe ─────────── */
   var progres = document.getElementById("progres");

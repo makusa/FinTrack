@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "fintrack-landing",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-06",
+
+  // Les fichiers de public/ sont servis directement par la couche d'assets
+  // de Cloudflare : ces requêtes n'invoquent pas le Worker et ne sont pas
+  // facturées. Le Worker ne reçoit que ce qui ne correspond à aucun fichier,
+  // c'est-à-dire /api/*.
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+
+  "observability": { "enabled": true },
+
+  // Remplacer database_id par la valeur retournée par :
+  //   npx wrangler d1 create fintrack-beta
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "fintrack-beta",
+      "database_id": "A_REMPLACER_APRES_wrangler_d1_create"
+    }
+  ]
+}

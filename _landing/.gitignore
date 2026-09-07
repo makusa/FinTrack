@@ -1,0 +1,7 @@
+# Secrets de développement local — jamais dans le dépôt
+.dev.vars
+
+# État local de Wrangler (base D1 simulée, cache)
+.wrangler/
+
+node_modules/
