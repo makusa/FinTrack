@@ -1,29 +1,40 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "fintrack-landing",
-  "main": "src/index.js",
-  "compatibility_date": "2026-09-06",
-
-  // Les fichiers de public/ sont servis directement par la couche d'assets
-  // de Cloudflare : ces requêtes n'invoquent pas le Worker et ne sont pas
-  // facturées. Le Worker ne reçoit que ce qui ne correspond à aucun fichier,
-  // c'est-à-dire /api/*.
-  "assets": {
-    "directory": "./public",
-    "binding": "ASSETS",
-    "html_handling": "auto-trailing-slash",
-    "not_found_handling": "404-page"
-  },
-
-  "observability": { "enabled": true },
-
-  // Remplacer database_id par la valeur retournée par :
-  //   npx wrangler d1 create fintrack-beta
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "fintrack-beta",
-      "database_id": "A_REMPLACER_APRES_wrangler_d1_create"
-    }
-  ]
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "fintrack-landing",
+	"main": "src/index.js",
+	"compatibility_date": "2026-09-06",
+	// Les fichiers de public/ sont servis directement par la couche d'assets
+	// de Cloudflare : ces requêtes n'invoquent pas le Worker et ne sont pas
+	// facturées. Le Worker ne reçoit que ce qui ne correspond à aucun fichier,
+	// c'est-à-dire /api/*.
+	"assets": {
+		"directory": "./public",
+		"binding": "ASSETS",
+		"html_handling": "auto-trailing-slash",
+		"not_found_handling": "404-page"
+	},
+	// Attaché ici plutôt qu'au tableau de bord : `wrangler deploy` crée le
+	// domaine et son enregistrement DNS, puis le réaffirme à chaque déploiement.
+	"routes": [
+		{
+			"pattern": "fintrack.bmsk.ca",
+			"custom_domain": true
+		}
+	],
+	// Une seule adresse publique, pour ne pas indexer la même page deux fois.
+	// Repasser à true pour retrouver une URL *.workers.dev de secours.
+	"workers_dev": false,
+	"preview_urls": true,
+	"observability": {
+		"enabled": true
+	},
+	// Base créée avec : npx wrangler d1 create fintrack-beta
+	// Le code n'utilise que la liaison DB (env.DB dans src/index.js).
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "fintrack-beta",
+			"database_id": "a9d727b6-66d5-4659-8503-5132b34afd9b"
+		}
+	]
 }
