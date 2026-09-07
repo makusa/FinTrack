@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="fr-CA">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fin:Track — Vos finances, calculées à la canadienne</title>
+<meta name="description" id="metaDesc" content="Fin:Track suit vos droits de cotisation CELI, CELIAPP et REER, calcule votre hypothèque avec la capitalisation semestrielle canadienne et vos marges de crédit au taux journalier. En français comme en anglais.">
+<meta property="og:title" content="Fin:Track">
+<meta property="og:locale" content="fr_CA">
+<meta property="og:locale:alternate" content="en_CA">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papier:#EEF1EF; --surface:#F9FBFA;
+  --encre:#0E241E; --encre-2:#2A413A;
+  --verdigris:#2E7D6C; --cuivre:#A55A2E;
+  --sourdine:#5C6E68; --ligne:#D2DAD6; --ligne-forte:#B9C5C0;
+  --sans:"Archivo","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --gouttiere:clamp(20px,5vw,40px);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);font-variation-settings:"wdth" 100;background:var(--papier);color:var(--encre);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+:focus-visible{outline:2px solid var(--verdigris);outline-offset:3px;border-radius:2px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+
+.zone{max-width:1180px;margin:0 auto;padding-left:var(--gouttiere);padding-right:var(--gouttiere)}
+h1,h2,h3{font-variation-settings:"wdth" 118;line-height:1.05;letter-spacing:-.015em}
+h1{font-size:clamp(2.4rem,5.8vw,4.2rem);font-weight:700}
+h2{font-size:clamp(1.7rem,3.4vw,2.5rem);font-weight:650}
+h3{font-size:1.0625rem;font-weight:650;line-height:1.3;font-variation-settings:"wdth" 108}
+p{max-width:63ch}
+.graduation{height:9px;background-image:repeating-linear-gradient(to right,var(--ligne-forte) 0 1px,transparent 1px 12px);border-top:1px solid var(--ligne)}
+
+.rev{opacity:0;transform:translateY(14px);transition:opacity .7s ease,transform .7s cubic-bezier(.16,.8,.3,1)}
+.rev.vu{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.rev{opacity:1;transform:none}}
+
+.barre{position:sticky;top:0;z-index:60;background:rgba(238,241,239,.88);backdrop-filter:saturate(150%) blur(12px);-webkit-backdrop-filter:saturate(150%) blur(12px);border-bottom:1px solid var(--ligne)}
+.barre-in{display:flex;align-items:center;justify-content:space-between;height:62px;gap:20px}
+.marque{font-size:1.15rem;font-weight:700;font-variation-settings:"wdth" 112;letter-spacing:-.01em}
+.marque i{font-style:normal;color:var(--verdigris)}
+.barre nav{display:flex;gap:26px;font-size:.9375rem;color:var(--sourdine);margin-left:auto}
+.barre nav a:hover{color:var(--encre)}
+@media(max-width:900px){.barre nav{display:none}}
+.progres{position:absolute;left:0;bottom:-1px;height:2px;width:0;background:var(--verdigris)}
+.barre-fin{display:flex;align-items:center;gap:14px}
+
+/* sélecteur de langue */
+.langue{display:flex;border:1px solid var(--ligne-forte);border-radius:6px;overflow:hidden}
+.langue button{border:0;background:transparent;font-family:var(--sans);font-size:.8125rem;font-weight:650;color:var(--sourdine);padding:6px 10px;cursor:pointer;transition:background .16s ease,color .16s ease}
+.langue button[aria-pressed="true"]{background:var(--encre);color:var(--surface)}
+
+.bouton{display:inline-block;padding:11px 20px;border-radius:6px;background:var(--encre);color:var(--surface);font-size:.9375rem;font-weight:600;border:1px solid var(--encre);transition:background .18s ease,border-color .18s ease;cursor:pointer;font-family:var(--sans)}
+.bouton:hover{background:var(--verdigris);border-color:var(--verdigris)}
+.bouton.creux{background:transparent;color:var(--encre);border-color:var(--ligne-forte)}
+.bouton.creux:hover{background:transparent;border-color:var(--encre)}
+.bouton.petit{padding:8px 15px;font-size:.875rem}
+@media(max-width:520px){.barre .bouton.petit{display:none}}
+
+.tel{position:relative;width:100%;aspect-ratio:620/1347;background:var(--encre);border-radius:11.5%/5.3%;padding:2.6%;box-shadow:0 24px 48px -22px rgba(14,36,30,.5),0 2px 8px rgba(14,36,30,.14)}
+.tel img{position:absolute;inset:2.6%;width:94.8%;height:94.8%;border-radius:9.2%/4.2%;object-fit:cover}
+.tel.pile img{opacity:0;transition:opacity .5s ease}
+.tel.pile img.actif{opacity:1}
+
+.heros{padding:clamp(46px,7vw,84px) 0 clamp(40px,6vw,68px);overflow:hidden}
+.heros-grille{display:grid;grid-template-columns:1.06fr .94fr;gap:clamp(28px,5vw,72px);align-items:center}
+@media(max-width:940px){.heros-grille{grid-template-columns:1fr;gap:40px}}
+.heros h1{margin-bottom:22px;max-width:15ch}
+.heros-texte>p{font-size:clamp(1.0625rem,1.6vw,1.1875rem);color:var(--encre-2);margin-bottom:28px}
+.heros-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.note-cta{font-size:.8125rem;color:var(--sourdine);margin-top:14px}
+.heros-visuel{display:flex;justify-content:center;will-change:transform}
+.heros-visuel .tel{max-width:312px}
+
+.faits{border-top:1px solid var(--ligne);border-bottom:1px solid var(--ligne);background:var(--surface)}
+.faits-grille{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--ligne)}
+@media(max-width:760px){.faits-grille{grid-template-columns:repeat(2,1fr)}}
+.fait{background:var(--surface);padding:22px var(--gouttiere)}
+.fait b{display:block;font-size:.9375rem;font-weight:650;margin-bottom:3px}
+.fait span{font-size:.8125rem;color:var(--sourdine)}
+
+.section{padding:clamp(56px,7.5vw,90px) 0}
+.section-entete{max-width:54ch;margin-bottom:clamp(30px,4vw,46px)}
+.section-entete p{margin-top:14px;color:var(--encre-2);font-size:1.0625rem}
+
+.recit-grille{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,6vw,80px);align-items:start}
+.recit-visuel{position:sticky;top:96px;display:flex;justify-content:center}
+.recit-visuel .tel{max-width:296px}
+.etape{min-height:74vh;display:flex;flex-direction:column;justify-content:center;padding:26px 0;opacity:.34;transition:opacity .45s ease}
+.etape.active{opacity:1}
+.etape-num{font-size:.8125rem;font-weight:650;color:var(--verdigris);margin-bottom:10px;font-variant-numeric:tabular-nums}
+.etape h3{font-size:clamp(1.35rem,2.4vw,1.75rem);font-variation-settings:"wdth" 114;margin-bottom:14px}
+.etape p{color:var(--encre-2);font-size:1rem;margin-bottom:16px}
+.etape dl{font-size:.8125rem;border-top:1px solid var(--ligne);padding-top:12px;max-width:36ch}
+.etape dt{color:var(--sourdine);float:left;clear:left;margin-right:8px}
+.etape dd{font-variant-numeric:tabular-nums;font-weight:650;text-align:right;margin-bottom:5px}
+@media(max-width:940px){
+  .recit-grille{grid-template-columns:1fr;gap:0}
+  .recit-visuel{order:-1;top:70px;z-index:5;background:linear-gradient(var(--papier) 72%,rgba(238,241,239,0));padding:10px 0 22px}
+  .recit-visuel .tel{max-width:196px}
+  .etape{min-height:60vh;opacity:1}
+}
+
+.car-entete{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;margin-bottom:26px}
+.car-nav{display:flex;gap:8px;flex-shrink:0}
+.car-btn{width:42px;height:42px;border-radius:50%;border:1px solid var(--ligne-forte);background:var(--surface);color:var(--encre);cursor:pointer;font-size:1.1rem;line-height:1;display:grid;place-items:center;transition:border-color .18s ease}
+.car-btn:hover{border-color:var(--encre)}
+.car-btn[disabled]{opacity:.34;cursor:default}
+.car-piste{display:flex;gap:22px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding:4px 0 26px;cursor:grab}
+.car-piste::-webkit-scrollbar{display:none}
+.car-piste.attrape{cursor:grabbing;scroll-snap-type:none}
+.car-item{flex:0 0 232px;scroll-snap-align:start}
+.car-item figcaption{margin-top:16px}
+.car-item b{display:block;font-size:.9375rem;font-weight:650}
+.car-item span{display:block;font-size:.8125rem;color:var(--sourdine);margin-top:2px}
+.car-jauge{height:2px;background:var(--ligne);position:relative}
+.car-jauge i{position:absolute;left:0;top:0;height:100%;background:var(--encre);transition:width .2s ease,left .2s ease}
+
+.inventaire{columns:3;column-gap:36px;font-size:.9375rem;margin-top:44px}
+@media(max-width:880px){.inventaire{columns:2}}
+@media(max-width:560px){.inventaire{columns:1}}
+.inventaire li{break-inside:avoid;list-style:none;padding:9px 0 9px 18px;border-bottom:1px solid var(--ligne);position:relative;color:var(--encre-2)}
+.inventaire li::before{content:"";position:absolute;left:0;top:1.05em;width:8px;height:1px;background:var(--verdigris)}
+.inventaire li em{font-style:normal;color:var(--cuivre);font-size:.8125rem;font-weight:600}
+
+.compar-enveloppe{overflow-x:auto}
+.compar{width:100%;border-collapse:collapse;font-size:.9375rem;background:var(--surface);border:1px solid var(--ligne);min-width:580px}
+.compar th,.compar td{padding:14px 16px;text-align:left;border-bottom:1px solid var(--ligne)}
+.compar thead th{font-size:.8125rem;font-weight:650;color:var(--sourdine);vertical-align:bottom;line-height:1.3}
+.compar thead th.nous{color:var(--encre);border-bottom:2px solid var(--encre)}
+.compar tbody th{font-weight:500;color:var(--encre-2)}
+.compar td{color:var(--sourdine);font-size:.875rem}
+.compar td.nous{color:var(--encre);font-weight:600;background:rgba(46,125,108,.055)}
+.compar td.attente{color:var(--cuivre);font-weight:600}
+.compar-note{font-size:.75rem;color:var(--sourdine);margin-top:14px;max-width:70ch}
+
+.paliers{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+@media(max-width:880px){.paliers{grid-template-columns:1fr}}
+.palier{background:var(--surface);border:1px solid var(--ligne);border-radius:8px;padding:26px 24px}
+.palier.mis-en-avant{border:1.5px solid var(--encre);box-shadow:0 2px 0 var(--verdigris)}
+.palier-nom{font-size:1.0625rem;font-weight:650;font-variation-settings:"wdth" 110}
+.palier-prix{font-size:2rem;font-weight:700;font-variant-numeric:tabular-nums;margin:12px 0 2px;letter-spacing:-.02em}
+.palier-prix small{font-size:.875rem;font-weight:500;color:var(--sourdine);letter-spacing:0}
+.palier-quoi{font-size:.8125rem;color:var(--sourdine);margin-bottom:18px;min-height:2.4em}
+.palier ul{list-style:none;font-size:.875rem;border-top:1px solid var(--ligne);padding-top:14px}
+.palier li{padding:6px 0 6px 16px;position:relative;color:var(--encre-2)}
+.palier li::before{content:"";position:absolute;left:0;top:.95em;width:7px;height:1px;background:var(--verdigris)}
+.palier li em{font-style:normal;color:var(--cuivre);font-size:.75rem;font-weight:600}
+
+.privee{background:var(--encre);color:var(--papier)}
+.privee h2{color:#fff}
+.privee p{color:#C3D2CD;margin-top:16px;font-size:1.0625rem}
+.privee-grille{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:38px}
+@media(max-width:800px){.privee-grille{grid-template-columns:1fr;gap:22px}}
+.privee-grille h3{color:#fff;margin-bottom:8px}
+.privee-grille p{color:#A7BDB7;font-size:.9375rem;margin-top:0}
+.privee .graduation{background-image:repeating-linear-gradient(to right,#3A5951 0 1px,transparent 1px 12px);border-top-color:#3A5951}
+
+.final{text-align:center;padding:clamp(60px,8vw,100px) 0}
+.final h2{max-width:20ch;margin:0 auto 18px}
+.final p{margin:0 auto 28px;color:var(--encre-2)}
+.formulaire{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;max-width:470px;margin:0 auto}
+.formulaire input{flex:1 1 240px;padding:12px 14px;border:1px solid var(--ligne-forte);border-radius:6px;font-family:var(--sans);font-size:.9375rem;background:var(--surface);color:var(--encre)}
+.formulaire input::placeholder{color:#8B9B96}
+
+.pied{border-top:1px solid var(--ligne);padding:34px 0 44px;font-size:.8125rem;color:var(--sourdine)}
+.pied-haut{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:22px}
+.pied-liens{display:flex;gap:20px;flex-wrap:wrap}
+.pied-legal{max-width:78ch;line-height:1.65}
+.pied-legal + .pied-legal{margin-top:8px}
+</style>
+</head>
+<body>
+
+<header class="barre">
+  <div class="zone barre-in">
+    <a href="#" class="marque">Fin<i>:</i>Track</a>
+    <nav>
+      <a href="#justesse" data-t="n1">Justesse</a>
+      <a href="#app" data-t="n2">L'application</a>
+      <a href="#comparatif" data-t="n3">Comparatif</a>
+      <a href="#prix" data-t="n4">Prix</a>
+    </nav>
+    <div class="barre-fin">
+      <div class="langue" role="group" aria-label="Langue / Language">
+        <button type="button" data-langue="fr" aria-pressed="true" lang="fr">FR</button>
+        <button type="button" data-langue="en" aria-pressed="false" lang="en">EN</button>
+      </div>
+      <a href="#beta" class="bouton petit" data-t="cta1">Rejoindre la bêta</a>
+    </div>
+  </div>
+  <div class="progres" id="progres"></div>
+</header>
+
+<main>
+
+<section class="heros">
+  <div class="zone heros-grille">
+    <div class="heros-texte">
+      <h1 data-t="h1">Combien vous reste-t-il de droits CELI&nbsp;?</h1>
+      <p data-t="hsub">Votre application de budget connaît vos dépenses. Elle ignore vos droits de cotisation, calcule votre hypothèque à l'américaine et n'a jamais entendu parler du CELIAPP. Fin:Track est conçue ici, pour les règles d'ici — en français comme en anglais.</p>
+      <div class="heros-actions">
+        <a href="#beta" class="bouton" data-t="cta1">Rejoindre la bêta</a>
+        <a href="#justesse" class="bouton creux" data-t="cta2">Voir les calculs</a>
+      </div>
+      <p class="note-cta" data-t="hnote">iOS 17 et plus. Français, anglais, espagnol, portugais.</p>
+    </div>
+    <div class="heros-visuel" id="herosVisuel">
+      <div class="tel">
+        <img src="img/17-comptes-enregistres.webp" data-shot="17-comptes-enregistres" width="620" height="1347" data-alt="alt17" alt="Écran Comptes enregistrés de Fin:Track : droit CELI disponible, ancrage 2026, droit CELIAPP." fetchpriority="high">
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="faits">
+  <div class="faits-grille">
+    <div class="fait"><b data-t="f1b">Sur votre appareil</b><span data-t="f1s">Aucun compte à créer pour commencer</span></div>
+    <div class="fait"><b data-t="f2b">Face ID ou NIP</b><span data-t="f2s">Verrouillage automatique configurable</span></div>
+    <div class="fait"><b data-t="f3b">Français et anglais</b><span data-t="f3s">Complets tous les deux, plus l'espagnol et le portugais</span></div>
+    <div class="fait"><b data-t="f4b">Conçu à Montréal</b><span data-t="f4s">Pour les règles d'ici</span></div>
+  </div>
+</div>
+
+<section class="section" id="justesse">
+  <div class="zone">
+    <div class="section-entete rev">
+      <h2 data-t="jh">Trois calculs que les autres arrondissent</h2>
+      <p data-t="jp">Ce ne sont pas des détails. Un mauvais mode de capitalisation fausse votre paiement hypothécaire tous les mois, et une cotisation de trop coûte 1&nbsp;% par mois en pénalité. Les écrans présentés ici viennent de l'application.</p>
+    </div>
+
+    <div class="recit-grille">
+      <div class="recit-visuel">
+        <div class="tel pile" id="pile">
+          <img class="actif" data-i="0" src="img/17-comptes-enregistres.webp" data-shot="17-comptes-enregistres" width="620" height="1347" data-alt="alt17" alt="Écran Comptes enregistrés : droit CELI disponible, ancrage, droit CELIAPP.">
+          <img data-i="1" src="img/14-prets-detail.webp" data-shot="14-prets-detail" width="620" height="1347" data-alt="alt14" alt="Détail d'une hypothèque : solde, capital initial, capital remboursé, intérêts payés, versements restants.">
+          <img data-i="2" src="img/16-marges-de-credit-detail.webp" data-shot="16-marges-de-credit-detail" width="620" height="1347" data-alt="alt16" alt="Détail d'une marge de crédit : taux d'utilisation, coût mensuel estimé, paiement minimum, taux journalier.">
+        </div>
+      </div>
+
+      <div class="recit-textes">
+        <article class="etape active" data-i="0">
+          <div class="etape-num" data-t="e1n">Calcul 01</div>
+          <h3 data-t="e1h">Vos droits de cotisation, ancrés sur l'ARC</h3>
+          <p data-t="e1p">Vous saisissez une seule fois le droit indiqué dans Mon dossier de l'ARC, avec son année de référence. Fin:Track projette ensuite chaque cotisation et chaque retrait — en respectant la règle qui piège tout le monde : un retrait du CELI ne rétablit vos droits qu'au 1<sup>er</sup> janvier suivant.</p>
+          <dl>
+            <dt data-t="e1d1">CELIAPP, par an</dt><dd data-t="e1v1">8 000 $</dd>
+            <dt data-t="e1d2">CELIAPP, à vie</dt><dd data-t="e1v2">40 000 $</dd>
+            <dt data-t="e1d3">Droit suivi</dt><dd data-t="e1v3">Par personne</dd>
+          </dl>
+        </article>
+
+        <article class="etape" data-i="1">
+          <div class="etape-num" data-t="e2n">Calcul 02</div>
+          <h3 data-t="e2h">L'hypothèque, avec la capitalisation semestrielle</h3>
+          <p data-t="e2p">Au Canada, l'intérêt hypothécaire se compose deux fois par année, pas douze. Les applications conçues aux États-Unis appliquent la capitalisation mensuelle et se trompent sur votre paiement. Fin:Track utilise le taux périodique équivalent, sépare capital et intérêts, et compte les versements qui restent.</p>
+          <dl>
+            <dt data-t="e2d1">Hypothèque</dt><dd data-t="e2v1">Semestrielle</dd>
+            <dt data-t="e2d2">Auto, personnel</dt><dd data-t="e2v2">Mensuelle</dd>
+            <dt data-t="e2d3">Versements anticipés</dt><dd data-t="e2v3">Pris en compte</dd>
+          </dl>
+        </article>
+
+        <article class="etape" data-i="2">
+          <div class="etape-num" data-t="e3n">Calcul 03</div>
+          <h3 data-t="e3h">Les marges de crédit, au taux journalier</h3>
+          <p data-t="e3p">Une marge canadienne accumule l'intérêt chaque jour sur le solde utilisé. Fin:Track affiche le taux journalier au dix-millième de pourcent, estime le coût mensuel réel, suit votre taux d'utilisation et gère les trois formes de paiement minimum au lieu d'en supposer une seule.</p>
+          <dl>
+            <dt data-t="e3d1">Capitalisation</dt><dd data-t="e3v1">Quotidienne</dd>
+            <dt data-t="e3d2">Paiement minimum</dt><dd data-t="e3v2">3 modes</dd>
+            <dt data-t="e3d3">Utilisation</dt><dd data-t="e3v3">Suivie</dd>
+          </dl>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="graduation"></div>
+
+<section class="section" id="app">
+  <div class="zone">
+    <div class="car-entete rev">
+      <div class="section-entete" style="margin-bottom:0">
+        <h2 data-t="ah">Et tout le reste d'une vraie application de finances</h2>
+        <p data-t="ap">La justesse canadienne est la raison de choisir Fin:Track. Le quotidien, lui, doit être complet.</p>
+      </div>
+      <div class="car-nav">
+        <button class="car-btn" id="carPrec" data-aria="carPrec" aria-label="Écran précédent">&#8249;</button>
+        <button class="car-btn" id="carSuiv" data-aria="carSuiv" aria-label="Écran suivant">&#8250;</button>
+      </div>
+    </div>
+
+    <div class="car-piste" id="carPiste" tabindex="0" role="region" data-aria="carZone" aria-label="Captures d'écran de l'application">
+      <figure class="car-item"><div class="tel"><img src="img/01-tableau-de-bord.webp" data-shot="01-tableau-de-bord" width="620" height="1347" data-alt="alt01" alt="Tableau de bord : solde global multidevises, comptes, revenus et dépenses du mois, prêts." loading="lazy"></div><figcaption><b data-t="c1b">Tableau de bord</b><span data-t="c1s">Solde global converti, par devise</span></figcaption></figure>
+      <figure class="car-item"><div class="tel"><img src="img/04-comptes.webp" data-shot="04-comptes" width="620" height="1347" data-alt="alt04" alt="Liste des comptes : chèques, épargne, CELI, CELIAPP, carte de crédit, compte en dollars américains." loading="lazy"></div><figcaption><b data-t="c2b">Comptes</b><span data-t="c2s">Chèques, épargne, enregistrés, cartes</span></figcaption></figure>
+      <figure class="car-item"><div class="tel"><img src="img/06-transactions.webp" data-shot="06-transactions" width="620" height="1347" data-alt="alt06" alt="Liste des transactions groupées par jour, avec montants et catégories." loading="lazy"></div><figcaption><b data-t="c3b">Transactions</b><span data-t="c3s">Groupées par jour, recherchables</span></figcaption></figure>
+      <figure class="car-item"><div class="tel"><img src="img/12-recurrences.webp" data-shot="12-recurrences" width="620" height="1347" data-alt="alt12" alt="Écran Récurrences proposant de créer des transactions récurrentes détectées automatiquement." loading="lazy"></div><figcaption><b data-t="c4b">Récurrences</b><span data-t="c4s">Détectées, puis proposées</span></figcaption></figure>
+      <figure class="car-item"><div class="tel"><img src="img/08-budgets.webp" data-shot="08-budgets" width="620" height="1347" data-alt="alt08" alt="Budgets par catégorie avec barres de progression." loading="lazy"></div><figcaption><b data-t="c5b">Budgets</b><span data-t="c5s">Par catégorie, par période</span></figcaption></figure>
+      <figure class="car-item"><div class="tel"><img src="img/10-projets-epargne.webp" data-shot="10-projets-epargne" width="620" height="1347" data-alt="alt10" alt="Projets d'épargne avec montants atteints et objectifs." loading="lazy"></div><figcaption><b data-t="c6b">Projets d'épargne</b><span data-t="c6s">Avec date d'atteinte projetée</span></figcaption></figure>
+      <figure class="car-item"><div class="tel"><img src="img/13-prets.webp" data-shot="13-prets" width="620" height="1347" data-alt="alt13" alt="Liste des prêts : hypothèque et prêt auto, avec taux et soldes." loading="lazy"></div><figcaption><b data-t="c7b">Prêts</b><span data-t="c7s">Amortissement complet</span></figcaption></figure>
+      <figure class="car-item"><div class="tel"><img src="img/19-reglages.webp" data-shot="19-reglages" width="620" height="1347" data-alt="alt19" alt="Réglages : langue, sécurité, connexion bancaire, synchronisation iCloud, export CSV." loading="lazy"></div><figcaption><b data-t="c8b">Réglages</b><span data-t="c8s">Langue, sécurité, synchronisation</span></figcaption></figure>
+    </div>
+    <div class="car-jauge"><i id="carJauge" style="width:25%"></i></div>
+    <p class="compar-note" data-t="cnote">Captures réelles de l'application, prises sur iPhone. Les montants proviennent d'un ménage québécois fictif utilisé pour la démonstration.</p>
+
+    <ul class="inventaire">
+      <li data-t="i01">Comptes multidevises avec solde global converti</li>
+      <li data-t="i02">Transactions récurrentes, six fréquences</li>
+      <li data-t="i03">Détection automatique des récurrences</li>
+      <li data-t="i04">Budgets par catégorie et par période</li>
+      <li data-t="i05">Prêts avec versements anticipés</li>
+      <li data-t="i06">Marges de crédit et cartes de crédit</li>
+      <li data-t="i07">Projets d'épargne avec projection</li>
+      <li data-t="i08">Flux mensuel estimé et surplus</li>
+      <li data-t="i09">Projection de solde et répartition des dépenses</li>
+      <li data-t="i10">Tableau de bord réorganisable</li>
+      <li data-t="i11">Centre de notifications dans l'application</li>
+      <li data-t="i12">Export CSV de vos transactions</li>
+      <li data-t="i13">Widgets, quatre formats, écran verrouillé <em data-t="tPro">Pro</em></li>
+      <li data-t="i14">Synchronisation entre vos appareils <em data-t="tPro">Pro</em></li>
+      <li data-t="i15">Numérisation de reçus <em data-t="tPro">Pro</em></li>
+      <li data-t="i16">Connexion bancaire canadienne <em data-t="tMax">Max</em></li>
+      <li data-t="i17">Assistance par IA <em data-t="tSoon">à venir</em></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="comparatif">
+  <div class="zone">
+    <div class="section-entete rev">
+      <h2 data-t="kh">Ce que vous perdez ailleurs</h2>
+      <p data-t="kp">Comparaison par famille de produits plutôt que par marque, parce que les fonctionnalités changent plus vite qu'une page web.</p>
+    </div>
+    <div class="compar-enveloppe rev">
+      <table class="compar">
+        <thead>
+          <tr>
+            <th scope="col"></th>
+            <th scope="col" class="nous">Fin:Track</th>
+            <th scope="col" data-t="kc2">Grandes apps<br>américaines</th>
+            <th scope="col" data-t="kc3">Nouvelles apps<br>canadiennes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row" data-t="kr1">Suivi des droits CELI, CELIAPP, REER</th><td class="nous" data-t="vOui">Oui</td><td data-t="vNon">Non</td><td data-t="vNon">Non</td></tr>
+          <tr><th scope="row" data-t="kr2">Capitalisation hypothécaire semestrielle</th><td class="nous" data-t="vOui">Oui</td><td data-t="vNon">Non</td><td data-t="vVar">Variable</td></tr>
+          <tr><th scope="row" data-t="kr3">Marges de crédit à intérêt quotidien</th><td class="nous" data-t="vOui">Oui</td><td data-t="vNon">Non</td><td data-t="vVar">Variable</td></tr>
+          <tr><th scope="row" data-t="kr4">Interface complète en français et en anglais</th><td class="nous" data-t="vOui">Oui</td><td data-t="vPart">Partielle</td><td data-t="vVar">Variable</td></tr>
+          <tr><th scope="row" data-t="kr5">Fonctionne sans connexion bancaire</th><td class="nous" data-t="vOui">Oui</td><td data-t="vNon">Non</td><td data-t="vNon">Non</td></tr>
+          <tr><th scope="row" data-t="kr6">Achat unique possible</th><td class="nous" data-t="vOui">Oui</td><td data-t="vNon">Non</td><td data-t="vNon">Non</td></tr>
+          <tr><th scope="row" data-t="kr7">Fonctions d'IA</th><td class="attente" data-t="vSoon">À venir</td><td data-t="vOui">Oui</td><td data-t="vOui">Oui</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="compar-note" data-t="knote">Comparaison établie à partir des fonctionnalités publiées par les éditeurs en 2026. Les offres évoluent : vérifiez auprès de chaque éditeur avant de décider. Nous indiquons volontairement l'IA comme un point où d'autres sont en avance.</p>
+  </div>
+</section>
+
+<section class="section privee">
+  <div class="zone">
+    <div class="section-entete">
+      <h2 data-t="ph">Vos données restent où elles doivent être</h2>
+      <p data-t="pp">Un relevé bancaire dit où vous habitez, où vous mangez, qui vous payez et quand vous êtes malade. Fin:Track est construit pour que ces informations ne quittent pas votre appareil sans que vous l'ayez demandé.</p>
+    </div>
+    <div class="privee-grille">
+      <div><h3 data-t="p1h">Local par défaut</h3><p data-t="p1p">Les données vivent dans l'application, protégées par le chiffrement du système. Aucune inscription n'est requise pour commencer.</p></div>
+      <div><h3 data-t="p2h">La synchronisation reste la vôtre</h3><p data-t="p2p">La synchronisation entre vos appareils passe par votre propre compte iCloud privé, pas par nos serveurs.</p></div>
+      <div><h3 data-t="p3h">La connexion bancaire est optionnelle</h3><p data-t="p3p">Elle passe par un fournisseur canadien, elle s'active seulement si vous le voulez, et l'application reste complète sans elle.</p></div>
+    </div>
+  </div>
+  <div class="graduation" style="margin-top:56px"></div>
+</section>
+
+<section class="section" id="prix">
+  <div class="zone">
+    <div class="section-entete rev">
+      <h2 data-t="xh">Trois paliers, dont un gratuit pour de vrai</h2>
+      <p data-t="xp">Ce qui ne nous coûte rien chaque mois se paie une seule fois. Ce qui a un coût récurrent — la connexion bancaire, l'IA — se paie par abonnement. Prix en dollars canadiens.</p>
+    </div>
+    <div class="paliers">
+      <div class="palier">
+        <div class="palier-nom">Courant</div>
+        <div class="palier-prix" data-t="x0prix">Gratuit</div>
+        <div class="palier-quoi" data-t="x0quoi">Tout le suivi manuel, sans limite de temps.</div>
+        <ul>
+          <li data-t="x0a">Comptes, transactions, récurrences</li>
+          <li data-t="x0b">Budgets et projets d'épargne</li>
+          <li data-t="x0c">Prêts, marges, cartes de crédit</li>
+          <li data-t="x0d">Analyse et projections</li>
+        </ul>
+      </div>
+      <div class="palier mis-en-avant">
+        <div class="palier-nom">Pro</div>
+        <div class="palier-prix" data-t="x1prix">24,99 $ <small>une seule fois</small></div>
+        <div class="palier-quoi" data-t="x1quoi">Le calculateur de droits de cotisation et tout ce qui ne coûte rien à faire tourner.</div>
+        <ul>
+          <li data-t="x1a">Tout le palier Courant</li>
+          <li data-t="x1b">Droits CELI, CELIAPP et REER</li>
+          <li data-t="x1c">Widgets et écran verrouillé</li>
+          <li data-t="x1d">Synchronisation entre vos appareils</li>
+          <li data-t="x1e">Numérisation de reçus</li>
+        </ul>
+      </div>
+      <div class="palier">
+        <div class="palier-nom">Max</div>
+        <div class="palier-prix" data-t="x2prix">3,99 $ <small>par mois</small></div>
+        <div class="palier-quoi" data-t="x2quoi">Pour ceux qui veulent que les transactions arrivent toutes seules.</div>
+        <ul>
+          <li data-t="x2a">Tout le palier Pro</li>
+          <li data-t="x2b">Connexion aux banques canadiennes</li>
+          <li data-t="x2c">Rapprochement automatique</li>
+          <li data-t="x2d">Assistance par IA <em>à venir</em></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="final" id="beta">
+  <div class="zone">
+    <h2 data-t="bh">La bêta ouvre bientôt sur TestFlight</h2>
+    <p data-t="bp">Laissez votre courriel et vous recevrez l'invitation. Rien d'autre : pas d'infolettre, pas de partage à des tiers.</p>
+    <form class="formulaire" onsubmit="return false;">
+      <label for="courriel" data-t="blabel" style="position:absolute;left:-9999px">Adresse courriel</label>
+      <input type="email" id="courriel" data-ph="bph" placeholder="vous@exemple.ca" autocomplete="email" required>
+      <button type="submit" class="bouton" data-t="bbtn">Recevoir l'invitation</button>
+    </form>
+    <p class="note-cta" data-t="bnote" style="margin-top:16px">Vous pouvez vous retirer en tout temps.</p>
+  </div>
+</section>
+
+</main>
+
+<footer class="pied">
+  <div class="zone">
+    <div class="pied-haut">
+      <span class="marque" style="font-size:1rem">Fin<i>:</i>Track</span>
+      <div class="pied-liens">
+        <a href="#justesse" data-t="n1">Justesse</a>
+        <a href="#prix" data-t="n4">Prix</a>
+        <a href="#" data-t="fl1">Confidentialité</a>
+        <a href="#" data-t="fl2">Nous joindre</a>
+      </div>
+    </div>
+    <p class="pied-legal" data-t="fg1">Fin:Track n'est pas affilié à l'Agence du revenu du Canada ni à aucune institution financière. Les droits de cotisation affichés sont une projection calculée à partir des montants que vous saisissez : votre relevé officiel demeure celui de Mon dossier de l'ARC.</p>
+    <p class="pied-legal" data-t="fg2">Fin:Track ne fournit pas de conseils financiers, fiscaux ou de placement. Les captures d'écran présentent des données de démonstration.</p>
+    <p class="pied-legal" data-t="fg3" style="margin-top:16px">Conçu à Montréal.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var doux = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ─────────── Bilingue. Le français est dans le HTML ; on ne stocke que l'anglais. ─────────── */
+  var EN = {
+    _title: "Fin:Track — Your money, calculated the Canadian way",
+    _desc: "Fin:Track tracks your TFSA, FHSA and RRSP contribution room, amortizes your mortgage with Canadian semi-annual compounding, and accrues credit line interest daily. In English and in French.",
+    n1:"Precision", n2:"The app", n3:"Comparison", n4:"Pricing", cta1:"Join the beta", cta2:"See the calculations",
+    h1:"How much TFSA room do you have left?",
+    hsub:"Your budgeting app knows your spending. It doesn't know your contribution room, it amortizes your mortgage the American way, and it has never heard of an FHSA. Fin:Track is built here, for the rules that apply here — in English and in French.",
+    hnote:"iOS 17 and later. English, French, Spanish, Portuguese.",
+    f1b:"On your device", f1s:"No account needed to get started",
+    f2b:"Face ID or PIN",  f2s:"Configurable auto-lock",
+    f3b:"English and French", f3s:"Both complete, plus Spanish and Portuguese",
+    f4b:"Built in Montréal", f4s:"For the rules that apply here",
+    jh:"Three calculations others round off",
+    jp:"These aren't details. The wrong compounding method skews your mortgage payment every single month, and one contribution too many costs 1% per month in penalty. The screens below come from the app.",
+    e1n:"Calculation 01", e1h:"Your contribution room, anchored to the CRA",
+    e1p:"You enter the room shown in CRA My Account once, with its reference year. Fin:Track then projects every contribution and every withdrawal — including the rule that catches everyone: a TFSA withdrawal only restores your room on January 1 of the following year.",
+    e1d1:"FHSA, per year", e1v1:"$8,000", e1d2:"FHSA, lifetime", e1v2:"$40,000", e1d3:"Room tracked", e1v3:"Per person",
+    e2n:"Calculation 02", e2h:"The mortgage, with semi-annual compounding",
+    e2p:"In Canada, mortgage interest compounds twice a year, not twelve times. Apps built in the United States apply monthly compounding and get your payment wrong. Fin:Track uses the equivalent periodic rate, separates principal from interest, and counts the payments you have left.",
+    e2d1:"Mortgage", e2v1:"Semi-annual", e2d2:"Auto, personal", e2v2:"Monthly", e2d3:"Prepayments", e2v3:"Accounted for",
+    e3n:"Calculation 03", e3h:"Credit lines, at the daily rate",
+    e3p:"A Canadian line of credit accrues interest every day on the balance you have drawn. Fin:Track shows the daily rate to four decimal places, estimates the real monthly cost, tracks your utilization, and handles all three minimum payment types instead of assuming one.",
+    e3d1:"Compounding", e3v1:"Daily", e3d2:"Minimum payment", e3v2:"3 types", e3d3:"Utilization", e3v3:"Tracked",
+    ah:"And everything else a real finance app needs",
+    ap:"Canadian precision is the reason to choose Fin:Track. Day to day, it still has to be complete.",
+    c1b:"Dashboard", c1s:"Total balance converted, by currency",
+    c2b:"Accounts", c2s:"Chequing, savings, registered, cards",
+    c3b:"Transactions", c3s:"Grouped by day, searchable",
+    c4b:"Recurrences", c4s:"Detected, then suggested",
+    c5b:"Budgets", c5s:"By category, by period",
+    c6b:"Savings goals", c6s:"With a projected completion date",
+    c7b:"Loans", c7s:"Full amortization schedule",
+    c8b:"Settings", c8s:"Language, security, sync",
+    cnote:"Real screenshots taken on iPhone. The amounts belong to a fictional Quebec household used for the demo.",
+    i01:"Multi-currency accounts with a converted total", i02:"Recurring transactions, six frequencies",
+    i03:"Automatic recurrence detection", i04:"Budgets by category and by period",
+    i05:"Loans with prepayments", i06:"Credit lines and credit cards",
+    i07:"Savings goals with projection", i08:"Estimated monthly cash flow and surplus",
+    i09:"Balance projection and expense breakdown", i10:"Rearrangeable dashboard",
+    i11:"In-app notification centre", i12:"CSV export of your transactions",
+    i13:"Widgets, four sizes, lock screen <em>Pro</em>", i14:"Sync across your devices <em>Pro</em>",
+    i15:"Receipt scanning <em>Pro</em>", i16:"Canadian bank connection <em>Max</em>",
+    i17:"AI assistance <em>coming</em>",
+    kh:"What you give up elsewhere",
+    kp:"Compared by product family rather than by brand, because features change faster than a web page.",
+    kc2:"Large American<br>apps", kc3:"Newer Canadian<br>apps",
+    kr1:"TFSA, FHSA and RRSP room tracking", kr2:"Semi-annual mortgage compounding",
+    kr3:"Credit lines with daily interest", kr4:"Complete interface in both English and French",
+    kr5:"Works without a bank connection", kr6:"One-time purchase available", kr7:"AI features",
+    vOui:"Yes", vNon:"No", vVar:"Varies", vPart:"Partial", vSoon:"Coming",
+    knote:"Based on features published by each vendor in 2026. Offerings change: check with each vendor before deciding. We deliberately show AI as a point where others are ahead.",
+    ph:"Your data stays where it belongs",
+    pp:"A bank statement says where you live, where you eat, who you pay and when you were sick. Fin:Track is built so that information doesn't leave your device unless you ask it to.",
+    p1h:"Local by default", p1p:"Your data lives in the app, protected by the system's encryption. No sign-up is required to get started.",
+    p2h:"Sync stays yours", p2p:"Syncing across your devices runs through your own private iCloud account, not through our servers.",
+    p3h:"The bank connection is optional", p3p:"It runs through a Canadian provider, it turns on only if you want it, and the app stays complete without it.",
+    xh:"Three tiers, one of them genuinely free",
+    xp:"What costs us nothing each month is paid for once. What carries a recurring cost — the bank connection, AI — is paid by subscription. Prices in Canadian dollars.",
+    x0prix:"Free", x0quoi:"All the manual tracking, with no time limit.",
+    x0a:"Accounts, transactions, recurrences", x0b:"Budgets and savings goals",
+    x0c:"Loans, credit lines, credit cards", x0d:"Analysis and projections",
+    x1prix:"$24.99 <small>one time</small>", x1quoi:"The contribution room calculator and everything that costs nothing to run.",
+    x1a:"Everything in Courant", x1b:"TFSA, FHSA and RRSP room", x1c:"Widgets and lock screen",
+    x1d:"Sync across your devices", x1e:"Receipt scanning",
+    x2prix:"$3.99 <small>per month</small>", x2quoi:"For those who want transactions to arrive on their own.",
+    x2a:"Everything in Pro", x2b:"Canadian bank connections", x2c:"Automatic reconciliation", x2d:"AI assistance <em>coming</em>",
+    bh:"The beta opens soon on TestFlight",
+    bp:"Leave your email and you'll get the invitation. Nothing else: no newsletter, no sharing with third parties.",
+    blabel:"Email address", bph:"you@example.ca", bbtn:"Send me the invitation", bnote:"You can opt out at any time.",
+    fl1:"Privacy", fl2:"Contact",
+    fg1:"Fin:Track is not affiliated with the Canada Revenue Agency or with any financial institution. The contribution room shown is a projection calculated from the amounts you enter: your official record remains CRA My Account.",
+    fg2:"Fin:Track does not provide financial, tax or investment advice. Screenshots show demonstration data.",
+    fg3:"Built in Montréal.",
+    alt17:"Fin:Track Registered accounts screen: available TFSA room, anchor year, and FHSA room.",
+    alt14:"Mortgage detail: balance, original principal, principal repaid, interest paid, remaining payments.",
+    alt16:"Credit line detail: utilization, estimated monthly cost, minimum payment, daily rate.",
+    alt01:"Dashboard: multi-currency total balance, accounts, income and expenses for the month, loans.",
+    alt04:"Account list: chequing, savings, TFSA, FHSA, credit card, US dollar account.",
+    alt06:"Transaction list grouped by day, with amounts and categories.",
+    alt12:"Recurrences screen suggesting recurring transactions detected automatically.",
+    alt08:"Budgets by category with progress bars.",
+    alt10:"Savings goals with amounts saved and targets.",
+    alt13:"Loan list: mortgage and car loan, with rates and balances.",
+    alt19:"Settings: language, security, bank connection, iCloud sync, CSV export.",
+    carPrec:"Previous screen", carSuiv:"Next screen", carZone:"App screenshots"
+  };
+
+  var FR = {}, titreFR = document.title, descFR = document.getElementById("metaDesc").content;
+  function recolter(){
+    document.querySelectorAll("[data-t]").forEach(function(el){ FR[el.dataset.t] = el.innerHTML; });
+    document.querySelectorAll("[data-alt]").forEach(function(el){ FR[el.dataset.alt] = el.alt; });
+    document.querySelectorAll("[data-ph]").forEach(function(el){ FR[el.dataset.ph] = el.placeholder; });
+    document.querySelectorAll("[data-aria]").forEach(function(el){ FR[el.dataset.aria] = el.getAttribute("aria-label"); });
+  }
+  recolter();
+
+  function appliquer(code){
+    var d = (code === "en") ? EN : FR;
+    document.querySelectorAll("[data-t]").forEach(function(el){
+      if (d[el.dataset.t] !== undefined) el.innerHTML = d[el.dataset.t];
+    });
+    document.querySelectorAll("[data-alt]").forEach(function(el){
+      if (d[el.dataset.alt] !== undefined) el.alt = d[el.dataset.alt];
+    });
+    document.querySelectorAll("[data-ph]").forEach(function(el){
+      if (d[el.dataset.ph] !== undefined) el.placeholder = d[el.dataset.ph];
+    });
+    document.querySelectorAll("[data-aria]").forEach(function(el){
+      if (d[el.dataset.aria] !== undefined) el.setAttribute("aria-label", d[el.dataset.aria]);
+    });
+    var dossier = (code === "en") ? "img-en/" : "img/";
+    document.querySelectorAll("img[data-shot]").forEach(function(el){
+      var voulu = dossier + el.dataset.shot + ".webp";
+      if (!el.getAttribute("src").endsWith(voulu)) el.setAttribute("src", voulu);
+    });
+    document.title = (code === "en") ? EN._title : titreFR;
+    document.getElementById("metaDesc").content = (code === "en") ? EN._desc : descFR;
+    document.documentElement.lang = (code === "en") ? "en-CA" : "fr-CA";
+    document.querySelectorAll(".langue button").forEach(function(b){
+      b.setAttribute("aria-pressed", b.dataset.langue === code ? "true" : "false");
+    });
+    try { localStorage.setItem("fintrack-langue", code); } catch(e){}
+  }
+
+  var choisie = new URLSearchParams(location.search).get("lang");
+  if (choisie !== "fr" && choisie !== "en") {
+    choisie = null;
+    try { choisie = localStorage.getItem("fintrack-langue"); } catch(e){}
+  }
+  if (choisie !== "fr" && choisie !== "en") {
+    choisie = (navigator.language || "fr").toLowerCase().indexOf("fr") === 0 ? "fr" : "en";
+  }
+  document.querySelectorAll(".langue button").forEach(function(b){
+    b.addEventListener("click", function(){ appliquer(b.dataset.langue); });
+  });
+  appliquer(choisie);
+
+  /* ─────────── Filet de progression et parallaxe ─────────── */
+  var progres = document.getElementById("progres");
+  var heros = document.getElementById("herosVisuel");
+  var enAttente = false;
+  function surDefilement(){
+    var y = window.scrollY;
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    progres.style.width = (h > 0 ? (y / h) * 100 : 0) + "%";
+    if (!doux && heros && y < window.innerHeight * 1.4) {
+      heros.style.transform = "translate3d(0," + (y * -0.055) + "px,0)";
+    }
+    enAttente = false;
+  }
+  window.addEventListener("scroll", function(){
+    if (!enAttente) { enAttente = true; requestAnimationFrame(surDefilement); }
+  }, {passive:true});
+  surDefilement();
+
+  /* ─────────── Révélations ─────────── */
+  if ("IntersectionObserver" in window) {
+    var oRev = new IntersectionObserver(function(es){
+      es.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add("vu"); oRev.unobserve(e.target); } });
+    }, {threshold:0.18});
+    document.querySelectorAll(".rev").forEach(function(el){ oRev.observe(el); });
+  } else {
+    document.querySelectorAll(".rev").forEach(function(el){ el.classList.add("vu"); });
+  }
+
+  /* ─────────── Récit défilant ─────────── */
+  var etapes = Array.prototype.slice.call(document.querySelectorAll(".etape"));
+  var ecrans = Array.prototype.slice.call(document.querySelectorAll("#pile img"));
+  if (etapes.length && "IntersectionObserver" in window) {
+    var oRecit = new IntersectionObserver(function(es){
+      es.forEach(function(e){
+        if (!e.isIntersecting) return;
+        var i = e.target.getAttribute("data-i");
+        etapes.forEach(function(a){ a.classList.toggle("active", a === e.target); });
+        ecrans.forEach(function(img){ img.classList.toggle("actif", img.getAttribute("data-i") === i); });
+      });
+    }, {rootMargin:"-45% 0px -45% 0px", threshold:0});
+    etapes.forEach(function(el){ oRecit.observe(el); });
+  }
+
+  /* ─────────── Carrousel ─────────── */
+  var piste = document.getElementById("carPiste");
+  var prec  = document.getElementById("carPrec");
+  var suiv  = document.getElementById("carSuiv");
+  var jauge = document.getElementById("carJauge");
+  if (piste) {
+    function pas(){
+      var item = piste.querySelector(".car-item");
+      return item ? item.getBoundingClientRect().width + 22 : 254;
+    }
+    function majJauge(){
+      var maxi = piste.scrollWidth - piste.clientWidth;
+      var part = Math.max((piste.clientWidth / piste.scrollWidth) * 100, 8);
+      jauge.style.width = part + "%";
+      jauge.style.left  = (maxi > 0 ? (piste.scrollLeft / maxi) * (100 - part) : 0) + "%";
+      prec.disabled = piste.scrollLeft <= 2;
+      suiv.disabled = piste.scrollLeft >= maxi - 2;
+    }
+    prec.addEventListener("click", function(){ piste.scrollBy({left:-pas(), behavior: doux ? "auto" : "smooth"}); });
+    suiv.addEventListener("click", function(){ piste.scrollBy({left: pas(), behavior: doux ? "auto" : "smooth"}); });
+    piste.addEventListener("scroll", majJauge, {passive:true});
+    piste.addEventListener("keydown", function(e){
+      if (e.key === "ArrowRight"){ e.preventDefault(); suiv.click(); }
+      if (e.key === "ArrowLeft"){ e.preventDefault(); prec.click(); }
+    });
+    var attrape = false, departX = 0, departScroll = 0;
+    piste.addEventListener("pointerdown", function(e){
+      if (e.pointerType === "touch") return;
+      attrape = true; departX = e.clientX; departScroll = piste.scrollLeft;
+      piste.classList.add("attrape"); piste.setPointerCapture(e.pointerId);
+    });
+    piste.addEventListener("pointermove", function(e){
+      if (attrape) piste.scrollLeft = departScroll - (e.clientX - departX);
+    });
+    ["pointerup","pointercancel"].forEach(function(ev){
+      piste.addEventListener(ev, function(){ attrape = false; piste.classList.remove("attrape"); });
+    });
+    window.addEventListener("resize", majJauge);
+    majJauge();
+  }
+})();
+</script>
+
+</body>
+</html>
