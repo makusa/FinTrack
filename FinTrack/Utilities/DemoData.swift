@@ -38,6 +38,18 @@ enum DemoData {
         cal.date(byAdding: .month, value: offset, to: .now) ?? .now
     }
 
+    /// Demo content is user-authored data, not UI copy, so it does not live in
+    /// the localization table. The screenshot harness runs once per language,
+    /// so the seed picks names matching the language the app launched in.
+    private static var isEnglish: Bool {
+        LanguageManager.shared.current == .english
+    }
+
+    /// Picks the French or English variant of a piece of demo content.
+    private static func t(_ fr: String, _ en: String) -> String {
+        isEnglish ? en : fr
+    }
+
     // MARK: - Entry point
 
     /// Populates an empty in-memory store with a realistic Quebec household.
@@ -52,22 +64,23 @@ enum DemoData {
         }
 
         // ── Comptes ──────────────────────────────────────────────────────
-        let cheques = Account(name: "Compte chèques", institution: "Banque Nationale",
+        let bank = t("Banque Nationale", "National Bank")
+        let cheques = Account(name: t("Compte chèques", "Chequing"), institution: bank,
                               type: .checking, currency: "CAD",
                               initialBalance: d("2850"), colorHex: "#E4002B")
-        let epargne = Account(name: "Épargne d'urgence", institution: "Banque Nationale",
+        let epargne = Account(name: t("Épargne d'urgence", "Emergency savings"), institution: bank,
                               type: .savings, currency: "CAD",
                               initialBalance: d("11500"), colorHex: "#34C759")
-        let celi = Account(name: "CELI", institution: "Banque Nationale",
+        let celi = Account(name: t("CELI", "TFSA"), institution: bank,
                            type: .investment, currency: "CAD",
                            initialBalance: d("28400"), colorHex: "#3478F6")
-        let celiapp = Account(name: "CELIAPP", institution: "Banque Nationale",
+        let celiapp = Account(name: t("CELIAPP", "FHSA"), institution: bank,
                               type: .investment, currency: "CAD",
                               initialBalance: d("8000"), colorHex: "#5AC8FA")
-        let visa = Account(name: "Visa Infinite", institution: "Banque Nationale",
+        let visa = Account(name: "Visa Infinite", institution: bank,
                            type: .credit, currency: "CAD",
                            initialBalance: 0, colorHex: "#FF9500")
-        let usd = Account(name: "Compte USD", institution: "Banque Nationale",
+        let usd = Account(name: t("Compte USD", "USD account"), institution: bank,
                           type: .checking, currency: "USD",
                           initialBalance: d("1450"), colorHex: "#8E8E93")
 
@@ -106,16 +119,16 @@ enum DemoData {
 
         // (jour du mois, montant, type, bénéficiaire, catégorie, compte)
         let monthlyRows: [(Int, String, TransactionType, String, String, Account)] = [
-            (1,  "2412.50", .income,  "Employeur — paie",      "category.salary",        cheques),
-            (2,  "1685.00", .expense, "Hypothèque",            "category.housing",       cheques),
+            (1,  "2412.50", .income,  t("Employeur — paie", "Employer — payroll"), "category.salary",        cheques),
+            (2,  "1685.00", .expense, t("Hypothèque", "Mortgage"), "category.housing",       cheques),
             (3,   "142.37", .expense, "IGA",                   "category.grocery",       visa),
             (4,    "92.40", .expense, "Hydro-Québec",          "category.utilities",     cheques),
             (6,    "62.15", .expense, "Restaurant Damas",      "category.restaurant",    visa),
-            (8,    "97.00", .expense, "STM — passe mensuelle", "category.transport",     visa),
+            (8,    "97.00", .expense, t("STM — passe mensuelle", "STM — monthly pass"), "category.transport",     visa),
             (11,  "128.44", .expense, "Metro",                 "category.grocery",       visa),
             (13,   "18.99", .expense, "Netflix",               "category.entertainment", visa),
-            (15, "2412.50", .income,  "Employeur — paie",      "category.salary",        cheques),
-            (16,   "71.80", .expense, "Essence Petro-Canada",  "category.transport",     visa),
+            (15, "2412.50", .income,  t("Employeur — paie", "Employer — payroll"), "category.salary",        cheques),
+            (16,   "71.80", .expense, t("Essence Petro-Canada", "Petro-Canada gas"), "category.transport",     visa),
             (18,  "155.12", .expense, "Costco",                "category.grocery",       visa),
             (20,   "88.60", .expense, "Pharmaprix",            "category.health",        visa),
             (22,   "76.90", .expense, "Restaurant Schwartz's", "category.restaurant",    visa),
@@ -128,8 +141,8 @@ enum DemoData {
         // de bord les exclut des statistiques revenus/dépenses.
         // (jour du mois, montant, libellé, compte source, compte destination)
         let transferRows: [(Int, String, String, Account, Account)] = [
-            (5, "1150.00", "Paiement Visa", cheques, visa),
-            (15, "500.00", "Virement CELI", cheques, celi),
+            (5, "1150.00", t("Paiement Visa", "Visa payment"), cheques, visa),
+            (15, "500.00", t("Virement CELI", "TFSA transfer"), cheques, celi),
         ]
 
         func insertTransfer(amount: Decimal, label: String,
@@ -165,9 +178,9 @@ enum DemoData {
 
         // Transactions à venir — alimente la section « À venir ».
         let upcoming: [(Int, String, TransactionType, String, String, Account)] = [
-            (2,  "1685.00", .expense, "Hypothèque",             "category.housing",       cheques),
-            (4,    "97.00", .expense, "STM — passe mensuelle",  "category.transport",     cheques),
-            (6,  "2412.50", .income,  "Employeur — paie",       "category.salary",        cheques),
+            (2,  "1685.00", .expense, t("Hypothèque", "Mortgage"), "category.housing",       cheques),
+            (4,    "97.00", .expense, t("STM — passe mensuelle", "STM — monthly pass"), "category.transport",     cheques),
+            (6,  "2412.50", .income,  t("Employeur — paie", "Employer — payroll"), "category.salary",        cheques),
             (11,   "18.99", .expense, "Netflix",                "category.entertainment", visa),
         ]
         for (offset, amount, type, payee, key, account) in upcoming {
@@ -178,10 +191,10 @@ enum DemoData {
 
         // ── Budgets ──────────────────────────────────────────────────────
         let budgets: [(String, String, String, String, [String])] = [
-            ("Alimentation", "650",  "#34C759", "cart.fill",  ["category.grocery"]),
-            ("Restaurants",  "250",  "#FF9500", "fork.knife", ["category.restaurant"]),
-            ("Transport",    "200",  "#3478F6", "car.fill",   ["category.transport"]),
-            ("Loisirs",      "150",  "#AF52DE", "film.fill",  ["category.entertainment"]),
+            (t("Alimentation", "Groceries"), "650",  "#34C759", "cart.fill",  ["category.grocery"]),
+            (t("Restaurants", "Dining out"), "250",  "#FF9500", "fork.knife", ["category.restaurant"]),
+            (t("Transport", "Transit"), "200",  "#3478F6", "car.fill",   ["category.transport"]),
+            (t("Loisirs", "Entertainment"), "150",  "#AF52DE", "film.fill",  ["category.entertainment"]),
         ]
         for (idx, b) in budgets.enumerated() {
             let budget = Budget(name: b.0, limitAmount: d(b.1), currency: "CAD",
@@ -192,8 +205,8 @@ enum DemoData {
         }
 
         // ── Hypothèque ───────────────────────────────────────────────────
-        let hypo = Loan(label: "Hypothèque — Rosemont",
-                        lenderName: "Banque Nationale",
+        let hypo = Loan(label: t("Hypothèque — Rosemont", "Mortgage — Rosemont"),
+                        lenderName: bank,
                         type: .mortgage,
                         currency: "CAD",
                         originalPrincipal: d("385000"),
@@ -205,8 +218,8 @@ enum DemoData {
                         account: cheques)
         context.insert(hypo)
 
-        let auto = Loan(label: "Prêt auto — RAV4",
-                        lenderName: "Banque Nationale",
+        let auto = Loan(label: t("Prêt auto — RAV4", "Car loan — RAV4"),
+                        lenderName: bank,
                         type: .auto,
                         currency: "CAD",
                         originalPrincipal: d("32000"),
@@ -219,8 +232,8 @@ enum DemoData {
         context.insert(auto)
 
         // ── Marge de crédit ──────────────────────────────────────────────
-        let marge = CreditLine(name: "Marge de crédit personnelle",
-                               lenderName: "Banque Nationale",
+        let marge = CreditLine(name: t("Marge de crédit personnelle", "Personal line of credit"),
+                               lenderName: bank,
                                currency: "CAD",
                                creditLimit: d("25000"),
                                annualInterestRate: d("8.45"),
@@ -231,9 +244,9 @@ enum DemoData {
         context.insert(marge)
 
         let entries: [(CreditLineEntryType, String, Int, String)] = [
-            (.draw,      "6000.00", -75, "Rénovation cuisine"),
-            (.repayment,  "800.00", -45, "Remboursement"),
-            (.repayment,  "800.00", -15, "Remboursement"),
+            (.draw,      "6000.00", -75, t("Rénovation cuisine", "Kitchen renovation")),
+            (.repayment,  "800.00", -45, t("Remboursement", "Repayment")),
+            (.repayment,  "800.00", -15, t("Remboursement", "Repayment")),
         ]
         for (type, amount, offset, note) in entries {
             let e = CreditLineEntry(type: type, amount: d(amount),
@@ -243,7 +256,7 @@ enum DemoData {
         }
 
         // ── Projets d'épargne ────────────────────────────────────────────
-        let voyage = SavingsProject(name: "Voyage au Japon",
+        let voyage = SavingsProject(name: t("Voyage au Japon", "Trip to Japan"),
                                     iconSystemName: "airplane",
                                     colorHex: "#FF2D92",
                                     currency: "CAD",
@@ -254,7 +267,7 @@ enum DemoData {
                                     account: epargne)
         context.insert(voyage)
 
-        let urgence = SavingsProject(name: "Fonds d'urgence",
+        let urgence = SavingsProject(name: t("Fonds d'urgence", "Emergency fund"),
                                      iconSystemName: "shield.fill",
                                      colorHex: "#34C759",
                                      currency: "CAD",

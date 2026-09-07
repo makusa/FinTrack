@@ -2,13 +2,21 @@
 //  ScreenshotTests.swift
 //  FinTrackUITests
 //
-//  Screenshot harness for presentation / App Store captures.
+//  Screenshot harness for presentation / App Store / landing-page captures.
 //  Launches the app in -FTDemoMode (in-memory store + demo dataset, lock and
 //  coach marks bypassed, Placement tier simulated), walks the main screens and
-//  attaches a PNG for each. Extract them with:
+//  attaches a PNG for each.
 //
-//    xcrun xcresulttool export attachments --path <result>.xcresult \
-//                                          --output-path <dir>
+//  Two runs, one per language. The slugs are identical in both so the two sets
+//  map one to one:
+//
+//    xcodebuild test -scheme FinTrack \
+//      -destination 'platform=iOS Simulator,name=iPhone 16 Pro Max' \
+//      -only-testing:FinTrackUITests/ScreenshotTests/testCaptureAllScreensEN \
+//      -resultBundlePath /tmp/shots-en.xcresult
+//
+//    xcrun xcresulttool export attachments --path /tmp/shots-en.xcresult \
+//                                          --output-path /tmp/shots-en
 //
 //  Navigation notes (learned the hard way):
 //   • Rows are not exposed as `cells` — the screens use custom SwiftUI layouts.
@@ -16,6 +24,8 @@
 //   • Never tap navigationBars.buttons[0] to go back: on a root screen that is
 //     the "+" button, which opens a modal that blocks every later capture.
 //     Re-tapping the current tab pops to root, which is safe everywhere.
+//   • Demo content (account names, budget names…) is seeded in the language the
+//     app launched in, so every row prefix below has to be language-aware too.
 //
 
 import XCTest
@@ -24,19 +34,29 @@ final class ScreenshotTests: XCTestCase {
 
     private var app: XCUIApplication!
     private var shotIndex = 0
+    private var isEN = false
 
     override func setUpWithError() throws {
         // Keep going after a soft failure so one missing screen never costs us
         // the whole capture run.
         continueAfterFailure = true
+    }
 
+    // MARK: - Language
+
+    /// Picks the French or English variant of a label the harness has to match.
+    private func L(_ fr: String, _ en: String) -> String { isEN ? en : fr }
+
+    private func launch(english: Bool) {
+        isEN = english
+        shotIndex = 0
         app = XCUIApplication()
         app.launchArguments = [
             "-FTDemoMode",
-            "-appLanguage", "fr",
+            "-appLanguage", english ? "en" : "fr",
             "-fintrack.dev.tierOverride", "placement",
-            "-AppleLanguages", "(fr-CA)",
-            "-AppleLocale", "fr_CA",
+            "-AppleLanguages", english ? "(en-CA)" : "(fr-CA)",
+            "-AppleLocale", english ? "en_CA" : "fr_CA",
         ]
         app.launch()
     }
@@ -112,9 +132,21 @@ final class ScreenshotTests: XCTestCase {
         return false
     }
 
+    // MARK: - Tests
+
+    func testCaptureAllScreensFR() throws {
+        launch(english: false)
+        try runCapture()
+    }
+
+    func testCaptureAllScreensEN() throws {
+        launch(english: true)
+        try runCapture()
+    }
+
     // MARK: - Capture run
 
-    func testCaptureAllScreens() throws {
+    private func runCapture() throws {
         XCTAssertTrue(app.tabBars.firstMatch.waitForExistence(timeout: 30),
                       "L'application n'a pas atteint l'écran principal.")
         settle(3)
@@ -127,18 +159,18 @@ final class ScreenshotTests: XCTestCase {
         capture("tableau-de-bord-analyses")
 
         // ── 2. Comptes ───────────────────────────────────────────────────
-        if tapTab("Comptes") {
+        if tapTab(L("Comptes", "Accounts")) {
             capture("comptes")
-            if tapRow(startingWith: "Compte chèques") {
+            if tapRow(startingWith: L("Compte chèques", "Chequing")) {
                 capture("compte-detail")
             } else {
-                XCTFail("Détail de compte : ligne « Compte chèques » introuvable.")
+                XCTFail("Détail de compte : ligne introuvable.")
             }
-            tapTab("Comptes")   // pop to root
+            tapTab(L("Comptes", "Accounts"))   // pop to root
         }
 
         // ── 3. Transactions ──────────────────────────────────────────────
-        if tapTab("Transactions") {
+        if tapTab(L("Transactions", "Transactions")) {
             capture("transactions")
             app.swipeUp(); settle(1.2)
             capture("transactions-suite")
@@ -147,16 +179,16 @@ final class ScreenshotTests: XCTestCase {
         // ── 4. Gérer + sous-écrans ───────────────────────────────────────
         // (libellé de la ligne, nom de fichier, ligne de détail à ouvrir)
         let sections: [(row: String, slug: String, detail: String?)] = [
-            ("Budgets",             "budgets",             "Alimentation"),
-            ("Projets d'épargne",   "projets-epargne",     "Voyage au Japon"),
-            ("Récurrences",         "recurrences",         nil),
-            ("Prêts",               "prets",               "Hypothèque"),
-            ("Marges de crédit",    "marges-de-credit",    "Marge de crédit"),
-            ("Comptes enregistrés", "comptes-enregistres", nil),
+            (L("Budgets", "Budgets"),                      "budgets",             L("Alimentation", "Groceries")),
+            (L("Projets d'épargne", "Savings Goals"),      "projets-epargne",     L("Voyage au Japon", "Trip to Japan")),
+            (L("Récurrences", "Recurring"),                "recurrences",         nil),
+            (L("Prêts", "Loans"),                          "prets",               L("Hypothèque", "Mortgage")),
+            (L("Marges de crédit", "Credit Lines"),        "marges-de-credit",    L("Marge de crédit", "Personal line")),
+            (L("Comptes enregistrés", "Registered Accounts"), "comptes-enregistres", nil),
         ]
 
         for section in sections {
-            guard tapTab("Gérer") else { break }
+            guard tapTab(L("Gérer", "Manage")) else { break }
             guard tapRow(startingWith: section.row) else {
                 XCTFail("Ligne introuvable dans Gérer : \(section.row)")
                 continue
@@ -169,11 +201,11 @@ final class ScreenshotTests: XCTestCase {
         }
 
         // ── 5. Gérer (racine) + Réglages ─────────────────────────────────
-        if tapTab("Gérer") {
-            tapTab("Gérer")     // pop to root
+        if tapTab(L("Gérer", "Manage")) {
+            tapTab(L("Gérer", "Manage"))     // pop to root
             capture("gerer")
         }
-        if tapTab("Réglages") {
+        if tapTab(L("Réglages", "Settings")) {
             capture("reglages")
         }
     }
